@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="styles.css">
 <script>
   // Apply the saved theme before first paint so the page never flashes the wrong colours.
-  try { const s = JSON.parse(localStorage.getItem('rngdle10:v3')); if (s && s.settings) { document.documentElement.dataset.theme = s.settings.theme; document.documentElement.dataset.effects = s.settings.effects; } } catch (e) {}
+  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { document.documentElement.dataset.theme = s.settings.theme; document.documentElement.dataset.effects = s.settings.effects; } } catch (e) {}
 </script>
 </head>
 <body>
@@ -196,14 +196,16 @@
     <h3>Install</h3>
     <p class="muted" id="installText"></p>
     <button class="btn" id="installBtn" type="button" hidden>Install RNGdle 10</button>
-    <h3>Your data</h3>
-    <p class="muted">Rolls are saved in this browser only. A save file moves them to another browser.</p>
+    <h3>Save files <span class="muted" id="slotCount"></span></h3>
+    <p class="muted">Each save file keeps its own rolls, badges and achievements in this browser. Export one to move it or share it; importing always adds a new save file.</p>
+    <ul class="slots" id="slotList"></ul>
     <div class="dlg-actions" style="justify-content:flex-start">
-      <button class="btn" id="exportBtn" type="button">Export save</button>
-      <button class="btn" id="importBtn" type="button">Import save</button>
+      <button class="btn" id="newSlotBtn" type="button">New save file</button>
+      <button class="btn" id="importBtn" type="button">Import a save file</button>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
-      <button class="btn danger" id="resetBtn" type="button">Erase everything</button>
+      <button class="btn danger" id="resetBtn" type="button">Erase the current save</button>
     </div>
+    <p class="muted">Share saves with other players on <a href="https://github.com/gkson-lab/rngdle9/discussions">the game's GitHub Discussions</a>: export a save and attach the file to a post.</p>
     <p class="muted" id="dataMsg" role="status"></p>
     <div class="dlg-actions"><button class="btn" type="button" data-close>Done</button></div>
   </div>

@@ -52,8 +52,21 @@
     return '#' + q.toString();
   }
 
-  // Storage, carrying older saves forward.
-  const KEY = 'rngdle10:v3';
+  // Save files: each is one browser-stored save, listed in an index. The first keeps the original
+  // key so saves from earlier versions are picked up as it.
+  const SLOTS_KEY = 'rngdle10:slots';
+  const MAX_SLOTS = 10;
+  const slotKey = id => (id === 'main' ? 'rngdle10:v3' : `rngdle10:slot:${id}`);
+  function loadSlots() {
+    try {
+      const s = JSON.parse(localStorage.getItem(SLOTS_KEY));
+      if (s && Array.isArray(s.list) && s.list.some(x => x.id === s.active)) return s;
+    } catch { /* fall through to a fresh index */ }
+    return { active: 'main', list: [{ id: 'main', name: 'Save 1', created: Date.now() }] };
+  }
+  const slots = loadSlots();
+  function saveSlots() { try { localStorage.setItem(SLOTS_KEY, JSON.stringify(slots)); } catch { /* storage blocked */ } }
+  const KEY = slotKey(slots.active);
   const LOG_LIMIT = 200;
   const perMode = make => Object.fromEntries(MODE_IDS.map(id => [id, make()]));
   const blank = () => ({
@@ -78,7 +91,7 @@
         if (!(s.v >= 4)) rescale(st);
         return st;
       }
-      const old = JSON.parse(localStorage.getItem('rngdle9:v2'));
+      const old = slots.active === 'main' && JSON.parse(localStorage.getItem('rngdle9:v2'));
       const st = blank();
       if (old) {
         Object.assign(st, { total: old.total || 0, counts: old.counts || {}, first: old.first || {} });
@@ -103,14 +116,19 @@
     st.v = 4;
   }
   const tierTotal = mode => Object.values(state.tiers[mode]).reduce((a, b) => a + b, 0);
+  // Saves are throttled, not debounced: a debounce kept resetting during Endless and never fired.
   let saveTimer = 0, storageOk = true;
-  function save() {
+  function writeSave() {
     clearTimeout(saveTimer);
-    saveTimer = setTimeout(() => {
-      try { localStorage.setItem(KEY, JSON.stringify(state)); storageOk = true; } catch { storageOk = false; }
-      $('storageNotice').hidden = storageOk;
-    }, 200);
+    saveTimer = 0;
+    try { localStorage.setItem(KEY, JSON.stringify(state)); storageOk = true; } catch { storageOk = false; }
+    $('storageNotice').hidden = storageOk;
   }
+  function save() {
+    if (!saveTimer) saveTimer = setTimeout(writeSave, auto ? 1000 : 200);
+  }
+  addEventListener('pagehide', () => { if (saveTimer) writeSave(); });
+  document.addEventListener('visibilitychange', () => { if (document.hidden && saveTimer) writeSave(); });
 
   function entryFor(x) {
     const r = scoreOf(x);
@@ -259,13 +277,13 @@
   function spinTo(x, speed) {
     if (speed === 3 || effects() === 'off') { setReels(x); return Promise.resolve(); }
     const s = String(x.n).padStart(G.DIGITS, '0'), lead = leadCount(x.n);
-    const base = speed === 1 ? 650 : 240, stagger = speed === 1 ? 100 : 30, spins = speed === 1 ? 24 : 10;
+    const base = speed === 1 ? 460 : 170, stagger = speed === 1 ? 70 : 20, spins = speed === 1 ? 20 : 8;
     $('expWrap').hidden = !x.e;
     const jobs = reels.map((r, i) => spinReel(r, s[i], base + i * stagger, spins + i * 2, i < lead, digitFace, speed === 1 ? () => tick(i) : null));
     const end = base + reels.length * stagger;
-    if (x.e) jobs.push(spinReel($('expReel'), x.e, end + (speed === 1 ? 200 : 50), spins + 20, false, digitFace, null));
+    if (x.e) jobs.push(spinReel($('expReel'), x.e, end + (speed === 1 ? 150 : 40), spins + 16, false, digitFace, null));
     const m = MULT_BY_ID[x.x];
-    jobs.push(spinReel($('multReel'), m.symbol, end + (speed === 1 ? 450 : 100), spins + 26, false, multFace, () => paintMult(m)));
+    jobs.push(spinReel($('multReel'), m.symbol, end + (speed === 1 ? 300 : 70), spins + 20, false, multFace, () => paintMult(m)));
     return Promise.all(jobs).then(() => $('reels').setAttribute('aria-label', label(x)));
   }
 
@@ -440,9 +458,10 @@
     return s;
   }
   const rollsText = k => `${fmt(k)} ${k === 1 ? 'roll' : 'rolls'}`;
-  function showResult(x, { animate = false, speed = 1, preview = false, fresh = null } = {}) {
-    const r = scoreOf(x);
-    const rt = G.rollTier(r.rank, x.mode), { pct, tier } = rt;
+  function showResult(x, { animate = false, speed = 1, preview = false, fresh = null, pre = null } = {}) {
+    const r = pre ? pre.r : scoreOf(x);
+    const rt = pre ? { pct: pre.pct, tier: pre.tier, oneInLog: pre.entry.oneInLog, estimated: pre.entry.estimated } : G.rollTier(r.rank, x.mode);
+    const { pct, tier } = rt;
     shown = { x, r, pct, tier, preview, odds: rt };
     $('firstRun').hidden = true;
     $('result').hidden = false;
@@ -559,12 +578,13 @@
 
   // Side boards: the best rolls of this session and of all time, for the current mode.
   let freshEntry = null;
-  function renderBoards() {
+  function renderBoards(changed = true) {
     const mode = state.mode, name = MODE_BY_ID[mode].name;
     for (const el of document.querySelectorAll('[data-board]')) {
       const all = el.dataset.board === 'all';
       const list = all ? state.hof[mode] : session.best[mode];
       const sub = `${name} · ${rollsText(all ? state.totals[mode] : session.rolls)}`;
+      if (!changed && el.querySelector('.sub')) { el.querySelector('.sub').textContent = sub; continue; } // only the counts moved
       const items = list.map((x, k) => `<li${x === freshEntry ? ' class="fresh"' : ''} style="--tc:${tierVar(x.tier)}"><a href="${hashOf(x)}"><span class="rank num">${k + 1}</span><span class="n num">${esc(label(x))}</span><span class="sc num">${esc(oneText(x))}</span><span class="tier">${ROLL_TIERS[T(x.tier)].name}${x.x && x.x !== 'unity' ? ` <span class="x">× ${esc(MULT_BY_ID[x.x].symbol)}</span>` : ''}</span></a></li>`).join('');
       el.innerHTML = `<h2>${all ? 'All time' : 'This session'}</h2><p class="sub num">${sub}</p>`
         + (items ? `<ol>${items}</ol>` : `<p class="empty">${all ? 'Your ten best rolls ever land here.' : 'Your ten best rolls this session land here.'}</p>`);
@@ -573,10 +593,12 @@
 
   // Rolling
   let speed = 1, auto = null, busy = false, hunt = '', huntRolls = 0;
+  const run = { start: 0, rolls: 0 }; // the current Auto or Endless run, for its rolls-a-second figure
   const huntName = id => (id.startsWith('x:') ? `× ${MULT_BY_ID[id.slice(2)].symbol} ${MULT_BY_ID[id.slice(2)].name}` : findBadge(id).name);
   const huntP = id => (id.startsWith('x:') ? MULT_BY_ID[id.slice(2)].p : findBadge(id).p);
 
-  async function rollOnce() {
+  // One roll's bookkeeping, with no drawing, so Turbo can take several per screen frame.
+  function takeRoll() {
     const mode = state.mode, roll = G.randomParams(mode), n = G.randomRoll();
     const x = { n, t: Date.now(), mode, x: roll.mult };
     if (roll.e) x.e = roll.e;
@@ -584,17 +606,9 @@
     if (roll.t !== undefined) x.tg = roll.t;
     const rec = record(x);
     save();
+    run.rolls++;
     for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id);
     if (rec.freshMult) toast(`New multiplier: <b>× ${esc(rec.r.mult.symbol)} ${esc(rec.r.mult.name)}</b>`, RARITIES[rec.r.mult.rarity].id);
-    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
-    const sp = auto && speed === 3 ? 3 : speed;
-    if (sp !== 3) $('result').hidden = true;
-    await spinTo(x, sp);
-    showResult(x, { animate: true, speed: sp, fresh: rec.fresh });
-    celebrate(rec.tier.id, sp);
-    freshEntry = rec.madeSession || rec.madeHof ? rec.entry : null;
-    renderBoards();
-
     let found = false;
     if (hunt) {
       huntRolls++;
@@ -607,8 +621,52 @@
       }
     }
     checkAchievements(rec);
+    return { x, rec, found };
+  }
+  function drawRoll({ x, rec }, sp, boardsChanged) {
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    showResult(x, { animate: true, speed: sp, fresh: rec.fresh, pre: rec });
+    celebrate(rec.tier.id, sp);
+    renderBoards(boardsChanged);
     paintStatus();
-    return { tier: rec.tier, found };
+  }
+  async function rollOnce() {
+    const roll = takeRoll();
+    if (speed !== 3) $('result').hidden = true;
+    await spinTo(roll.x, speed);
+    freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
+    drawRoll(roll, speed, !!freshEntry);
+    return { tier: roll.rec.tier, found: roll.found };
+  }
+
+  // Turbo: rolls run on their own steady clock (90 a second) in small slices that never block the
+  // page for more than a few milliseconds. Drawing happens at most once per screen frame and shows
+  // the rarest roll since the last frame, so a Mythic is never skipped over. A hidden tab or a
+  // throttled screen slows the drawing, never the rolling.
+  const TURBO_RATE = 90; // rolls per second
+  async function turboLoop(kind) {
+    let last = performance.now(), owed = 0, best = null, changed = false, framePending = false;
+    const draw = () => {
+      framePending = false;
+      if (best && !document.hidden) { drawRoll(best, 3, changed); best = null; changed = false; }
+    };
+    while (auto === kind && speed === 3 && ready[state.mode]) {
+      await sleep(15);
+      const now = performance.now();
+      owed = Math.min(owed + ((now - last) / 1000) * TURBO_RATE, TURBO_RATE); // at most a second of catch-up
+      last = now;
+      let stop = false;
+      const start = performance.now();
+      while (owed >= 1 && performance.now() - start < 6 && auto === kind) {
+        owed--;
+        const roll = takeRoll();
+        if (roll.rec.madeSession || roll.rec.madeHof) { changed = true; freshEntry = roll.rec.entry; }
+        if (!best || roll.rec.entry.oneInLog > best.rec.entry.oneInLog) best = roll;
+        if (kind === 'auto' && (roll.found || T(roll.rec.tier.id) >= +$('stopAt').value)) { best = roll; stop = true; break; }
+      }
+      if (stop) { draw(); setAuto(null); return; }
+      if (best && !framePending) { framePending = true; requestAnimationFrame(draw); }
+    }
   }
 
   function paintStatus() {
@@ -619,8 +677,8 @@
         + (best ? `, best <b style="color:${tierVar(best.tier)}">${ROLL_TIERS[T(best.tier)].name}</b>` : ''));
     }
     if (auto === 'endless') {
-      const mins = (Date.now() - session.start) / 60000;
-      parts.push(`Endless keeps rolling until you press Stop${mins > 0.5 ? `, about ${fmt(session.rolls / mins)} rolls a minute` : ''}`);
+      const secs = (performance.now() - run.start) / 1000;
+      parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`);
     }
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
     $('status').innerHTML = parts.join('<br>');
@@ -637,7 +695,9 @@
   }
   $('rollBtn').addEventListener('click', rollClicked);
   function setAuto(kind) {
+    if (kind !== auto) { run.start = performance.now(); run.rolls = 0; }
     auto = kind;
+    if (!kind && saveTimer) writeSave();
     $('autoBtn').setAttribute('aria-pressed', String(kind === 'auto'));
     $('endlessBtn').setAttribute('aria-pressed', String(kind === 'endless'));
     paintRollButton();
@@ -649,9 +709,10 @@
     while (auto) {
       if (!ready[state.mode]) { await warm(state.mode); continue; }
       const kind = auto;
+      if (speed === 3) { await turboLoop(kind); continue; }
       const { tier, found } = await rollOnce();
       if (kind === 'auto' && auto === 'auto' && (found || T(tier.id) >= +$('stopAt').value)) { setAuto(null); break; }
-      await sleep(speed === 1 ? 800 : speed === 2 ? 300 : 40);
+      await sleep(speed === 1 ? 300 : 60);
     }
     busy = false;
     paintRollButton();
@@ -983,7 +1044,7 @@
     for (const r of document.querySelectorAll('#settingsDialog input[name="theme"]')) r.checked = r.value === s.theme;
     for (const r of document.querySelectorAll('#settingsDialog input[name="effects"]')) r.checked = r.value === s.effects;
   }
-  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); $('settingsDialog').showModal(); });
+  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); $('settingsDialog').showModal(); });
   $('settingsDialog').addEventListener('change', ev => {
     if (ev.target.name === 'theme') state.settings.theme = ev.target.value;
     if (ev.target.name === 'effects') state.settings.effects = ev.target.value;
@@ -1012,15 +1073,87 @@
     navigator.serviceWorker.register('sw.js').catch(() => { /* offline support unavailable; the game still works */ });
   }
 
-  $('exportBtn').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify({ game: 'rngdle10', version: 4, state })], { type: 'application/json' });
+  // Save files panel
+  const readSlot = id => { try { return JSON.parse(localStorage.getItem(slotKey(id))); } catch { return null; } };
+  const newSlotId = () => Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+  const slotName = id => slots.list.find(s => s.id === id).name;
+  function download(name, data) {
     const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `rngdle10-save-${dayKey()}.json`;
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(data)], { type: 'application/json' }));
+    a.download = name;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    $('dataMsg').textContent = `Saved ${fmt(state.total)} rolls to a file.`;
+  }
+  const fileName = name => `rngdle10-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'save'}.json`;
+  function renderSlots() {
+    $('slotList').innerHTML = slots.list.map(s => {
+      const data = s.id === slots.active ? state : readSlot(s.id);
+      const rolls = data ? data.total || 0 : 0;
+      const lastT = data && data.log && data.log[0] && data.log[0].t;
+      const playing = s.id === slots.active;
+      return `<li class="${playing ? 'playing' : ''}"><div class="slot-info"><b>${esc(s.name)}</b>${playing ? ' <span class="slot-tag">Playing</span>' : ''}`
+        + `<span class="muted num">${rollsText(rolls)}${lastT ? ` · last rolled ${new Date(lastT).toLocaleDateString()}` : ''}</span></div>`
+        + `<div class="slot-actions">${playing ? '' : `<button class="btn" type="button" data-slot="play" data-id="${s.id}">Play</button>`}`
+        + `<button class="btn" type="button" data-slot="rename" data-id="${s.id}" aria-label="Rename ${esc(s.name)}">Rename</button>`
+        + `<button class="btn" type="button" data-slot="copy" data-id="${s.id}" aria-label="Duplicate ${esc(s.name)}">Duplicate</button>`
+        + `<button class="btn" type="button" data-slot="export" data-id="${s.id}" aria-label="Export ${esc(s.name)} to a file">Export</button>`
+        + `${playing ? '' : `<button class="btn danger" type="button" data-slot="delete" data-id="${s.id}" aria-label="Delete ${esc(s.name)}">Delete</button>`}</div></li>`;
+    }).join('');
+    $('newSlotBtn').disabled = $('importBtn').disabled = slots.list.length >= MAX_SLOTS;
+    $('slotCount').textContent = `${slots.list.length} of ${MAX_SLOTS}`;
+  }
+  function addSlot(name, data) {
+    const id = newSlotId();
+    try { localStorage.setItem(slotKey(id), JSON.stringify(data)); } catch { $('dataMsg').textContent = 'This browser is blocking storage, so the save file could not be created.'; return null; }
+    slots.list.push({ id, name, created: Date.now() });
+    saveSlots();
+    return id;
+  }
+  function playSlot(id) {
+    setAuto(null);
+    writeSave();
+    slots.active = id;
+    saveSlots();
+    location.hash = '';
+    location.reload();
+  }
+  $('slotList').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-slot]');
+    if (!b) return;
+    const id = b.dataset.id, s = slots.list.find(x => x.id === id), action = b.dataset.slot;
+    if (action === 'play') playSlot(id);
+    if (action === 'rename') {
+      const name = (prompt('Name this save file', s.name) || '').trim().slice(0, 40);
+      if (name) { s.name = name; saveSlots(); renderSlots(); }
+    }
+    if (action === 'copy') {
+      if (slots.list.length >= MAX_SLOTS) return;
+      if (id === slots.active) writeSave();
+      if (addSlot(`${s.name} copy`, readSlot(id) || blank())) { renderSlots(); $('dataMsg').textContent = `Made a copy of ${s.name}.`; }
+    }
+    if (action === 'export') {
+      if (id === slots.active) writeSave();
+      const data = readSlot(id) || blank();
+      download(fileName(s.name), { game: 'rngdle10', version: 4, name: s.name, state: data });
+      $('dataMsg').textContent = `Exported ${s.name} (${rollsText(data.total || 0)}) to a file.`;
+    }
+    if (action === 'delete') {
+      if (!confirm(`Delete the save file "${s.name}"? Its rolls, badges and achievements cannot be recovered unless you exported it.`)) return;
+      try { localStorage.removeItem(slotKey(id)); } catch { /* already gone */ }
+      slots.list = slots.list.filter(x => x.id !== id);
+      saveSlots();
+      renderSlots();
+      $('dataMsg').textContent = `Deleted ${s.name}.`;
+    }
   });
+  $('newSlotBtn').addEventListener('click', () => {
+    const fresh = blank();
+    fresh.settings = { ...state.settings };
+    const id = addSlot(`Save ${slots.list.length + 1}`, fresh);
+    if (id && confirm('New save file created. Switch to it now?')) playSlot(id);
+    else renderSlots();
+  });
+  // Importing always makes a new save file, so a shared save can never overwrite your own.
   $('importBtn').addEventListener('click', () => $('importFile').click());
   $('importFile').addEventListener('change', async () => {
     const file = $('importFile').files[0];
@@ -1030,35 +1163,33 @@
     try { data = JSON.parse(await file.text()); } catch { /* reported below */ }
     const s = data && ['rngdle10', 'rngdle9'].includes(data.game) && data.state;
     if (!s || !Array.isArray(s.log) || typeof s.total !== 'number') {
-      $('dataMsg').textContent = 'That file is not an RNGdle save, so nothing changed.';
+      $('dataMsg').textContent = 'That file is not an RNGdle save, so nothing was imported.';
       return;
     }
-    if (!confirm(`Replace your progress (${fmt(state.total)} rolls) with this save (${fmt(s.total)} rolls)?`)) return;
-    setAuto(null);
+    const st = Object.assign(blank(), s, { settings: { ...state.settings } });
     const b = blank();
-    Object.assign(state, b, s, { settings: state.settings });
-    for (const k of ['totals', 'tiers', 'hof']) state[k] = Object.assign(b[k], s[k]);
-    if (data.game === 'rngdle9') state.totals.classic = s.total;
-    state.log = s.log.filter(x => Number.isInteger(x.n) && x.n >= 0 && x.n < G.SPACE).slice(0, LOG_LIMIT).map(upgradeEntry);
-    state.favs = (s.favs || []).map(upgradeEntry);
-    for (const id of MODE_IDS) state.hof[id] = state.hof[id].map(upgradeEntry);
-    if (!(s.v >= 4)) rescale(state);
-    save();
-    renderBoards();
-    $('dataMsg').textContent = `Loaded a save with ${fmt(state.total)} rolls.`;
+    for (const k of ['totals', 'tiers', 'hof']) st[k] = Object.assign(b[k], s[k]);
+    if (data.game === 'rngdle9') { st.totals.classic = s.total; st.v = 3; }
+    st.log = s.log.filter(x => x && Number.isInteger(x.n) && x.n >= 0 && x.n < G.SPACE).slice(0, LOG_LIMIT);
+    const name = String(data.name || file.name.replace(/\.json$/i, '').replace(/^rngdle10-/, '') || 'Imported save').slice(0, 40);
+    if (addSlot(name, st)) {
+      renderSlots();
+      $('dataMsg').textContent = `Imported "${name}" (${rollsText(s.total)}) as a new save file. Press Play to use it.`;
+    }
   });
   $('resetBtn').addEventListener('click', () => {
-    if (!confirm('Erase every roll, badge, multiplier, star and achievement in this browser? This cannot be undone.')) return;
+    if (!confirm(`Erase every roll, badge, multiplier, star and achievement in "${slotName(slots.active)}"? This cannot be undone.`)) return;
     setAuto(null);
     const keep = state.settings;
     Object.assign(state, blank(), { settings: keep });
     session.rolls = 0;
     session.best = perMode(() => []);
-    try { localStorage.removeItem('rngdle9:v2'); } catch { /* nothing to remove */ }
-    save();
+    if (slots.active === 'main') { try { localStorage.removeItem('rngdle9:v2'); } catch { /* nothing to remove */ } }
+    writeSave();
     renderBoards();
     paintStatus();
-    $('dataMsg').textContent = 'Everything was erased.';
+    renderSlots();
+    $('dataMsg').textContent = `Erased "${slotName(slots.active)}".`;
   });
 
   // Start
