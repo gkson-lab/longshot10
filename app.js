@@ -1169,7 +1169,8 @@
     const st = Object.assign(blank(), s, { settings: { ...state.settings } });
     const b = blank();
     for (const k of ['totals', 'tiers', 'hof']) st[k] = Object.assign(b[k], s[k]);
-    if (data.game === 'rngdle9') { st.totals.classic = s.total; st.v = 3; }
+    if (data.game === 'rngdle9') st.totals.classic = s.total;
+    if (data.game === 'rngdle9' || !s.tiers || !s.hof) st.v = 3; // rebuild tiers and hall of fame from the log on first load
     st.log = s.log.filter(x => x && Number.isInteger(x.n) && x.n >= 0 && x.n < G.SPACE).slice(0, LOG_LIMIT);
     const name = String(data.name || file.name.replace(/\.json$/i, '').replace(/^rngdle10-/, '') || 'Imported save').slice(0, 40);
     if (addSlot(name, st)) {

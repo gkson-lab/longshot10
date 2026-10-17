@@ -1,0 +1,31 @@
+title: "Save: "
+labels: ["save file"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share an RNGdle 10 save so others can load it. In the game, open Settings, find your save under Save files, and press Export. Then drag the `.json` file into the box below.
+
+        Anyone can import it from Settings > Save files > Import a save file. Importing always creates a new save file, so it never touches their own progress.
+  - type: textarea
+    id: file
+    attributes:
+      label: Save file
+      description: Drag your exported .json file here.
+    validations:
+      required: true
+  - type: input
+    id: best
+    attributes:
+      label: Best roll
+      description: Your rarest roll, as the game shows it, for example "Mythic 1/2,400,000 in Exponent mode".
+  - type: input
+    id: rolls
+    attributes:
+      label: Rolls
+      description: How many rolls the save has. Settings > Save files shows it.
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Badges you are proud of, multipliers you landed, how you played.

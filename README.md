@@ -14,7 +14,7 @@ Every roll shows its odds as 1/N: the chance that a random roll of the same mode
 - Target: a target number is rolled; the closer you land, the bigger the bonus.
 - Prime radar: shows the nearest prime, with badges for landing beside one or far from all of them.
 
-Auto rolls until a tier you choose, or until a badge or multiplier you are hunting turns up. Endless never stops on its own. While either runs, the best rolls of the session and of all time stay beside the reels.
+Auto rolls until a tier you choose, or until a badge or multiplier you are hunting turns up. Endless never stops on its own; on Turbo it rolls about 90 times a second and shows the rarest roll of each screen frame. While either runs, the best rolls of the session and of all time stay beside the reels.
 
 ## Other things it does
 
@@ -24,7 +24,12 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
 - Midnight, Felt and Daylight themes, an effects setting, and offline install from the hosted copy
-- Export and import your save; Space rolls, A toggles Auto, E toggles Endless
+- Up to ten save files in the browser, each with its own progress; export one to move or share it, and importing always adds a new save file instead of replacing yours
+- Space rolls, A toggles Auto, E toggles Endless
+
+## Sharing save files
+
+Export a save from Settings > Save files, then post it in [Discussions > Show and tell](https://github.com/gkson-lab/rngdle9/discussions/categories/show-and-tell); the post form asks for the file and your best roll. To play someone else's save, download their `.json` file and choose Import a save file.
 
 ## Exact odds
 
@@ -40,6 +45,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v2.2: Endless on Turbo rolls about 85 times a second (up from about 22) without blocking the page, and 1× and 2× cycle about twice as fast; long runs now save as they go; save files; sharing saves through GitHub Discussions.
 - v2.1: Modulo, Target and Prime radar modes; 100 multipliers on their own reel; a 1/N for every roll; one thirteen-step rarity ladder plus Trash, up to Eternal; Auto settings folded behind one button.
 - v2.0.2: the offline cache now fetches fresh files when a new version installs, instead of reusing the browser's copy of the previous version.
 - v2.0.1: 192px and 512px PNG app icons so browsers offer Install; the icon is drawn from shapes by `tools/icons.js` so it looks the same on every system.
