@@ -31,11 +31,12 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 
 Each save file has an inventory of items you can use from the Inventory tab:
 
-- Charm of Two, Five, Ten and a Hundred: luck ×2, ×5, ×10 or ×100 for a number of rolls. Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game.
+- Luck charms, from the Charm of Two (luck ×2) up to the Charm of a Million (luck ×1,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the rolls are shared out to worker threads, so a million real rolls take a few seconds, with progress shown.
+- Drop boosters: Magnet (×2), Treasure Map (×5), Horn of Plenty (×25) and Golden Goose (×100) multiply item drop chances for a number of rolls; past 100% you get several of an item at once.
 - Multiplier Lens: for 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.
 - Overclock: Turbo rolls twice as fast for 3 minutes.
 
-Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, and each save file gets a Charm of Two once a day. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
+Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Two once a day, and several of one item fuse into the next one up (five Charms of a Hundred Thousand make a Charm of a Million). Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
 
 ## Sharing save files
 
