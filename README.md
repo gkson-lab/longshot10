@@ -55,7 +55,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
-- v2.3: inventory with luck charms, the Multiplier Lens and Overclock; item drops, achievement rewards and a daily gift; items are saved with each save file.
+- v2.5, the Inventory update: inventory with luck charms, the Multiplier Lens and Overclock; item drops, achievement rewards and a daily gift; items are saved with each save file.
 - v2.2: Endless on Turbo rolls about 85 times a second (up from about 22) without blocking the page, and 1× and 2× cycle about twice as fast; long runs now save as they go; save files; sharing saves through GitHub Discussions.
 - v2.1: Modulo, Target and Prime radar modes; 100 multipliers on their own reel; a 1/N for every roll; one thirteen-step rarity ladder plus Trash, up to Eternal; Auto settings folded behind one button.
 - v2.0.2: the offline cache now fetches fresh files when a new version installs, instead of reusing the browser's copy of the previous version.
