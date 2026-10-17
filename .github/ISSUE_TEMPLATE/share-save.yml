@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Saves are easier to browse in [Discussions > Show and tell](https://github.com/gkson-lab/rngdle9/discussions/categories/show-and-tell), but posting one here works too.
+        Saves are easier to browse in [Discussions > Show and tell](https://github.com/gkson-lab/rngexp10/discussions/categories/show-and-tell), but posting one here works too.
 
         In the game, open Settings, find your save under Save files, and press Export. Then drag the `.json` file into the box below.
   - type: textarea

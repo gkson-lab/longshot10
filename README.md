@@ -1,6 +1,6 @@
 # RNGdle 10
 
-A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), with ten digits and unlimited rolls. Play it at https://gkson-lab.github.io/rngdle9/ or open `index.html` locally. Everything runs and is saved in your browser.
+A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), with ten digits and unlimited rolls. Play it at https://gkson-lab.github.io/rngexp10/ or open `index.html` locally. Everything runs and is saved in your browser.
 
 Each roll is a number from 0 to 9,999,999,999, checked against 142 badges: primes, palindromes, straights, sequences like Fibonacci and Catalan, meme numbers, and combos such as palindromic and twin primes. A badge is worth EP equal to its odds, so a 1-in-143 badge adds 143 EP. A second reel lands on one of 100 math multipliers, from ×∛2 to ×⁵2, or on ×1. A roll with no badges still counts as 1 EP, so its multiplier matters.
 
@@ -29,7 +29,7 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 
 ## Sharing save files
 
-Export a save from Settings > Save files, then post it in [Discussions > Show and tell](https://github.com/gkson-lab/rngdle9/discussions/categories/show-and-tell); the post form asks for the file and your best roll. To play someone else's save, download their `.json` file and choose Import a save file.
+Export a save from Settings > Save files, then post it in [Discussions > Show and tell](https://github.com/gkson-lab/rngexp10/discussions/categories/show-and-tell); the post form asks for the file and your best roll. To play someone else's save, download their `.json` file and choose Import a save file.
 
 ## Exact odds
 
