@@ -5,9 +5,17 @@ A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), w
 Roll a number from 0 to 999,999,999 and it is checked against 143 badges: primes, palindromes, straights, Fibonacci and other sequences, meme numbers, and combos like palindromic primes and twin primes. Each badge is worth EP equal to its odds (a 1-in-143 badge is worth 143 EP), and your roll's total is ranked against all possible rolls, from Trash to Mythic.
 
 - **Roll** as often as you like, or turn on **Auto** with a speed (1×, 2×, Turbo) and a tier to stop at.
-- **Collection** tracks every badge you have earned. **Log** keeps your stats and the last 200 rolls.
-- Open `#123456789` at the end of the URL to see how any number scores without recording it.
+- **Hunt** a specific badge: autoroll stops when it turns up and tells you how many rolls it took.
+- **Collection** tracks every badge you have earned and the first number that earned it. **Log** keeps your stats and the last 200 rolls.
+- **Check any number** with the box under the controls (or `#123456789` at the end of the URL) without recording it.
+- **Export and import** your save as a JSON file to move it between browsers.
+- Keys: Space rolls, A toggles auto.
 - Everything runs and is saved in your browser. There are no accounts, servers or network requests.
+
+## Changelog
+
+- **v1.1** Badge hunt, new-badge alerts, first-found numbers in the collection, number checker, save export/import, A shortcut.
+- **v1.0** Nine-digit rolls, unlimited rolling with autoroll, 143 badges with exact odds.
 
 ## Exact odds
 
