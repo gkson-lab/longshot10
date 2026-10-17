@@ -45,16 +45,19 @@
 
         <div class="stage-main">
           <div class="modes">
-            <div class="seg" role="group" aria-label="Mode">
-              <button type="button" data-mode="classic" aria-pressed="true">Classic</button>
-              <button type="button" data-mode="exp" aria-pressed="false">Exponent</button>
-            </div>
+            <div class="seg" id="modeSeg" role="group" aria-label="Mode"></div>
+            <p class="mode-desc" id="modeDesc"></p>
           </div>
 
           <div class="cabinet" id="cabinet">
             <div class="reels-row">
               <div class="reels" id="reels" role="img" aria-label="No roll yet"></div>
               <div class="exp-wrap" id="expWrap" hidden><span aria-hidden="true">^</span><div class="reel exp" id="expReel"><div class="strip"><div>1</div></div></div></div>
+            </div>
+            <div class="mult" id="multWindow">
+              <span class="mult-x" aria-hidden="true">×</span>
+              <div class="reel mult-reel" id="multReel"><div class="strip"><div>1</div></div></div>
+              <div class="mult-text"><span class="mult-name" id="multName"></span><span class="mult-meta num" id="multMeta"></span></div>
             </div>
             <p class="facts" id="facts"></p>
           </div>
@@ -64,38 +67,27 @@
               <button class="roll" id="rollBtn" type="button" disabled>Loading odds…</button>
               <button class="btn" id="autoBtn" type="button" aria-pressed="false">Auto</button>
               <button class="btn" id="endlessBtn" type="button" aria-pressed="false">Endless</button>
+              <button class="btn" id="optsBtn" type="button" aria-expanded="false" aria-controls="opts">Auto settings</button>
             </div>
-            <div class="opts">
+            <div class="opts" id="opts" hidden>
               <div class="seg" id="speed" role="group" aria-label="Speed">
                 <button type="button" data-speed="1" aria-pressed="true">1×</button>
                 <button type="button" data-speed="2" aria-pressed="false">2×</button>
                 <button type="button" data-speed="3" aria-pressed="false">Turbo</button>
               </div>
-              <label class="field">Auto stops at
-                <select id="stopAt">
-                  <option value="3">Rare or better</option>
-                  <option value="4" selected>Epic or better</option>
-                  <option value="5">Anomaly or better</option>
-                  <option value="6">Mythic</option>
-                  <option value="99">Never</option>
-                </select>
-              </label>
-              <label class="field">Hunt
-                <select id="hunt"><option value="">No badge</option></select>
-              </label>
+              <label class="field">Auto stops at <select id="stopAt"></select></label>
+              <label class="field">Hunt <select id="hunt"></select></label>
             </div>
             <p class="status" id="status"></p>
             <p class="notice" id="storageNotice" hidden>This browser is blocking storage, so rolls will be lost when you close the tab.</p>
-            <form class="check" id="checkForm">
-              <input type="text" id="checkInput" inputmode="numeric" autocomplete="off" placeholder="Any number, like 1729^3" aria-label="Check a number, optionally with an exponent">
-              <button class="btn" type="submit">Check</button>
-            </form>
             <p class="keys">Space rolls, A toggles Auto, E toggles Endless</p>
           </div>
 
           <div id="result" hidden>
             <div class="result">
               <p class="tier-word" id="tierWord"></p>
+              <p class="one-in num" id="oneIn"></p>
+              <p class="one-in-note" id="oneInNote"></p>
               <p class="score-line" id="scoreLine"></p>
               <div class="result-actions">
                 <button class="btn" id="starBtn" type="button" aria-pressed="false">Star</button>
@@ -106,7 +98,7 @@
             <div class="section-head"><h2 id="badgeHead">Badges</h2><span id="badgeSub"></span></div>
             <ul class="cards" id="badges"></ul>
           </div>
-          <p class="empty-state" id="firstRun">Press Roll or Space for your first number. Every number from 0 to 9,999,999,999 is equally likely.</p>
+          <p class="empty-state" id="firstRun">Press Roll or Space for your first number. Every number from 0 to 9,999,999,999 is equally likely, and the reel under it picks one of 100 multipliers.</p>
 
           <div class="boards-narrow">
             <div class="board" data-board="session"></div>
@@ -121,6 +113,11 @@
     <section id="tab-collection" role="tabpanel" aria-labelledby="tab-btn-collection" hidden>
       <div class="section-head"><h2>Collection</h2><span id="collCount"></span></div>
       <div class="progress"><i id="collBar"></i></div>
+      <form class="check" id="checkForm">
+        <label class="field" for="checkInput">Look up any number</label>
+        <input type="text" id="checkInput" class="num" inputmode="numeric" autocomplete="off" placeholder="1729 or 1729^3">
+        <button class="btn" type="submit">Look up</button>
+      </form>
       <div class="filters">
         <input type="search" id="collSearch" placeholder="Search badges" aria-label="Search badges">
         <select id="collStatus" aria-label="Show">
@@ -141,10 +138,7 @@
         </div>
         <div>
           <div class="section-head"><h2>Hall of fame</h2><span>top 10, kept forever</span></div>
-          <div class="seg" id="hofMode" role="group" aria-label="Hall of fame mode" style="margin-bottom:10px">
-            <button type="button" data-mode="classic" aria-pressed="true">Classic</button>
-            <button type="button" data-mode="exp" aria-pressed="false">Exponent</button>
-          </div>
+          <label class="field hof-pick">Mode <select id="hofMode"></select></label>
           <ol class="list" id="hofList"></ol>
           <div class="section-head"><h2>Starred rolls</h2><span id="favCount"></span></div>
           <ul class="list" id="favList"></ul>
@@ -167,7 +161,7 @@
     </section>
   </main>
 
-  <p class="foot">RNGdle 10 · v2.0.2 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngdle9">source</a></p>
+  <p class="foot">RNGdle 10 · v2.1 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngdle9">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

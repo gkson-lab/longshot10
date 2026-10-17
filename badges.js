@@ -118,6 +118,60 @@
   const KAPREKAR = [495, 6174];
   const MEMES = [42, 69, 420, 666, 1337, 9001, 80085, 5318008, 8008135];
 
+  // The multiplier reel: [id, name, symbol, value]. Values too big for a double are { log: log10 }.
+  // Each lands with chance 1 in N: N = 30 · value^1.2 up to ×10, then 475 · (log10 value)^3.5 so the
+  // giants stay rare but reachable (capped at 10^15). Unity (×1) takes the remaining chance.
+  const MULTIPLIER_DEFS = [
+    ['delian', 'Delian constant', '∛2', 1.2599210499], ['apery', "Apéry's constant", 'ζ(3)', 1.2020569032],
+    ['glaisher', 'Glaisher–Kinkelin constant', 'A', 1.2824271291], ['conway', "Conway's constant", 'λ', 1.3035772690],
+    ['mills', "Mills' constant", 'θ', 1.3063778839], ['plastic', 'Plastic number', 'ρ', 1.3247179572],
+    ['sqrt2', 'Root two', '√2', 1.4142135624], ['soldner', 'Ramanujan–Soldner constant', 'μ', 1.4513692349],
+    ['backhouse', "Backhouse's constant", 'B', 1.4560749485], ['supergolden', 'Supergolden ratio', 'ψ', 1.4655712319],
+    ['lieb', "Lieb's square ice constant", 'W', 1.5396007179], ['erdos', 'Erdős–Borwein constant', 'E', 1.6066951524],
+    ['phi', 'Golden ratio', 'φ', 1.6180339887], ['niven', "Niven's constant", 'C', 1.7052111401],
+    ['sqrt3', 'Root three', '√3', 1.7320508076], ['egamma', 'e to the gamma', 'eᵞ', 1.7810724180],
+    ['komornik', 'Komornik–Loreti constant', 'q', 1.7872316501], ['brun', "Brun's constant", 'B₂', 1.9021605831],
+    ['sqrt5', 'Root five', '√5', 2.2360679775], ['parabolic', 'Universal parabolic constant', 'P', 2.2955871494],
+    ['ln10', 'Natural log of ten', 'ln 10', 2.3025850930], ['silver', 'Silver ratio', 'δₛ', 2.4142135624],
+    ['feigA', 'Feigenbaum alpha', 'α', 2.5029078751], ['sqrt2pi', 'Root of two pi', '√(2π)', 2.5066282746],
+    ['sierpinski', "Sierpiński's constant", 'K', 2.5849817596], ['lemniscate', 'Lemniscate constant', 'ϖ', 2.6220575543],
+    ['gelfondS', 'Gelfond–Schneider constant', '2^√2', 2.6651441427], ['khinchin', "Khinchin's constant", 'K₀', 2.6854520011],
+    ['e', "Euler's number", 'e', 2.7182818285], ['fransen', 'Fransén–Robinson constant', 'F', 2.8077702420],
+    ['pi', 'Pi', 'π', 3.1415926536], ['levy', "Lévy's constant", 'L', 3.2758229187],
+    ['bronze', 'Bronze ratio', 'β', 3.3027756377], ['recipFib', 'Reciprocal Fibonacci constant', 'Ψ', 3.3598856662],
+    ['feigD', 'Feigenbaum delta', 'δ', 4.6692016091], ['tau', 'Tau', 'τ', 6.2831853072],
+    ['piSq', 'Pi squared', 'π²', 9.8696044011], ['eE', 'e to the e', 'eᵉ', 15.1542622415],
+    ['almostInt', 'Almost an integer', 'e^π − π', 19.9990999792], ['piE', 'Pi to the e', 'πᵉ', 22.4591577184],
+    ['gelfond', "Gelfond's constant", 'e^π', 23.1406926328], ['goldenAngle', 'Golden angle in degrees', '137.5°', 137.5077640500],
+    ['two', 'Double', '2', 2], ['three', 'Triple', '3', 3], ['six', 'First perfect number', '6', 6],
+    ['seven', 'Lucky seven', '7', 7], ['ten', 'Ten', '10', 10], ['dozen', 'Dozen', '12', 12],
+    ['bakers', "Baker's dozen", '13', 13], ['score', 'Score', '20', 20], ['perfect28', 'Second perfect number', '28', 28],
+    ['m31', 'Mersenne prime 31', '31', 31], ['answer', 'The Answer', '42', 42], ['nice', 'Nice', '69', 69],
+    ['fact5', 'Five factorial', '5!', 120], ['m127', 'Mersenne prime 127', '127', 127], ['gross', 'Gross', '144', 144],
+    ['perfect496', 'Third perfect number', '496', 496], ['thousand', 'Thousand', '10³', 1000],
+    ['kibi', 'Two to the ten', '2¹⁰', 1024], ['taxicab', 'Taxicab number', '1729', 1729], ['fact7', 'Seven factorial', '7!', 5040],
+    ['kaprekar', "Kaprekar's constant", '6174', 6174], ['perfect8128', 'Fourth perfect number', '8128', 8128],
+    ['m8191', 'Mersenne prime 8191', '8191', 8191], ['catalan10', 'Tenth Catalan number', 'C₁₀', 16796],
+    ['ackermann', 'Ackermann A(4, 1)', 'A(4,1)', 65533], ['two16', 'Two to the sixteen', '2¹⁶', 65536],
+    ['bell10', 'Tenth Bell number', 'B₁₀', 115975], ['m17', 'Mersenne prime 2¹⁷ − 1', 'M₁₇', 131071],
+    ['m19', 'Mersenne prime 2¹⁹ − 1', 'M₁₉', 524287], ['fib30', 'Thirtieth Fibonacci number', 'F₃₀', 832040],
+    ['fact10', 'Ten factorial', '10!', 3628800], ['perfect5', 'Fifth perfect number', '33550336', 33550336],
+    ['busyBeaver', 'Busy beaver BB(5)', 'BB(5)', 47176870], ['taxicab3', 'Third taxicab number', 'Ta(3)', 87539319],
+    ['lucas40', 'Fortieth Lucas number', 'L₄₀', 228826127], ['bell15', 'Fifteenth Bell number', 'B₁₅', 1382958545],
+    ['m31b', 'Mersenne prime 2³¹ − 1', 'M₃₁', 2147483647], ['two32', 'Two to the thirty-two', '2³²', 4294967296],
+    ['primorial29', 'Primorial of 29', '29#', 6469693230], ['catalan20', 'Twentieth Catalan number', 'C₂₀', 6564120420],
+    ['perfect6', 'Sixth perfect number', '8589869056', 8589869056], ['fib50', 'Fiftieth Fibonacci number', 'F₅₀', 12586269025],
+    ['tetra33', 'Three tetrated to three', '³3', 7625597484987], ['ramanujan', "Ramanujan's constant", 'e^(π√163)', 262537412640768744],
+    ['fact20', 'Twenty factorial', '20!', 2432902008176640000], ['m61', 'Mersenne prime 2⁶¹ − 1', 'M₆₁', 2305843009213693951],
+    ['two64', 'Two to the sixty-four', '2⁶⁴', 18446744073709551616], ['rubik', "Rubik's cube positions", '4.3 × 10¹⁹', 43252003274489856000],
+    ['fact25', 'Twenty-five factorial', '25!', 15511210043330985984000000], ['m89', 'Mersenne prime 2⁸⁹ − 1', 'M₈₉', { log: 26.79169 }],
+    ['m127b', 'Mersenne prime 2¹²⁷ − 1', 'M₁₂₇', { log: 38.23081 }], ['monster', 'Order of the Monster group', '|M|', { log: 53.90742 }],
+    ['deck', 'Orderings of a 52-card deck', '52!', { log: 67.90665 }], ['googol', 'Googol', '10¹⁰⁰', { log: 100 }],
+    ['shannon', 'Shannon number', '10¹²⁰', { log: 120 }], ['fact100', 'One hundred factorial', '100!', { log: 157.97000 }],
+    ['centillion', 'Centillion', '10³⁰³', { log: 303 }], ['two5', 'Two tetrated to five', '⁵2', { log: 19728.30170 }],
+  ];
+  const MULT_UNITS = 1e15;
+
   function createGame(DIGITS, opts = {}) {
     const SPACE = 10 ** DIGITS;
     const pre = (opts.counts) || {};
@@ -492,25 +546,93 @@
       { id: 'bigbang', name: 'Big Bang', desc: 'The result has at least 201 digits', group: 'huge', prob: pBeyond(BIGBANG), test: (n, s, c) => c.e >= 1 && n >= BIGBANG[c.e] },
       { id: 'selfpow', name: 'Self Power', desc: 'The base equals the exponent, like 3³', prob: 1 / SPACE, test: (n, s, c) => n === c.e },
       { id: 'oneUp', name: 'Still One', desc: 'A base of 1, so the result is just 1', prob: 1 / SPACE, test: n => n === 1 },
-    ].map(b => ({ ...b, cat: 'Powers', power: true }));
+    ].map(b => ({ ...b, cat: 'Powers', power: true, factor: b.group === 'exp' || b.group === 'huge' }));
+    // Badges with `factor` multiply the score after the power instead of adding EP before it, so
+    // the base EP stays independent of the exponent (which keeps the 1/N calculation exact).
 
-    const RARITIES = [
-      { id: 'common', name: 'Common', min: 0.1 },
-      { id: 'uncommon', name: 'Uncommon', min: 0.01 },
-      { id: 'rare', name: 'Rare', min: 0.001 },
-      { id: 'epic', name: 'Epic', min: 0.0001 },
-      { id: 'anomaly', name: 'Anomaly', min: 0.00001 },
-      { id: 'mythic', name: 'Mythic', min: 0 },
+    // Modulo mode: a modulus m is rolled uniformly from 2 to 9,999, and r = n mod m.
+    const M_LO = 2, M_HI = 9999, M_COUNT = M_HI - M_LO + 1;
+    const pMod = rem => { let t = 0; for (let m = M_LO; m <= M_HI; m++) { const r = rem(m); if (r !== null) t += congruent(r, m); } return t / M_COUNT / SPACE; };
+    const MOD_BADGES = [
+      { id: 'modClean', name: 'Clean Divide', desc: 'The modulus divides your number exactly', group: 'mod', prob: pMod(() => 0), test: (n, s, c) => c.r === 0 },
+      { id: 'modBig', name: 'Big Divide', desc: 'A modulus of 5,000 or more divides your number exactly', group: 'mod', prob: pMod(m => (m >= 5000 ? 0 : null)), test: (n, s, c) => c.r === 0 && c.m >= 5000 },
+      { id: 'modOne', name: 'Remainder One', desc: 'Dividing by the modulus leaves exactly 1', group: 'mod', prob: pMod(() => 1), test: (n, s, c) => c.r === 1 },
+      { id: 'modShort', name: 'Just Short', desc: 'One more and the modulus would divide it', group: 'mod', prob: pMod(m => m - 1), test: (n, s, c) => c.r === c.m - 1 },
+      { id: 'modHalf', name: 'Halfway', desc: 'The remainder is exactly half the modulus', group: 'mod', prob: pMod(m => (m % 2 ? null : m / 2)), test: (n, s, c) => c.r * 2 === c.m },
+    ].map(b => ({ ...b, cat: 'Modulo', mode: 'mod' }));
+
+    // Target mode: a target t is rolled uniformly and D = |n - t|.
+    // Ordered pairs (n, t) with D < d number SPACE(2d - 1) - d(d - 1).
+    const pWithin = d => Number(((BigInt(SPACE) * BigInt(2 * d - 1) - BigInt(d) * BigInt(d - 1)) * 10n ** 18n) / (BigInt(SPACE) * BigInt(SPACE))) / 1e18;
+    const TARGET_BADGES = [
+      { id: 'tBull', name: 'Bullseye', desc: 'Landed exactly on the target', d: 1 },
+      { id: 't10', name: 'Point Blank', desc: 'Within 10 of the target', d: 10 },
+      { id: 't1k', name: 'Close Call', desc: 'Within 1,000 of the target', d: 1000 },
+      { id: 't1m', name: 'In Range', desc: 'Within 1,000,000 of the target', d: 1e6 },
+      { id: 't1pct', name: 'Warm', desc: 'Within 1% of the whole range from the target', d: SPACE / 100 },
+    ].filter(b => b.d <= SPACE / 100)
+      .map(b => ({ ...b, cat: 'Target', mode: 'target', group: 'target', prob: pWithin(b.d), test: (n, s, c) => c.D < b.d }));
+
+    // Prime radar: d is the distance from n to the nearest prime (0 when n is prime).
+    function nearestPrimeDistance(n) {
+      if (P.isPrime(n)) return 0;
+      for (let k = 1; ; k++) if (P.isPrime(n - k) || P.isPrime(n + k)) return k;
+    }
+    const RADAR_BADGES = [
+      { id: 'radarNext', name: 'Next Door', desc: 'One away from a prime', group: 'radarNear', test: (n, s, c) => c.d === 1 },
+      { id: 'radarNear', name: 'Within Reach', desc: 'Two or three away from the nearest prime', group: 'radarNear', test: (n, s, c) => c.d === 2 || c.d === 3 },
+      { id: 'radar20', name: 'Lonely Stretch', desc: 'At least 20 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 20 },
+      { id: 'radar50', name: 'Prime Desert', desc: 'At least 50 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 50 },
+      { id: 'radar100', name: 'Prime Wasteland', desc: 'At least 100 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 100 },
+    ].map(b => ({ ...b, cat: 'Radar', mode: 'radar', sieve: true }));
+
+    const MODES = [
+      { id: 'classic', name: 'Classic', badges: [], desc: 'Your score is the EP of every badge, times the multiplier.' },
+      { id: 'exp', name: 'Exponent', badges: POWER_BADGES, desc: 'An exponent is rolled too: 2 a quarter of the time, 3 an eighth, and so on. Your score is raised to it.' },
+      { id: 'mod', name: 'Modulo', badges: MOD_BADGES, desc: `A modulus from 2 to ${fmt(M_HI)} is rolled too. If it divides your number, your score is multiplied by it.` },
+      { id: 'target', name: 'Target', badges: TARGET_BADGES, desc: `A target number is rolled too. The closer you land, the bigger the bonus, up to ×${fmt(SPACE)} for a bullseye.` },
+      { id: 'radar', name: 'Prime radar', badges: RADAR_BADGES, desc: 'Shows the nearest prime. Landing beside one, or far from every prime, earns extra badges.' },
     ];
+    const MODE_BY_ID = Object.fromEntries(MODES.map(m => [m.id, m]));
+
+    // One ladder for badges, multipliers and whole rolls: each step is ten times rarer (1 in N).
+    const RARITIES = [
+      ['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare'], ['epic', 'Epic'], ['legendary', 'Legendary'],
+      ['anomaly', 'Anomaly'], ['mythic', 'Mythic'], ['divine', 'Divine'], ['cosmic', 'Cosmic'], ['transcendent', 'Transcendent'],
+      ['ethereal', 'Ethereal'], ['celestial', 'Celestial'], ['eternal', 'Eternal'],
+    ].map(([id, name], i, all) => ({ id, name, min: i === all.length - 1 ? 0 : 10 ** -(i + 1), from: 10 ** i }));
+    const rarityOf = p => RARITIES.findIndex(r => p >= r.min);
+
+    const MULTIPLIERS = MULTIPLIER_DEFS.map(([id, name, symbol, v]) => {
+      const log = typeof v === 'object' ? v.log : Math.log10(v);
+      const n = log <= 1 ? 30 * 10 ** (1.2 * log) : 475 * log ** 3.5;
+      const units = Math.round(MULT_UNITS / Math.min(MULT_UNITS, Math.round(n)));
+      return { id, name, symbol, value: typeof v === 'object' ? null : v, log, units, p: units / MULT_UNITS, rarity: rarityOf(units / MULT_UNITS) };
+    });
+    {
+      const used = MULTIPLIERS.reduce((t, m) => t + m.units, 0);
+      if (MULTIPLIERS.length !== 100 || new Set(MULTIPLIERS.map(m => m.id)).size !== 100 || used >= MULT_UNITS) throw new Error('multiplier table is invalid');
+      MULTIPLIERS.unshift({ id: 'unity', name: 'Unity', symbol: '1', value: 1, log: 0, units: MULT_UNITS - used, p: (MULT_UNITS - used) / MULT_UNITS, rarity: rarityOf((MULT_UNITS - used) / MULT_UNITS) });
+    }
+    const MULT_BY_ID = Object.fromEntries(MULTIPLIERS.map(m => [m.id, m]));
+    const MULT_ORDER = [...MULTIPLIERS].sort((a, b) => b.units - a.units);
+    function pickMultiplier(u) { // u in [0, MULT_UNITS)
+      for (const m of MULT_ORDER) { if (u < m.units) return m; u -= m.units; }
+      return MULT_ORDER[MULT_ORDER.length - 1];
+    }
 
     function computeCount(b) {
       if (b.dfa) return countByDfa(b.dfa);
       if (b.set) return b.set.size;
       if (b.among) return [...b.among].filter(n => b.test(n, String(n), { prime: P.isPrime(n) })).length;
       if (b.sieve) {
-        if (SPACE > 1e7) return null;
+        if (SPACE > 1e6) return null; // brute force only for the small test games
+
         let k = 0;
-        for (let n = 0; n < SPACE; n++) if (b.test(n, String(n), { prime: P.isPrime(n) })) k++;
+        for (let n = 0; n < SPACE; n++) {
+          const c = { prime: P.isPrime(n), d: b.mode === 'radar' ? nearestPrimeDistance(n) : undefined };
+          if (b.test(n, String(n), c)) k++;
+        }
         return k;
       }
       return b.count;
@@ -530,10 +652,10 @@
         b.p = b.count / SPACE;
       }
       b.ep = Math.round(1 / b.p);
-      b.rarity = RARITIES.findIndex(r => b.p > r.min);
+      b.rarity = rarityOf(b.p);
       return true;
     }
-    for (const list of [BADGES, POWER_BADGES]) {
+    for (const list of [BADGES, POWER_BADGES, MOD_BADGES, TARGET_BADGES, RADAR_BADGES]) {
       const keep = list.filter(finish);
       list.length = 0;
       list.push(...keep);
@@ -554,38 +676,50 @@
       return list;
     }
 
-    // Classic: score = total EP. Exponent mode: score = (total EP) ^ e. `log` is log10 of the score.
-    function evaluate(n, date, e) {
-      const s = String(n);
-      const c = { prime: P.isPrime(n), date, e };
-      let pool = BADGES.concat(datedBadges(date));
-      if (e) pool = pool.concat(POWER_BADGES);
+    // A roll is { mode, e, m, t, mult }. Score = EP × multiplier, then the mode's twist;
+    // `log` is log10 of the score so even ⁵2-sized results compare.
+    function context(n, date, roll) {
+      const c = { prime: P.isPrime(n), date, e: roll.e, m: roll.m, t: roll.t };
+      if (roll.m) c.r = n % roll.m;
+      if (roll.t !== undefined) c.D = Math.abs(n - roll.t);
+      if (roll.mode === 'radar') c.d = nearestPrimeDistance(n);
+      return c;
+    }
+    function evaluate(n, date, roll = {}) {
+      const s = String(n), c = context(n, date, roll);
+      const pool = BADGES.concat(datedBadges(date), (MODE_BY_ID[roll.mode] || MODES[0]).badges);
       const hits = pool.filter(b => b.test(n, s, c)).sort((a, b) => a.p - b.p);
       const seen = new Set();
-      return hits.filter(b => {
+      const badges = hits.filter(b => {
         if (!b.group) return true;
         if (seen.has(b.group)) return false;
         seen.add(b.group);
         return true;
       });
+      return { badges, c };
     }
-    function score(n, date, e) {
-      const badges = evaluate(n, date, e);
+    function score(n, date, roll = {}) {
+      const mode = roll.mode || 'classic';
+      const { badges, c } = evaluate(n, date, roll);
       const ep = badges.reduce((t, b) => t + b.ep, 0);
-      return { n, e, badges, ep, log: ep > 0 ? (e || 1) * Math.log10(ep) : -Infinity };
+      const factor = badges.filter(b => b.factor).reduce((t, b) => t + b.ep, 0) || 1;
+      const base = Math.max(ep - (factor > 1 ? factor : 0), 1); // a roll with no badges still counts as 1 EP
+      const mult = MULT_BY_ID[roll.mult] || MULT_BY_ID.unity;
+      // x is the number's own part of the score (badges plus the modulus or target bonus); the
+      // multiplier and the exponent are drawn independently of it. Equal scores are ordered by
+      // the number itself (the tiny last term), so every tier holds exactly its share.
+      const tie = (n / SPACE) * 1e-7;
+      let x = Math.log10(base) + tie;
+      if (mode === 'mod' && c.r === 0) x += Math.log10(roll.m);
+      if (mode === 'target') x += Math.log10(SPACE / (c.D + 1));
+      const rank = mode === 'exp' ? roll.e * (x + mult.log) + Math.log10(factor) : x + mult.log;
+      const log = mode === 'exp' ? rank - roll.e * tie : rank - tie;
+      return { n, mode, roll, badges, ep, base, factor, mult, log, x, rank, c };
     }
 
-    const ROLL_TIERS = [
-      { id: 'trash', name: 'Trash', below: 1 },
-      { id: 'common', name: 'Common', below: 50 },
-      { id: 'uncommon', name: 'Uncommon', below: 75 },
-      { id: 'rare', name: 'Rare', below: 90 },
-      { id: 'epic', name: 'Epic', below: 95 },
-      { id: 'anomaly', name: 'Anomaly', below: 99 },
-      { id: 'mythic', name: 'Mythic', below: Infinity },
-    ];
-    const SAMPLE = 30000;
-    const samples = {};
+    // Roll tiers: Trash is the bottom 1%; every other roll takes the rarity of its 1 in N.
+    const ROLL_TIERS = [{ id: 'trash', name: 'Trash' }, ...RARITIES];
+
     function seededRand(seed) {
       return () => { // mulberry32
         seed = (seed + 0x6d2b79f5) | 0;
@@ -594,55 +728,107 @@
         return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
       };
     }
-    // Fixed-seed sample of log-scores per mode, so every player sees the same percentiles.
-    // Built in slices so the page never freezes; distribution() finishes it synchronously if needed.
-    function sampler(mode) {
-      if (samples[mode]) return samples[mode];
-      const rand = seededRand(mode === 'exp' ? 0x51ed270b : 0x9e3779b9);
-      const st = { values: new Float64Array(SAMPLE), i: 0, sorted: false };
-      st.step = budget => {
-        for (const end = Math.min(SAMPLE, st.i + budget); st.i < end; st.i++) {
-          const n = Math.floor(rand() * SPACE);
-          let e;
-          if (mode === 'exp') { e = 1; while (e < E_MAX && rand() < 0.5) e++; }
-          st.values[st.i] = score(n, null, e).log;
-        }
-        if (st.i === SAMPLE && !st.sorted) { st.values.sort(); st.sorted = true; }
-        return st.sorted;
-      };
-      return (samples[mode] = st);
+    // Random roll parameters for a mode, from `rand` (uniform in [0, 1)) or from the CSPRNG.
+    function sampleRoll(mode, rand) {
+      const roll = { mode, mult: pickMultiplier(Math.floor(rand() * MULT_UNITS)).id };
+      if (mode === 'exp') { roll.e = 1; while (roll.e < E_MAX && rand() < 0.5) roll.e++; }
+      if (mode === 'mod') roll.m = M_LO + Math.floor(rand() * M_COUNT);
+      if (mode === 'target') roll.t = Math.floor(rand() * SPACE);
+      return roll;
     }
-    function distribution(mode) { const st = sampler(mode); st.step(Infinity); return st.values; }
+    function randomParams(mode) {
+      const roll = { mode, mult: pickMultiplier(randomBelow(MULT_UNITS)).id };
+      if (mode === 'exp') roll.e = randomExponent();
+      if (mode === 'mod') roll.m = M_LO + randomBelow(M_COUNT);
+      if (mode === 'target') roll.t = randomBelow(SPACE);
+      return roll;
+    }
+
+    // Tables of x (the number's own part of the score) at each point of GRID, per mode.
+    // tools/build-data.js builds them from 2,000,000 rolls; without data.js a 20,000-roll sample is used.
+    const GRID = [];
+    for (let i = 0; i < 1000; i++) GRID.push(i / 10);
+    for (let i = 1; i <= 99; i++) GRID.push(+(99.9 + i * 0.001).toFixed(3));
+    GRID.push(99.9995, 99.9999, 100);
+    function tableFromSorted(sorted) {
+      return GRID.map(p => sorted[Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))]);
+    }
+    function sampleLogs(mode, count, seed, budget) {
+      const rand = seededRand(seed), out = new Float64Array(count);
+      let i = 0;
+      return {
+        out,
+        step(k = budget) {
+          for (const end = Math.min(count, i + k); i < end; i++) out[i] = score(Math.floor(rand() * SPACE), null, sampleRoll(mode, rand)).x;
+          return i === count;
+        },
+      };
+    }
+    const fromData = opts.quantiles ? Object.fromEntries(Object.entries(opts.quantiles).map(([k, q]) => [k, q.map(v => (v === null ? -Infinity : v))])) : {};
+    const tables = { ...fromData };
+    const MODE_SEED = { classic: 0x9e3779b9, exp: 0x51ed270b, mod: 0x2545f491, target: 0x6a09e667, radar: 0xbb67ae85 };
     function warmUp(mode) {
+      if (tables[mode]) return Promise.resolve();
       return new Promise(resolve => {
-        const st = sampler(mode);
-        const tick = () => (st.step(1500) ? resolve() : setTimeout(tick, 0));
+        const job = sampleLogs(mode, 20000, MODE_SEED[mode], 1000);
+        const tick = () => {
+          if (!job.step()) { setTimeout(tick, 0); return; }
+          const sorted = Array.from(job.out).sort((a, b) => a - b);
+          tables[mode] = tableFromSorted(sorted);
+          resolve();
+        };
         tick();
       });
     }
-    function percentile(log, mode) {
-      const d = distribution(mode);
-      const bound = strict => {
-        let lo = 0, hi = d.length;
-        while (lo < hi) { const m = (lo + hi) >> 1; if (strict ? d[m] < log : d[m] <= log) lo = m + 1; else hi = m; }
-        return lo;
-      };
-      const lo = bound(true), hi = bound(false);
-      return (100 * (lo + (hi - lo) / 2)) / d.length;
+    // P(X ≥ x) for the number's own part X, from the sampled table. Past the 99.999th percentile
+    // the sample thins out, so the tail falls tenfold per unit of x, as a badge worth 1/p EP turns
+    // up with chance p; that stretch is flagged as an estimate.
+    const TAIL_B = GRID.indexOf(99.999);
+    function tailX(x, Q) {
+      if (x <= Q[0]) return { p: 1, est: false };
+      if (x > Q[TAIL_B]) return { p: 1e-5 * 10 ** -(x - Q[TAIL_B]), est: true };
+      let lo = 0, hi = TAIL_B;
+      while (lo < hi) { const m = (lo + hi) >> 1; if (Q[m] < x) lo = m + 1; else hi = m; }
+      const a = Q[lo - 1], b = Q[lo];
+      const pct = GRID[lo - 1] + ((GRID[lo] - GRID[lo - 1]) * (x - a)) / (b - a || 1);
+      return { p: 1 - pct / 100, est: false };
     }
-    function rollTier(log, mode) {
-      const pct = percentile(log, mode);
-      return { pct, tier: ROLL_TIERS.find(t => pct < t.below) };
-    }
-    // Share of all rolls that land in each tier (ties make this differ from the nominal bands).
-    function tierShares(mode) {
-      const d = distribution(mode), out = Object.fromEntries(ROLL_TIERS.map(t => [t.id, 0]));
-      for (let i = 0; i < d.length;) {
-        let j = i;
-        while (j < d.length && d[j] === d[i]) j++;
-        out[rollTier(d[i], mode).tier.id] += (j - i) / d.length;
-        i = j;
+    // P(a random roll of this mode ranks at least as high as `rank`): the multiplier reel and the
+    // exponent are exact and independent of the number, so sum over every value they can take.
+    // For each exponent: its chance and the log of its exponent badge's bonus. (Googol and Big Bang
+    // also depend on the number; at about 1 in 1,000 Exponent rolls they are left out of this sum.)
+    const E_TERMS = Array.from({ length: E_MAX }, (_, i) => {
+      const e = i + 1;
+      const hit = POWER_BADGES.filter(b => b.group === 'exp' && b.test(0, '0', { e })).sort((a, b) => a.p - b.p)[0];
+      return [e, pExp(e), hit ? Math.log10(hit.ep) : 0];
+    });
+    function pBeat(rank, mode) {
+      const Q = tables[mode];
+      if (!Q) throw new Error(`odds for ${mode} are not ready`);
+      let p = 0, est = 0;
+      for (const [e, pe, bonus] of mode === 'exp' ? E_TERMS : [[1, 1, 0]]) {
+        for (const m of MULTIPLIERS) {
+          const t = tailX((rank - bonus) / e - m.log, Q), w = pe * m.p * t.p;
+          p += w;
+          if (t.est) est += w;
+        }
       }
+      return { p: Math.min(1, p), estimated: est > p / 2 };
+    }
+    function percentile(rank, mode) { return 100 * (1 - pBeat(rank, mode).p); }
+    // 1 in N, floored at 2 so an ordinary roll reads 1/2. Trash is the bottom 1%.
+    function rollTier(rank, mode) {
+      const { p, estimated } = pBeat(rank, mode);
+      const pct = 100 * (1 - p), oneInLog = Math.max(Math.log10(2), -Math.log10(p));
+      const tier = pct < 1 ? ROLL_TIERS[0] : ROLL_TIERS[1 + rarityOf(10 ** -oneInLog)];
+      return { pct, tier, oneInLog, estimated };
+    }
+    // Share of all rolls in each tier. P(N ≥ k) = 1/k by construction, so each step of the
+    // ladder holds exactly a tenth of the one below it; Trash is the bottom 1%.
+    function tierShares() {
+      const out = { trash: 0.01 };
+      RARITIES.forEach((r, i) => { out[r.id] = 1 / r.from - (i + 1 < RARITIES.length ? 1 / RARITIES[i + 1].from : 0); });
+      out.common -= 0.01;
       return out;
     }
 
@@ -675,18 +861,20 @@
     }
 
     return {
-      DIGITS, SPACE, E_MAX, BADGES, POWER_BADGES, RARITIES, ROLL_TIERS,
-      CATEGORIES: ['Size', 'Math', 'Sequences', 'Digits', 'Memes', 'Combos', 'Powers', 'Daily'],
-      datedBadges, evaluate, score, rollTier, distribution, warmUp, tierShares, factorize,
-      randomRoll: () => randomBelow(SPACE), randomExponent, pExp, computeCount,
+      DIGITS, SPACE, E_MAX, M_LO, M_HI, MULT_UNITS, BADGES, POWER_BADGES, MOD_BADGES, TARGET_BADGES, RADAR_BADGES,
+      MODES, MODE_BY_ID, MULTIPLIERS, MULT_BY_ID, RARITIES, ROLL_TIERS, GRID,
+      CATEGORIES: ['Size', 'Math', 'Sequences', 'Digits', 'Memes', 'Combos', 'Powers', 'Modulo', 'Target', 'Radar', 'Daily'],
+      datedBadges, evaluate, score, rollTier, percentile, warmUp, tierShares, factorize, nearestPrimeDistance,
+      randomRoll: () => randomBelow(SPACE), randomParams, sampleRoll, sampleLogs, tableFromSorted, pickMultiplier,
+      randomExponent, pExp, computeCount, MODE_SEED,
     };
   }
 
   function popcount(x) { let c = 0; while (x) { c += x & 1; x >>>= 1; } return c; }
 
-  root.RNGEngine = { createGame, PRIME_COMBOS, P, millerRabin, digitSum, isHappy, E_MAX, pExp };
+  root.RNGEngine = { createGame, PRIME_COMBOS, P, millerRabin, digitSum, isHappy, E_MAX, pExp, MULTIPLIER_DEFS };
   if (!root.RNG_NO_AUTOSTART) {
-    const data = root.RNG_DATA && root.RNG_DATA.digits === 10 ? root.RNG_DATA : null;
-    root.RNG = createGame(10, { counts: data && data.counts });
+    const data = root.RNG_DATA && root.RNG_DATA.digits === 10 ? root.RNG_DATA : {};
+    root.RNG = createGame(10, { counts: data.counts, quantiles: data.quantiles });
   }
 })(typeof window !== 'undefined' ? window : globalThis);

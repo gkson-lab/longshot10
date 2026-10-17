@@ -20,8 +20,15 @@
   --r-uncommon: #5fd38a;
   --r-rare: #78acff;
   --r-epic: #c6a0ff;
-  --r-anomaly: #ff8f55;
+  --r-legendary: #ff9f45;
+  --r-anomaly: #ff7272;
   --r-mythic: #ffd447;
+  --r-divine: #6ee7de;
+  --r-cosmic: #ff7ad1;
+  --r-transcendent: #ffffff;
+  --r-ethereal: #cbb8ff;
+  --r-celestial: #ffe6a0;
+  --r-eternal: #ffb0c4;
 }
 :root[data-theme="felt"] {
   color-scheme: dark;
@@ -53,8 +60,22 @@
   --r-uncommon: #17793f;
   --r-rare: #1d5bc0;
   --r-epic: #7637c2;
-  --r-anomaly: #b8400c;
+  --r-legendary: #a14a00;
+  --r-anomaly: #bf2530;
   --r-mythic: #8d6200;
+  --r-divine: #0b6e66;
+  --r-cosmic: #a8166f;
+  --r-transcendent: #1b1a17;
+  --r-ethereal: #5a3fa8;
+  --r-celestial: #6e5300;
+  --r-eternal: #a3204a;
+}
+
+/* The reels stay dark in every theme, so inside the cabinet rarity colours come from the dark set. */
+:root[data-theme="daylight"] .cabinet {
+  --r-trash: #b09f8c; --r-common: #b8b7bf; --r-uncommon: #5fd38a; --r-rare: #78acff; --r-epic: #c6a0ff;
+  --r-legendary: #ff9f45; --r-anomaly: #ff7272; --r-mythic: #ffd447; --r-divine: #6ee7de; --r-cosmic: #ff7ad1; --r-transcendent: #ffffff;
+  --r-ethereal: #cbb8ff; --r-celestial: #ffe6a0; --r-eternal: #ffb0c4;
 }
 
 * { box-sizing: border-box; }
@@ -130,8 +151,9 @@ a { color: inherit; }
 .board .empty { color: var(--muted); font-size: 13px; padding: 6px; }
 
 /* Mode switch */
-.modes { display: flex; justify-content: center; margin-bottom: 14px; }
-.seg { display: inline-flex; padding: 3px; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.modes { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 16px; }
+.mode-desc { margin: 0; max-width: 520px; text-align: center; color: var(--muted); font-size: 14px; min-height: 42px; }
+.seg { display: inline-flex; flex-wrap: wrap; justify-content: center; padding: 3px; gap: 2px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
 .seg button {
   border: 0; background: none; color: var(--muted); padding: 8px 14px; min-height: 44px;
   border-radius: 6px; font-weight: 600; font-size: 14px;
@@ -167,6 +189,18 @@ a { color: inherit; }
 .reel.lead .strip div { color: var(--cell-lead); }
 .reel.spinning .strip { filter: blur(1px); }
 .reel.hit .strip div { color: var(--tc); text-shadow: 0 0 18px var(--tc); }
+/* The multiplier window sits under the digits, in the same reel language. */
+.mult {
+  display: flex; align-items: center; gap: 10px; margin: 14px auto 0; width: fit-content; max-width: 100%;
+  padding: 6px 14px 6px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line);
+}
+.mult-x { color: var(--muted); font-weight: 700; font-size: 18px; }
+.reel.mult-reel { --h: 40px; width: auto; min-width: 72px; padding: 0 8px; }
+.reel.mult-reel .strip div { font-size: 20px; color: var(--rc); white-space: nowrap; }
+.mult.unity .reel.mult-reel .strip div { color: var(--cell-lead); }
+.mult-text { display: flex; flex-direction: column; min-width: 0; }
+.mult-name { font-weight: 700; font-size: 14px; }
+.mult-meta { color: var(--muted); font-size: 13px; }
 .facts { text-align: center; margin: 12px 0 0; min-height: 22px; color: var(--muted); font-size: 14px; }
 .facts .value { color: var(--ink); }
 
@@ -213,8 +247,15 @@ select, input[type="text"], input[type="search"] {
   animation: pop .5s cubic-bezier(.2, 1.5, .4, 1) both, sheen 1.6s ease-out .3s 1 both;
 }
 @keyframes sheen { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.one-in { margin: 10px 0 0; font-size: clamp(26px, 6vw, 36px); font-weight: 700; color: var(--tc); letter-spacing: 0.01em; }
+.one-in-note { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
 .score-line { margin: 10px 0 14px; color: var(--muted); }
 .score-line b { color: var(--ink); font-size: 20px; }
+.score-line .formula { color: var(--muted); }
+.board .x, .list .tag { color: var(--muted); font-weight: 500; }
+.hof-pick { margin-bottom: 10px; }
+#tab-collection .check { margin: 0 0 16px; flex-wrap: wrap; align-items: center; }
+#tab-collection .check input { flex: 1 1 160px; }
 .result-actions { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 
 .section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin: 0 0 10px; }
