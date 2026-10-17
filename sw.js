@@ -1,9 +1,10 @@
 // Offline support: serve the game's own files from a cache, refreshing them in the background.
-const CACHE = 'rngdle10-v2.0.1';
+const CACHE = 'rngdle10-v2.0.2';
 const FILES = ['./', 'index.html', 'styles.css', 'app.js', 'badges.js', 'data.js', 'icon.svg', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest'];
 
 self.addEventListener('install', ev => {
-  ev.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
+  // cache: 'reload' skips the HTTP cache, so a new version never stores the previous version's files.
+  ev.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES.map(f => new Request(f, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', ev => {
