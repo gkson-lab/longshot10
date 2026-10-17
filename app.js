@@ -73,6 +73,7 @@
     v: 4, log: [], total: 0, totals: perMode(() => 0), counts: {}, first: {}, mults: {}, firstMult: {},
     tiers: perMode(() => ({})), hof: perMode(() => []), favs: [], ach: {}, huntsDone: 0, shares: 0,
     settings: { theme: 'midnight', effects: 'full', sound: true }, mode: 'classic',
+    inv: {}, effects: {}, boosted: 0, lastGift: '',
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -169,7 +170,9 @@
       if (!state.mults[x.x]) { freshMult = true; state.firstMult[x.x] = x; }
       state.mults[x.x] = (state.mults[x.x] || 0) + 1;
     }
-    state.tiers[x.mode][tier.id] = (state.tiers[x.mode][tier.id] || 0) + 1;
+    // Boosted rolls are not random draws of the plain game, so they stay out of the luck table.
+    if (x.b || x.lens) state.boosted++;
+    else state.tiers[x.mode][tier.id] = (state.tiers[x.mode][tier.id] || 0) + 1;
     const madeHof = insertTop(state.hof[x.mode], entry);
     const madeSession = insertTop(session.best[x.mode], entry);
     session.rolls++;
@@ -473,9 +476,10 @@
     if (animate && speed !== 3 && effects() !== 'off') { void w.offsetWidth; w.classList.add(i >= T('mythic') ? 'sheen' : 'pop'); }
     $('oneIn').textContent = oneText(rt);
     $('oneIn').style.setProperty('--tc', tierVar(tier.id));
-    $('oneInNote').textContent = rt.estimated
+    $('oneInNote').textContent = (rt.estimated
       ? 'estimated: rarer than any of the two million sampled rolls'
-      : `of ${MODE_BY_ID[x.mode].name} rolls do at least this well`;
+      : `of ${MODE_BY_ID[x.mode].name} rolls do at least this well`)
+      + (x.b ? `, rolled with luck ×${x.b}` : '') + (x.lens ? ', with the Multiplier Lens' : '');
 
     const f = formula(x, r), plain = f === `${fmt(r.base)} EP`;
     $('scoreLine').innerHTML = (plain ? '' : `<span class="formula num">${esc(f)} =</span> `)
@@ -597,14 +601,99 @@
   const huntName = id => (id.startsWith('x:') ? `× ${MULT_BY_ID[id.slice(2)].symbol} ${MULT_BY_ID[id.slice(2)].name}` : findBadge(id).name);
   const huntP = id => (id.startsWith('x:') ? MULT_BY_ID[id.slice(2)].p : findBadge(id).p);
 
+  // Inventory. Items live in the save file, so they move with exports and shared saves.
+  // Luck ×L makes a roll the best of L independent rolls: anything rare becomes roughly L times
+  // likelier, and the 1/N shown is still the result's true odds in the plain game.
+  const ITEMS = [
+    { id: 'luck2', name: 'Charm of Two', kind: 'luck', luck: 2, rolls: 50, rarity: 1, desc: 'Luck ×2 for 50 rolls: each roll is the best of 2.' },
+    { id: 'luck5', name: 'Charm of Five', kind: 'luck', luck: 5, rolls: 50, rarity: 2, desc: 'Luck ×5 for 50 rolls: each roll is the best of 5.' },
+    { id: 'luck10', name: 'Charm of Ten', kind: 'luck', luck: 10, rolls: 25, rarity: 3, desc: 'Luck ×10 for 25 rolls: each roll is the best of 10.' },
+    { id: 'luck100', name: 'Charm of a Hundred', kind: 'luck', luck: 100, rolls: 10, rarity: 5, desc: 'Luck ×100 for 10 rolls: each roll is the best of 100.' },
+    { id: 'lens', name: 'Multiplier Lens', kind: 'lens', rolls: 30, rarity: 2, desc: 'For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.' },
+    { id: 'overclock', name: 'Overclock', kind: 'overclock', minutes: 3, rarity: 3, desc: 'Turbo rolls twice as fast, about 180 a second, for 3 minutes.' },
+  ];
+  const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+  // Drop chances after an unboosted roll, by its tier. Mythic and rarer use the last row.
+  const DROPS = [
+    ['rare', [['luck2', 0.03]]],
+    ['epic', [['luck2', 0.15], ['lens', 0.05], ['luck5', 0.03]]],
+    ['legendary', [['luck5', 0.2], ['lens', 0.15], ['overclock', 0.05]]],
+    ['anomaly', [['luck5', 0.4], ['luck10', 0.25], ['overclock', 0.2]]],
+    ['mythic', [['luck10', 0.5], ['luck100', 0.2], ['overclock', 0.4]]],
+  ];
+  const ACH_REWARD = { uncommon: 'luck2', rare: 'luck2', epic: 'luck5', legendary: 'lens', anomaly: 'luck10', mythic: 'luck100', divine: 'luck100', cosmic: 'luck100', transcendent: 'luck100', ethereal: 'luck100', celestial: 'luck100', eternal: 'luck100' };
+  function grant(id, why) {
+    state.inv[id] = (state.inv[id] || 0) + 1;
+    const it = ITEM_BY_ID[id];
+    toast(`${esc(why)}: <b>${esc(it.name)}</b>`, RARITIES[it.rarity].id);
+    if (!$('tab-inventory').hidden) renderInventory();
+  }
+  function rollDrops(tierId) {
+    const i = T(tierId);
+    const row = [...DROPS].reverse().find(([id]) => i >= T(id));
+    if (!row) return;
+    for (const [id, chance] of row[1]) if (Math.random() < chance) grant(id, 'Item found');
+  }
+  const luckActive = () => (state.effects.luck && state.effects.luck.left > 0 ? state.effects.luck.L : 1);
+  const lensActive = () => (state.effects.lens || 0) > 0;
+  const overclockLeft = () => Math.max(0, (state.effects.overclock || 0) - Date.now());
+  function useItem(id) {
+    const it = ITEM_BY_ID[id], fx = state.effects;
+    if (!(state.inv[id] > 0)) return;
+    if (it.kind === 'luck') {
+      const cur = fx.luck && fx.luck.left > 0 ? fx.luck : null;
+      if (cur && cur.L > it.luck) { $('invMsg').textContent = `Luck ×${cur.L} is still active, so ${it.name} would do nothing yet.`; return; }
+      if (cur && cur.L < it.luck && !confirm(`Luck ×${cur.L} has ${cur.left} rolls left. Replace it with luck ×${it.luck}?`)) return;
+      fx.luck = cur && cur.L === it.luck ? { L: it.luck, left: cur.left + it.rolls } : { L: it.luck, left: it.rolls };
+    }
+    if (it.kind === 'lens') fx.lens = (fx.lens || 0) + it.rolls;
+    if (it.kind === 'overclock') fx.overclock = Math.max(Date.now(), fx.overclock || 0) + it.minutes * 60000;
+    state.inv[id]--;
+    $('invMsg').textContent = `Used ${it.name}.`;
+    save();
+    renderInventory();
+    paintStatus();
+  }
+  function effectsText() {
+    const out = [];
+    if (luckActive() > 1) out.push(`Luck ×${state.effects.luck.L}, ${rollsText(state.effects.luck.left)} left`);
+    if (lensActive()) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
+    const oc = overclockLeft();
+    if (oc) out.push(`Overclock, ${Math.floor(oc / 60000)}:${String(Math.floor(oc / 1000) % 60).padStart(2, '0')} left`);
+    return out;
+  }
+  function renderInventory() {
+    const fx = effectsText();
+    $('effects').innerHTML = fx.length ? fx.map(t => `<li>${esc(t)}</li>`).join('') : '<li class="muted">Nothing active. Use an item below.</li>';
+    const total = ITEMS.reduce((t, i) => t + (state.inv[i.id] || 0), 0);
+    $('invCount').textContent = `${fmt(total)} ${total === 1 ? 'item' : 'items'}`;
+    $('invList').innerHTML = ITEMS.map(it => {
+      const k = state.inv[it.id] || 0;
+      return `<li class="item${k ? '' : ' none'}" style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">×${fmt(k)}</span><br><span class="muted">${esc(it.desc)}</span></div>`
+        + `<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></li>`;
+    }).join('');
+    $('dropTable').innerHTML = DROPS.map(([tier, items]) => `<tr><td style="color:${tierVar(tier)};font-weight:700">${ROLL_TIERS[T(tier)].name}${tier === 'mythic' ? ' or rarer' : ''}</td><td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('');
+  }
+
   // One roll's bookkeeping, with no drawing, so Turbo can take several per screen frame.
   function takeRoll() {
-    const mode = state.mode, roll = G.randomParams(mode), n = G.randomRoll();
-    const x = { n, t: Date.now(), mode, x: roll.mult };
+    const mode = state.mode, L = luckActive(), lens = lensActive(), t = Date.now();
+    let pick = null;
+    for (let k = 0; k < L; k++) { // luck: keep the best of L independent rolls
+      const roll = G.randomParams(mode), n = G.randomRoll();
+      if (lens) { const alt = G.randomParams(mode).mult; if (MULT_BY_ID[alt].log > MULT_BY_ID[roll.mult].log) roll.mult = alt; }
+      const rank = L > 1 ? G.score(n, dayKey(t), roll).rank : 0;
+      if (!pick || rank > pick.rank) pick = { roll, n, rank };
+    }
+    const { roll, n } = pick;
+    const x = { n, t, mode, x: roll.mult };
     if (roll.e) x.e = roll.e;
     if (roll.m) x.m = roll.m;
     if (roll.t !== undefined) x.tg = roll.t;
+    if (L > 1) { x.b = L; state.effects.luck.left--; }
+    if (lens) { x.lens = 1; state.effects.lens--; }
     const rec = record(x);
+    if (!x.b && !x.lens) rollDrops(rec.tier.id); // boosted rolls never drop items, so boosts cannot feed themselves
     save();
     run.rolls++;
     for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id);
@@ -645,7 +734,7 @@
   // throttled screen slows the drawing, never the rolling.
   const TURBO_RATE = 90; // rolls per second
   async function turboLoop(kind) {
-    let last = performance.now(), owed = 0, best = null, changed = false, framePending = false;
+    let last = performance.now(), owed = 0, best = null, changed = false, framePending = false, statusAt = 0;
     const draw = () => {
       framePending = false;
       if (best && !document.hidden) { drawRoll(best, 3, changed); best = null; changed = false; }
@@ -653,11 +742,15 @@
     while (auto === kind && speed === 3 && ready[state.mode]) {
       await sleep(15);
       const now = performance.now();
-      owed = Math.min(owed + ((now - last) / 1000) * TURBO_RATE, TURBO_RATE); // at most a second of catch-up
+      const rate = overclockLeft() ? TURBO_RATE * 2 : TURBO_RATE;
+      owed = Math.min(owed + ((now - last) / 1000) * rate, rate); // at most a second of catch-up
+      // Small slices keep the page smooth; when the browser throttles timers (a hidden tab), ticks
+      // come late, so take a bigger slice, still under the 50 ms that feels like lag.
+      const budget = now - last > 100 ? 40 : 6;
       last = now;
       let stop = false;
       const start = performance.now();
-      while (owed >= 1 && performance.now() - start < 6 && auto === kind) {
+      while (owed >= 1 && performance.now() - start < budget && auto === kind) {
         owed--;
         const roll = takeRoll();
         if (roll.rec.madeSession || roll.rec.madeHof) { changed = true; freshEntry = roll.rec.entry; }
@@ -666,6 +759,7 @@
       }
       if (stop) { draw(); setAuto(null); return; }
       if (best && !framePending) { framePending = true; requestAnimationFrame(draw); }
+      if (now - statusAt > 250 && !document.hidden) { statusAt = now; paintStatus(); } // counters stay current even when frames are slow
     }
   }
 
@@ -681,6 +775,8 @@
       parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`);
     }
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
+    const fx = effectsText();
+    if (fx.length) parts.push(`<b>Active:</b> ${esc(fx.join(' · '))}`);
     $('status').innerHTML = parts.join('<br>');
   }
 
@@ -901,6 +997,7 @@
       if (state.ach[a.id] || !a.test(rec)) continue;
       state.ach[a.id] = Date.now();
       toast(`Achievement: <b>${esc(a.name)}</b>`, 'rare');
+      grant(ACH_REWARD[a.id] || 'luck2', 'Achievement reward');
     }
   }
 
@@ -908,7 +1005,7 @@
   for (const m of MODES) $('hofMode').appendChild(new Option(m.name, m.id));
   function rowHtml(x, removable) {
     const tier = ROLL_TIERS[T(x.tier)];
-    const tag = `${MODE_BY_ID[x.mode].name}${x.x && x.x !== 'unity' ? ` × ${MULT_BY_ID[x.x].symbol}` : ''}`;
+    const tag = `${MODE_BY_ID[x.mode].name}${x.x && x.x !== 'unity' ? ` × ${MULT_BY_ID[x.x].symbol}` : ''}${x.b ? `, luck ×${x.b}` : ''}`;
     return `<li style="--tc:${tierVar(x.tier)}"><a class="num" href="${hashOf(x)}">${esc(label(x))}</a><span class="t">${tier.name} <span class="tag">${esc(tag)}</span></span>`
       + (removable ? `<button class="btn x" type="button" data-unstar="${x.n},${x.t}" aria-label="Unstar ${esc(label(x))}">Unstar</button>`
         : `<span class="e num">${esc(oneText(x))}</span>`) + '</li>';
@@ -1008,12 +1105,13 @@
       html += `<tr><td><b>Rare or better</b></td><td></td><td class="num"><b>${(100 * yours).toFixed(1)}%</b></td><td class="num"><b>${(100 * expected).toFixed(1)}%</b></td></tr></tbody>`;
     }
     $('luck').innerHTML = html || '<tbody><tr><td class="empty-state">Roll a few times and this compares your tiers with how often each tier really comes up.</td></tr></tbody>';
+    $('luckNote').textContent = state.boosted ? `${rollsText(state.boosted)} made with a luck charm or the Multiplier Lens are left out, since they are not plain rolls.` : '';
     $('log').innerHTML = state.log.length ? state.log.map(x => rowHtml(entryFor(x), false)).join('')
       : '<li class="empty-state">No rolls yet. Your last 200 rolls appear here.</li>';
   }
 
   // Tabs, with arrow-key movement between them
-  const TABS = ['roll', 'collection', 'trophies', 'log'];
+  const TABS = ['roll', 'inventory', 'collection', 'trophies', 'log'];
   function selectTab(name) {
     document.querySelectorAll('.tabs [role="tab"]').forEach(b => {
       const on = b.dataset.tab === name;
@@ -1024,6 +1122,7 @@
     if (name === 'collection') renderCollection();
     if (name === 'trophies') renderTrophies();
     if (name === 'log') renderLog();
+    if (name === 'inventory') renderInventory();
   }
   const tabBar = document.querySelector('.tabs');
   tabBar.addEventListener('click', ev => { const b = ev.target.closest('[role="tab"]'); if (b) selectTab(b.dataset.tab); });
@@ -1193,7 +1292,13 @@
     $('dataMsg').textContent = `Erased "${slotName(slots.active)}".`;
   });
 
+  $('invList').addEventListener('click', ev => { const b = ev.target.closest('[data-use]'); if (b) useItem(b.dataset.use); });
+
   // Start
+  if (state.lastGift !== dayKey()) { // one free charm a day, per save file
+    state.lastGift = dayKey();
+    setTimeout(() => { grant('luck2', 'Daily gift'); save(); }, 600);
+  }
   applySettings();
   paintSound();
   paintMult(MULT_BY_ID.unity);

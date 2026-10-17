@@ -33,6 +33,7 @@
 
   <nav class="tabs" role="tablist" aria-label="Sections">
     <button role="tab" id="tab-btn-roll" aria-controls="tab-roll" data-tab="roll" aria-selected="true">Roll</button>
+    <button role="tab" id="tab-btn-inventory" aria-controls="tab-inventory" data-tab="inventory" aria-selected="false" tabindex="-1">Inventory</button>
     <button role="tab" id="tab-btn-collection" aria-controls="tab-collection" data-tab="collection" aria-selected="false" tabindex="-1">Collection</button>
     <button role="tab" id="tab-btn-trophies" aria-controls="tab-trophies" data-tab="trophies" aria-selected="false" tabindex="-1">Trophies</button>
     <button role="tab" id="tab-btn-log" aria-controls="tab-log" data-tab="log" aria-selected="false" tabindex="-1">Log</button>
@@ -110,6 +111,24 @@
       </div>
     </section>
 
+    <section id="tab-inventory" role="tabpanel" aria-labelledby="tab-btn-inventory" hidden>
+      <div class="two-col">
+        <div>
+          <div class="section-head"><h2>Inventory</h2><span id="invCount"></span></div>
+          <ul class="items" id="invList"></ul>
+          <p class="muted" id="invMsg" role="status"></p>
+        </div>
+        <div>
+          <div class="section-head"><h2>Active now</h2></div>
+          <ul class="effects" id="effects"></ul>
+          <div class="section-head"><h2>Where items come from</h2></div>
+          <p class="muted">Each plain roll can drop items, depending on its tier. Rolls made with a luck charm or the Lens never drop items. Every achievement also gives one, and each save file gets a Charm of Two once a day.</p>
+          <table class="luck"><tbody id="dropTable"></tbody></table>
+          <p class="muted">Items belong to the save file, so they go along when you export or share it.</p>
+        </div>
+      </div>
+    </section>
+
     <section id="tab-collection" role="tabpanel" aria-labelledby="tab-btn-collection" hidden>
       <div class="section-head"><h2>Collection</h2><span id="collCount"></span></div>
       <div class="progress"><i id="collBar"></i></div>
@@ -152,6 +171,7 @@
         <div>
           <div class="section-head"><h2>Luck</h2><span>your tiers against the exact odds</span></div>
           <table class="luck" id="luck"></table>
+          <p class="muted" id="luckNote"></p>
         </div>
         <div>
           <div class="section-head"><h2>Recent rolls</h2><span>last 200</span></div>
@@ -161,7 +181,7 @@
     </section>
   </main>
 
-  <p class="foot">RNGdle 10 · v2.2 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">RNGdle 10 · v2.3 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

@@ -27,6 +27,16 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - Up to ten save files in the browser, each with its own progress; export one to move or share it, and importing always adds a new save file instead of replacing yours
 - Space rolls, A toggles Auto, E toggles Endless
 
+## Inventory
+
+Each save file has an inventory of items you can use from the Inventory tab:
+
+- Charm of Two, Five, Ten and a Hundred: luck ×2, ×5, ×10 or ×100 for a number of rolls. Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game.
+- Multiplier Lens: for 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.
+- Overclock: Turbo rolls twice as fast for 3 minutes.
+
+Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, and each save file gets a Charm of Two once a day. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
+
 ## Sharing save files
 
 Export a save from Settings > Save files, then post it in [Discussions > Show and tell](https://github.com/gkson-lab/rngexp10/discussions/categories/show-and-tell); the post form asks for the file and your best roll. To play someone else's save, download their `.json` file and choose Import a save file.
@@ -45,6 +55,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v2.3: inventory with luck charms, the Multiplier Lens and Overclock; item drops, achievement rewards and a daily gift; items are saved with each save file.
 - v2.2: Endless on Turbo rolls about 85 times a second (up from about 22) without blocking the page, and 1× and 2× cycle about twice as fast; long runs now save as they go; save files; sharing saves through GitHub Discussions.
 - v2.1: Modulo, Target and Prime radar modes; 100 multipliers on their own reel; a 1/N for every roll; one thirteen-step rarity ladder plus Trash, up to Eternal; Auto settings folded behind one button.
 - v2.0.2: the offline cache now fetches fresh files when a new version installs, instead of reusing the browser's copy of the previous version.
