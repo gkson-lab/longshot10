@@ -3,7 +3,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "counts": "node --max-old-space-size=2048 tools/exact-counts.js",
+    "data": "node tools/build-data.js",
     "check": "node tools/check.js"
   }
 }

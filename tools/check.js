@@ -1,54 +1,96 @@
-// Sanity checks for badges.js.
-//   node tools/check.js [samples]
-// 1. Every badge's exact probability agrees with a large random sample.
-// 2. The hard-coded number lists match brute force where brute force is cheap.
+// Verifies badges.js.
+//   node tools/check.js
+// 1. Builds the game at 5 and 6 digits and brute-forces every badge count over every number.
+// 2. Checks power-badge probabilities exactly at 5 digits, summing over every exponent.
+// 3. Verifies the hard-coded number lists, and data.js against a fresh count where one is cheap.
+// 4. Samples the 10-digit game and compares every badge with its exact odds.
 'use strict';
 globalThis.crypto ??= require('crypto').webcrypto;
+globalThis.RNG_NO_AUTOSTART = true;
+const fs = require('fs');
+const path = require('path');
 require('../badges.js');
-const { BADGES, randomRoll, millerRabin, digitSum, score, rollTier } = globalThis.RNG9;
+const { createGame, millerRabin, pExp, E_MAX } = globalThis.RNGEngine;
 
 let failed = 0;
 const fail = msg => { failed++; console.log('FAIL', msg); };
+const time = label => { const t = Date.now(); return () => console.log(`${label} (${((Date.now() - t) / 1000).toFixed(1)}s)`); };
 
-// ---- brute-force list checks below 1e7 -----------------------------------------
-const armstrong = n => { const s = String(n); return [...s].reduce((t, c) => t + (+c) ** s.length, 0) === n; };
-const automorphic = n => (BigInt(n) * BigInt(n)) % 10n ** BigInt(String(n).length) === BigInt(n);
-const selfDescribing = n => { const s = String(n); return [...s].every((c, i) => +c === s.split(String(i)).length - 1); };
-const byId = Object.fromEntries(BADGES.map(b => [b.id, b]));
-for (const [id, f] of [['armstrong', armstrong], ['automorphic', automorphic], ['selfdesc', selfDescribing]]) {
-  for (let n = 10; n < 1e7; n++) {
-    const s = String(n);
-    if (f(n) !== byId[id].test(n, s, {})) { fail(`${id} disagrees at ${n}`); break; }
+for (const D of [5, 6]) {
+  const done = time(`brute force at ${D} digits`);
+  const g = createGame(D, { dropEmpty: true });
+  const date = '2026-10-17';
+  const badges = g.BADGES.concat(g.datedBadges(date));
+  const hits = new Array(badges.length).fill(0);
+  for (let n = 0; n < g.SPACE; n++) {
+    const s = String(n), c = { prime: millerRabin(n), date };
+    for (let i = 0; i < badges.length; i++) if (badges[i].test(n, s, c)) hits[i]++;
+  }
+  badges.forEach((b, i) => { if (hits[i] !== b.count) fail(`${D} digits, ${b.id}: counted ${b.count}, brute force ${hits[i]}`); });
+  done();
+
+  if (D === 5) {
+    const donePow = time('power badges at 5 digits');
+    for (const b of g.POWER_BADGES) {
+      let p = 0;
+      for (let e = 1; e <= E_MAX; e++) {
+        let k = 0;
+        for (let n = 0; n < g.SPACE; n++) if (b.test(n, String(n), { e })) k++;
+        p += (pExp(e) * k) / g.SPACE;
+      }
+      if (Math.abs(p - b.p) > 1e-15 + 1e-9 * p) fail(`power ${b.id}: p=${b.p}, brute force ${p}`);
+    }
+    donePow();
   }
 }
-// The lists' large members must really have the property.
-for (const id of ['armstrong', 'automorphic', 'selfdesc']) for (const n of byId[id].set) {
-  if (!{ armstrong, automorphic, selfdesc: selfDescribing }[id](n)) fail(`${id} list has ${n}`);
-}
-for (let n = 0; n < 2e5; n++) {
-  let p = n >= 2;
-  for (let d = 2; d * d <= n; d++) if (n % d === 0) { p = false; break; }
-  if (p !== millerRabin(n)) { fail('isPrime ' + n); break; }
+
+// Lists: every member has its property, and nothing below 1e7 is missing.
+{
+  const armstrong = n => { const s = String(n); return [...s].reduce((t, c) => t + BigInt(c) ** BigInt(s.length), 0n) === BigInt(n); };
+  const automorphic = n => (BigInt(n) * BigInt(n)) % 10n ** BigInt(String(n).length) === BigInt(n);
+  const selfDescribing = n => { const s = String(n); return [...s].every((c, i) => +c === s.split(String(i)).length - 1); };
+  const perfect = n => { let t = 1; for (let d = 2; d * d <= n; d++) if (n % d === 0) t += d + (d * d === n ? 0 : n / d); return n > 1 && t === n; };
+  const g = createGame(7);
+  const byId = Object.fromEntries(g.BADGES.map(b => [b.id, b]));
+  const big = createGame(10, { allowMissing: true });
+  const bigById = Object.fromEntries(big.BADGES.map(b => [b.id, b]));
+  for (const [id, f] of [['armstrong', armstrong], ['automorphic', automorphic], ['selfdesc', selfDescribing], ['perfect', perfect]]) {
+    for (const n of bigById[id].set) if (!f(n)) fail(`${id} list has ${n}`);
+    for (let n = 10; n < 1e7; n++) if (f(n) !== byId[id].set.has(n)) { fail(`${id} disagrees at ${n}`); break; }
+  }
+  console.log('lists checked');
+
+  const dataFile = path.join(__dirname, '..', 'data.js');
+  if (fs.existsSync(dataFile)) {
+    require(dataFile);
+    const counts = globalThis.RNG_DATA.counts;
+    for (const b of big.BADGES) if (counts[b.id] !== b.count) fail(`data.js ${b.id}: ${counts[b.id]}, fresh count ${b.count}`);
+    console.log('data.js agrees with fresh counts');
+  } else fail('data.js is missing: run tools/build-data.js');
 }
 
-// ---- Monte Carlo ---------------------------------------------------------------------
-const M = +process.argv[2] || 2e6;
-const hits = Object.fromEntries(BADGES.map(b => [b.id, 0]));
-for (let i = 0; i < M; i++) {
-  const n = randomRoll(), s = String(n), c = { prime: millerRabin(n) };
-  for (const b of BADGES) if (b.test(n, s, c)) hits[b.id]++;
+// Sampling at 10 digits catches anything the small sizes cannot reach (and the sieve counts).
+if (globalThis.RNG_DATA) {
+  const done = time('sampled 10-digit game');
+  const g = createGame(10, { counts: globalThis.RNG_DATA.counts });
+  const M = 1e6, hits = new Array(g.BADGES.length).fill(0);
+  for (let i = 0; i < M; i++) {
+    const n = g.randomRoll(), s = String(n), c = { prime: millerRabin(n) };
+    for (let j = 0; j < g.BADGES.length; j++) if (g.BADGES[j].test(n, s, c)) hits[j]++;
+  }
+  g.BADGES.forEach((b, j) => {
+    const exp = b.p * M, z = (hits[j] - exp) / Math.sqrt(Math.max(exp, 1));
+    if (Math.abs(z) > 5) fail(`${b.id}: sampled ${hits[j]}, expected ${exp.toFixed(1)} (z=${z.toFixed(1)})`);
+  });
+  const es = new Array(E_MAX + 1).fill(0);
+  for (let i = 0; i < 2e5; i++) es[g.randomExponent()]++;
+  for (let e = 1; e <= 6; e++) {
+    const exp = 2e5 * pExp(e), z = (es[e] - exp) / Math.sqrt(exp);
+    if (Math.abs(z) > 5) fail(`exponent ${e}: sampled ${es[e]}, expected ${exp}`);
+  }
+  done();
+  console.log(`${g.BADGES.length} badges + ${g.POWER_BADGES.length} power badges + 2 daily`);
 }
-const rows = [];
-for (const b of BADGES) {
-  const exp = b.p * M, z = (hits[b.id] - exp) / Math.sqrt(Math.max(exp, 1));
-  if (Math.abs(z) > 5) fail(`${b.id}: sampled ${hits[b.id]}, expected ${exp.toFixed(1)} (z=${z.toFixed(1)})`);
-  rows.push(`${b.id.padEnd(14)} ${String(b.count).padStart(10)}  1 in ${String(Math.round(1 / b.p)).padEnd(11)} sampled ${String(hits[b.id]).padStart(8)} expected ${exp.toFixed(1)}`);
-}
-console.log(rows.join('\n'));
-console.log(`\n${BADGES.length} badges`);
-for (const n of [0, 7, 69, 420, 1729, 123456789, 999999999, 777777777]) {
-  const r = score(n), t = rollTier(r.ep);
-  console.log(String(n).padStart(9), t.tier.name.padEnd(8), String(r.ep).padStart(11), r.badges.map(b => b.id).join(' '));
-}
+
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed');
 process.exit(failed ? 1 : 0);

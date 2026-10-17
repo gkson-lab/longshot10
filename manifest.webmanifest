@@ -1,0 +1,13 @@
+{
+  "name": "RNGdle 10",
+  "short_name": "RNGdle",
+  "description": "Roll a ten-digit number and collect badges for its patterns. Exact odds, runs offline.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0c0c10",
+  "theme_color": "#0c0c10",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

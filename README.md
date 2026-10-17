@@ -1,37 +1,39 @@
-# RNGdle 9
+# RNGdle 10
 
-A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), with nine digits instead of six and unlimited rolls.
+A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), with ten digits and unlimited rolls. Play it at https://gkson-lab.github.io/rngdle9/ or open `index.html` locally. Everything runs and is saved in your browser.
 
-Roll a number from 0 to 999,999,999 and it is checked against 143 badges: primes, palindromes, straights, Fibonacci and other sequences, meme numbers, and combos like palindromic primes and twin primes. Each badge is worth EP equal to its odds (a 1-in-143 badge is worth 143 EP), and your roll's total is ranked against all possible rolls, from Trash to Mythic.
+Each roll is a number from 0 to 9,999,999,999, checked against 155 badges: primes, palindromes, straights, sequences like Fibonacci and Catalan, meme numbers, and combos such as palindromic and twin primes. A badge is worth EP equal to its odds, so a 1-in-143 badge adds 143 EP. Your total is ranked against all possible rolls, from Trash to Mythic.
 
-- **Roll** as often as you like, or turn on **Auto** with a speed (1×, 2×, Turbo) and a tier to stop at.
-- **Hunt** a specific badge: autoroll stops when it turns up and tells you how many rolls it took.
-- **Collection** tracks every badge you have earned and the first number that earned it. **Log** keeps your stats and the last 200 rolls.
-- **Check any number** with the box under the controls (or `#123456789` at the end of the URL) without recording it.
-- **Export and import** your save as a JSON file to move it between browsers.
-- Keys: Space rolls, A toggles auto.
-- Everything runs and is saved in your browser. There are no accounts, servers or network requests.
+## Modes
 
-## Changelog
+Classic scores the total EP. Exponent mode also rolls an exponent (2 comes up a quarter of the time, 3 an eighth, and so on), raises your EP to that power, and adds badges for big exponents and results past a googol.
 
-- **v1.1** Badge hunt, new-badge alerts, first-found numbers in the collection, number checker, save export/import, A shortcut.
-- **v1.0** Nine-digit rolls, unlimited rolling with autoroll, 143 badges with exact odds.
+Auto rolls until a tier you choose or a badge you are hunting appears. Endless never stops on its own. While either runs, the best rolls of the session and of all time stay on the sides of the reels.
+
+## Other things it does
+
+- Collection with search and filters; select any badge to see exactly how many numbers qualify and how often you have earned it against the expectation
+- 25 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- A luck table comparing your tiers with the exact share of all rolls
+- The prime factorization of every roll
+- Copy a roll as text or save it as an image
+- Midnight, Felt and Daylight themes, and an effects setting
+- Installs as an app that works offline (from the hosted copy)
+- Export and import your save; Space rolls, A toggles Auto, E toggles Endless
 
 ## Exact odds
 
-Every badge's probability is exact over all 10⁹ possible rolls, not estimated:
-
-- Digit patterns are counted with small automata run over every digit string ([`badges.js`](badges.js)).
-- Sets and combos are generated in full (every palindrome, square, Fibonacci number, and so on) and tested.
-- Prime combos and Harshad numbers come from [`tools/exact-counts.js`](tools/exact-counts.js), which sieves every prime below 10⁹ (it recovers π(10⁹) = 50,847,534).
-
-[`tools/check.js`](tools/check.js) compares every badge against a few million random rolls and brute-forces the hard-coded number lists.
+Every probability is a count of qualifying numbers, not an estimate. Digit patterns are counted with small automata over every digit string, sets are generated in full, and prime badges come from a sieve of every prime below 10¹⁰ (it recovers π(10¹⁰) = 455,052,511).
 
 ```
-npm run check
-npm run counts
+npm run data    # rebuild data.js (sieve, about two minutes on 16 threads)
+npm run check   # brute-force every badge at 5 and 6 digits, verify lists and data.js, sample the real game
 ```
 
-## Run it
+Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
-Open `index.html` in a browser. No build step.
+## Changelog
+
+- v2.0: ten digits, Exponent mode, Endless with side leaderboards, achievements, hall of fame, badge details, luck table, collection filters, starred rolls, factorization, share image, themes, offline install. Fixes the Lonely Digit count, which was 81 instead of 72 in the nine-digit game.
+- v1.1: badge hunt, new-badge alerts, number checker, save export and import.
+- v1.0: nine-digit rolls, unlimited rolling with autoroll, 143 badges with exact odds.
