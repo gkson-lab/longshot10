@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>RNGdle 9</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%2307070b'/%3E%3Ctext x='16' y='24' font-family='monospace' font-size='22' font-weight='700' text-anchor='middle' fill='%23facc15'%3E9%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #07070b;
+    --panel: #101017;
+    --panel-2: #16161f;
+    --line: #23232f;
+    --ink: #f2f1f7;
+    --muted: #8a8a9c;
+    --dim: #4a4a5c;
+    --r-trash: #8b7d6b;
+    --r-common: #a8a8b8;
+    --r-uncommon: #4ade80;
+    --r-rare: #60a5fa;
+    --r-epic: #c084fc;
+    --r-anomaly: #fb923c;
+    --r-mythic: #facc15;
+    --glow: #3a3a55;
+    --mono: ui-monospace, "Cascadia Mono", "SF Mono", "JetBrains Mono", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+  }
+  body::before { /* ambient glow tinted by the last roll's tier */
+    content: ""; position: fixed; inset: -20vh -20vw auto; height: 80vh; z-index: -1;
+    background: radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--glow) 45%, transparent), transparent 65%);
+    transition: background 0.6s;
+    pointer-events: none;
+  }
+  button, select { font: inherit; color: inherit; }
+  .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 80px; }
+
+  header { display: flex; align-items: center; justify-content: space-between; padding: 22px 0 6px; }
+  .mark { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: 0.14em; display: flex; align-items: center; gap: 10px; }
+  .mark b {
+    font-family: var(--mono); font-size: 15px; letter-spacing: 0; color: #111;
+    background: var(--r-mythic); border-radius: 6px; padding: 1px 7px;
+    box-shadow: 0 0 18px color-mix(in srgb, var(--r-mythic) 60%, transparent);
+  }
+  .icon-btn {
+    width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;
+    background: var(--panel); border: 1px solid var(--line); cursor: pointer; color: var(--muted);
+  }
+  .icon-btn:hover { color: var(--ink); }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  nav { display: flex; gap: 2px; padding: 4px; margin: 16px 0 26px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; width: fit-content; }
+  nav button { background: none; border: 0; padding: 7px 14px; border-radius: 8px; color: var(--muted); cursor: pointer; font-weight: 600; font-size: 14px; }
+  nav button[aria-selected="true"] { background: var(--panel-2); color: var(--ink); box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 0 0 1px var(--line); }
+  :focus-visible { outline: 2px solid var(--r-rare); outline-offset: 2px; }
+
+  /* ---- reels ---- */
+  .machine {
+    position: relative; padding: 18px 14px; border-radius: 20px;
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--line);
+    box-shadow: 0 30px 80px -30px color-mix(in srgb, var(--glow) 70%, transparent), 0 1px 0 rgba(255,255,255,.05) inset;
+    transition: box-shadow .6s;
+  }
+  .machine.shake { animation: shake .45s cubic-bezier(.36,.07,.19,.97); }
+  .machine.shake-big { animation: shake-big .7s cubic-bezier(.36,.07,.19,.97); }
+  @keyframes shake { 10%, 90% { transform: translateX(-1px); } 20%, 80% { transform: translateX(3px); } 30%, 50%, 70% { transform: translateX(-5px); } 40%, 60% { transform: translateX(5px); } }
+  @keyframes shake-big { 10%, 90% { transform: translate(-2px, 1px) rotate(-.3deg); } 20%, 80% { transform: translate(5px, -2px) rotate(.4deg); } 30%, 50%, 70% { transform: translate(-9px, 2px) rotate(-.6deg); } 40%, 60% { transform: translate(9px, -1px) rotate(.6deg); } }
+  .reels { display: flex; justify-content: center; gap: clamp(6px, 2vw, 14px); }
+  .trio { display: flex; gap: clamp(2px, .8vw, 5px); }
+  .reel {
+    --h: clamp(48px, 13vw, 92px);
+    width: clamp(29px, 8.2vw, 62px); height: var(--h); overflow: hidden; position: relative;
+    border-radius: 9px;
+    background: linear-gradient(180deg, #050508 0%, #15151e 50%, #050508 100%);
+    box-shadow: inset 0 0 0 1px #262633, inset 0 10px 14px -8px #000, inset 0 -10px 14px -8px #000;
+  }
+  .reel::after { /* glass highlight */
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(180deg, rgba(255,255,255,.07), transparent 40%, transparent 60%, rgba(0,0,0,.35));
+  }
+  .strip { will-change: transform; }
+  .strip div {
+    height: var(--h); display: grid; place-items: center;
+    font-family: var(--mono); font-weight: 700; font-size: calc(var(--h) * .58);
+    color: var(--ink); text-shadow: 0 0 18px rgba(255,255,255,.18);
+  }
+  .reel.lead .strip div { color: var(--dim); text-shadow: none; }
+  .reel.spinning .strip { filter: blur(1.2px); }
+  .reel.hit .strip div { color: var(--tc); text-shadow: 0 0 22px var(--tc); }
+
+  .preview-note { text-align: center; color: var(--muted); font-size: 13px; min-height: 18px; margin: 10px 0 0; }
+
+  /* ---- controls ---- */
+  .controls { display: flex; flex-direction: column; align-items: center; gap: 14px; margin: 22px 0 8px; }
+  .roll {
+    position: relative; border: 0; cursor: pointer; border-radius: 999px;
+    padding: 15px 54px; font-weight: 800; font-size: 17px; letter-spacing: .18em; color: #0b0b10;
+    background: linear-gradient(180deg, #ffffff, #d9d9e6);
+    box-shadow: 0 10px 30px -8px rgba(255,255,255,.35), 0 0 0 1px rgba(255,255,255,.5) inset;
+    transition: transform .08s, box-shadow .2s;
+  }
+  .roll:hover { box-shadow: 0 12px 40px -6px rgba(255,255,255,.5), 0 0 0 1px #fff inset; }
+  .roll:active { transform: scale(.97); }
+  .roll:disabled { opacity: .45; cursor: default; transform: none; }
+  .roll.auto-on {
+    color: var(--ink); background: var(--panel-2);
+    box-shadow: 0 0 0 1px var(--line) inset;
+  }
+  .auto-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .toggle {
+    display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 12px 6px 6px;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-weight: 600; font-size: 14px;
+  }
+  .toggle .knob { width: 34px; height: 20px; border-radius: 999px; background: var(--line); position: relative; transition: background .2s; }
+  .toggle .knob::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--muted); transition: transform .2s, background .2s; }
+  .toggle[aria-pressed="true"] .knob { background: color-mix(in srgb, var(--r-uncommon) 35%, var(--line)); }
+  .toggle[aria-pressed="true"] .knob::after { transform: translateX(14px); background: var(--r-uncommon); box-shadow: 0 0 10px var(--r-uncommon); }
+  .seg { display: flex; padding: 3px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; }
+  .seg button { border: 0; background: none; color: var(--muted); padding: 4px 11px; border-radius: 999px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .seg button[aria-pressed="true"] { background: var(--panel-2); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
+  .stopat { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+  .stopat select { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px; color: var(--ink); font-size: 13px; }
+  .session { color: var(--muted); font-size: 13px; text-align: center; margin: 0; min-height: 19px; }
+  .session b { color: var(--ink); font-weight: 600; }
+
+  /* ---- result ---- */
+  .result { text-align: center; margin: 26px 0 22px; }
+  .tier {
+    margin: 0; font-size: clamp(38px, 10vw, 64px); font-weight: 900; letter-spacing: -.02em; line-height: 1;
+    color: var(--tc); text-shadow: 0 0 34px color-mix(in srgb, var(--tc) 55%, transparent);
+  }
+  .tier.pop { animation: pop .55s cubic-bezier(.2,1.6,.4,1) both; }
+  @keyframes pop { from { transform: scale(.4); opacity: 0; filter: blur(8px); } to { transform: none; opacity: 1; filter: none; } }
+  .tier.mythic {
+    background: linear-gradient(90deg, #facc15, #fb7185, #c084fc, #60a5fa, #facc15); background-size: 300% 100%;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: pop .55s cubic-bezier(.2,1.6,.4,1) both, sheen 3s linear infinite;
+  }
+  @keyframes sheen { to { background-position: 300% 0; } }
+  .ep { margin: 10px 0 14px; color: var(--muted); font-size: 15px; }
+  .ep b { color: var(--ink); font-size: 20px; }
+  .ghost {
+    background: var(--panel); border: 1px solid var(--line); color: var(--ink); border-radius: 999px;
+    padding: 7px 16px; font-weight: 600; font-size: 13px; cursor: pointer;
+  }
+  .ghost:hover { border-color: var(--muted); }
+
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-weight: 700; margin: 0 0 10px; display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  h2 span { letter-spacing: 0; text-transform: none; font-weight: 500; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 8px; list-style: none; margin: 0; padding: 0; }
+  .card {
+    position: relative; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; align-items: center;
+    padding: 11px 14px 11px 16px; border-radius: 12px; overflow: hidden;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--rc) 12%, var(--panel)), var(--panel) 60%);
+    border: 1px solid color-mix(in srgb, var(--rc) 28%, var(--line));
+  }
+  .card::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--rc); box-shadow: 0 0 12px var(--rc); }
+  .card .name { font-weight: 700; }
+  .card .desc { color: var(--muted); font-size: 13px; grid-column: 1; }
+  .card .right { grid-row: 1 / span 2; grid-column: 2; text-align: right; }
+  .card .rar { color: var(--rc); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .card .pts { font-family: var(--mono); font-weight: 700; font-size: 14px; }
+  .card .odds { color: var(--muted); font-size: 12px; }
+  .card.r-mythic { border-color: transparent; background: linear-gradient(var(--panel), var(--panel)) padding-box, linear-gradient(90deg, #facc15, #fb7185, #c084fc, #60a5fa, #facc15) border-box; background-size: 100% 100%, 300% 100%; animation: sheen 3s linear infinite; }
+  .card.r-anomaly { box-shadow: 0 0 24px -8px var(--rc); }
+  .card.locked { --rc: var(--dim); background: var(--panel); border-color: var(--line); opacity: .55; }
+  .card.locked::before { box-shadow: none; }
+  .card.locked.r-mythic { animation: none; background: var(--panel); border-color: var(--line); }
+  .card.in { animation: slide .4s cubic-bezier(.2,.9,.3,1.2) both; }
+  @keyframes slide { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+  .empty { color: var(--muted); padding: 16px; text-align: center; border: 1px dashed var(--line); border-radius: 12px; margin: 0; }
+
+  /* ---- collection & log ---- */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 26px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+  .stat .v { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .bar { height: 6px; background: var(--panel-2); border-radius: 3px; overflow: hidden; margin: 0 0 14px; }
+  .bar i { display: block; height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--r-uncommon), var(--r-rare), var(--r-epic), var(--r-mythic)); }
+  .cat { margin-bottom: 26px; }
+  .tierbar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 8px; background: var(--panel-2); }
+  .tierbar i { display: block; height: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 12px; color: var(--muted); margin-bottom: 26px; }
+  .legend span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--c); margin-right: 6px; }
+  .log { list-style: none; margin: 0; padding: 0; }
+  .log li { display: grid; grid-template-columns: 1fr auto auto; gap: 14px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--line); }
+  .log a { color: var(--ink); text-decoration: none; font-family: var(--mono); letter-spacing: .04em; }
+  .log a:hover { color: var(--r-rare); }
+  .log .t { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .log .e { font-family: var(--mono); color: var(--muted); font-size: 13px; min-width: 7ch; text-align: right; }
+  .foot { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 13px; }
+
+  #fx { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+  #flash { position: fixed; inset: 0; pointer-events: none; z-index: 9; opacity: 0; background: radial-gradient(circle at 50% 30%, var(--tc, #fff), transparent 70%); }
+  #flash.go { animation: flash .9s ease-out; }
+  @keyframes flash { 0% { opacity: .55; } 100% { opacity: 0; } }
+
+  [hidden] { display: none !important; }
+  @media (max-width: 520px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .machine { padding: 14px 8px; border-radius: 16px; }
+    .roll { padding: 14px 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<canvas id="fx"></canvas>
+<div id="flash"></div>
+<div class="wrap">
+  <header>
+    <h1 class="mark">RNGDLE <b>9</b></h1>
+    <button class="icon-btn" id="soundBtn" aria-label="Sound on" title="Sound"></button>
+  </header>
+
+  <nav role="tablist">
+    <button role="tab" data-tab="roll" aria-selected="true">Roll</button>
+    <button role="tab" data-tab="collection" aria-selected="false">Collection</button>
+    <button role="tab" data-tab="log" aria-selected="false">Log</button>
+  </nav>
+
+  <main>
+    <section id="tab-roll">
+      <div class="machine" id="machine">
+        <div class="reels" id="reels" role="img" aria-label="No roll yet"></div>
+      </div>
+      <p class="preview-note" id="previewNote"></p>
+
+      <div class="controls">
+        <button class="roll" id="rollBtn">ROLL</button>
+        <div class="auto-row">
+          <button class="toggle" id="autoBtn" aria-pressed="false"><span class="knob"></span>Auto</button>
+          <div class="seg" id="speed" role="group" aria-label="Speed">
+            <button data-speed="1" aria-pressed="true">1×</button>
+            <button data-speed="2" aria-pressed="false">2×</button>
+            <button data-speed="3" aria-pressed="false">Turbo</button>
+          </div>
+          <label class="stopat">Stop at
+            <select id="stopAt">
+              <option value="99">Never</option>
+              <option value="3">Rare+</option>
+              <option value="4" selected>Epic+</option>
+              <option value="5">Anomaly+</option>
+              <option value="6">Mythic</option>
+            </select>
+          </label>
+        </div>
+        <p class="session" id="session"></p>
+      </div>
+
+      <div id="result" hidden>
+        <div class="result">
+          <p class="tier" id="tier"></p>
+          <p class="ep" id="ep"></p>
+          <button class="ghost" id="shareBtn">Copy result</button>
+        </div>
+        <h2><span id="badgeHead"></span></h2>
+        <ul class="cards" id="badges"></ul>
+      </div>
+    </section>
+
+    <section id="tab-collection" hidden>
+      <h2>Collection <span id="collCount"></span></h2>
+      <div class="bar"><i id="collBar"></i></div>
+      <div id="collection"></div>
+    </section>
+
+    <section id="tab-log" hidden>
+      <div class="stats" id="stats"></div>
+      <h2>Roll tiers</h2>
+      <div class="tierbar" id="tierbar"></div>
+      <div class="legend" id="legend"></div>
+      <h2>Recent rolls <span>last 200</span></h2>
+      <ul class="log" id="log"></ul>
+      <div class="foot">
+        <span>Everything is stored in this browser only.</span>
+        <button class="ghost" id="resetBtn">Erase everything</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script src="badges.js"></script>
+<script>
+(function () {
+  'use strict';
+  const { BADGES, CATEGORIES, RARITIES, ROLL_TIERS, score, rollTier, randomRoll, datedBadges, distribution } = window.RNG9;
+  const $ = id => document.getElementById(id);
+  const fmt = n => Math.round(n).toLocaleString('en-US');
+  const grouped = n => String(n).padStart(9, '0').replace(/(\d{3})(?=\d)/g, '$1 ');
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const tierColor = id => `var(--r-${id})`;
+  const TIER_INDEX = Object.fromEntries(ROLL_TIERS.map((t, i) => [t.id, i]));
+
+  function dayKey(t = Date.now()) {
+    const d = new Date(t), p = x => String(x).padStart(2, '0');
+    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+  }
+
+  // ---- storage ----------------------------------------------------------------------
+  const KEY = 'rngdle9:v2';
+  const LOG_LIMIT = 200;
+  const blank = () => ({ log: [], total: 0, ep: 0, best: null, counts: {}, tiers: {}, sound: true });
+  function load() {
+    try {
+      const s = JSON.parse(localStorage.getItem(KEY));
+      if (s) return Object.assign(blank(), s);
+      // carry over rolls from the once-a-day version
+      const old = JSON.parse(localStorage.getItem('rngdle9:rolls') || 'null');
+      const st = blank();
+      if (old) for (const [d, n] of Object.entries(old).sort()) record(st, n, new Date(d + 'T12:00').getTime());
+      return st;
+    } catch { return blank(); }
+  }
+  let saveTimer = 0;
+  function save() {
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* storage unavailable */ } }, 150);
+  }
+  function record(st, n, t) {
+    const r = score(n, dayKey(t));
+    const { tier } = rollTier(r.ep);
+    st.log.unshift({ n, t });
+    if (st.log.length > LOG_LIMIT) st.log.length = LOG_LIMIT;
+    st.total++;
+    st.ep += r.ep;
+    if (!st.best || r.ep > st.best.ep) st.best = { n, t, ep: r.ep };
+    for (const b of r.badges) st.counts[b.id] = (st.counts[b.id] || 0) + 1;
+    st.tiers[tier.id] = (st.tiers[tier.id] || 0) + 1;
+    return { r, tier };
+  }
+  const state = load();
+
+  // ---- sound ------------------------------------------------------------------------------
+  let audio = null;
+  function tone(freq, dur, { type = 'triangle', gain = 0.06, when = 0 } = {}) {
+    if (!state.sound) return;
+    try {
+      audio = audio || new AudioContext();
+      const t0 = audio.currentTime + when;
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = type; o.frequency.value = freq;
+      g.gain.setValueAtTime(gain, t0);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g).connect(audio.destination);
+      o.start(t0); o.stop(t0 + dur);
+    } catch { /* no audio */ }
+  }
+  const tick = i => tone(420 + i * 55, 0.07, { type: 'square', gain: 0.025 });
+  function fanfare(tierIdx) {
+    const scale = [261.6, 329.6, 392, 523.3, 659.3, 784, 1046.5];
+    const notes = Math.max(1, tierIdx);
+    for (let i = 0; i < notes; i++) tone(scale[i], 0.35 + i * 0.05, { gain: 0.05, when: i * 0.07 });
+    if (tierIdx >= 5) tone(scale[notes] * 2, 0.9, { type: 'sine', gain: 0.05, when: notes * 0.07 });
+  }
+  const SPEAKER = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg>';
+  const MUTED = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
+  function paintSound() {
+    $('soundBtn').innerHTML = state.sound ? SPEAKER : MUTED;
+    $('soundBtn').setAttribute('aria-label', state.sound ? 'Mute sound' : 'Turn sound on');
+  }
+  $('soundBtn').addEventListener('click', () => { state.sound = !state.sound; paintSound(); save(); });
+
+  // ---- reels --------------------------------------------------------------------------------
+  const reels = [];
+  for (let g = 0; g < 3; g++) {
+    const trio = document.createElement('div');
+    trio.className = 'trio';
+    for (let i = 0; i < 3; i++) {
+      const reel = document.createElement('div');
+      reel.className = 'reel';
+      reel.innerHTML = '<div class="strip"><div>·</div></div>';
+      trio.appendChild(reel);
+      reels.push(reel);
+    }
+    $('reels').appendChild(trio);
+  }
+  const leadCount = n => (n === 0 ? 8 : 9 - String(n).length);
+
+  function setReels(n) {
+    const s = String(n).padStart(9, '0'), lead = leadCount(n);
+    reels.forEach((reel, i) => {
+      reel.classList.remove('spinning', 'hit');
+      reel.classList.toggle('lead', i < lead);
+      const strip = reel.firstChild;
+      strip.style.transition = 'none';
+      strip.style.transform = '';
+      strip.innerHTML = `<div>${s[i]}</div>`;
+    });
+    $('reels').setAttribute('aria-label', fmt(n));
+  }
+
+  // speed: 1 full spin, 2 quick spin, 3 turbo (no spin)
+  function spinTo(n, speed) {
+    if (speed === 3 || reducedMotion) { setReels(n); return Promise.resolve(); }
+    const s = String(n).padStart(9, '0'), lead = leadCount(n);
+    const base = speed === 1 ? 700 : 260, stagger = speed === 1 ? 120 : 40, spins = speed === 1 ? 26 : 12;
+    return Promise.all(reels.map((reel, i) => new Promise(resolve => {
+      const strip = reel.firstChild;
+      const from = strip.lastChild ? strip.lastChild.textContent : '0';
+      const k = spins + i * 2;
+      let html = `<div>${from}</div>`;
+      for (let j = 1; j < k; j++) html += `<div>${Math.floor(Math.random() * 10)}</div>`;
+      strip.innerHTML = html + `<div>${s[i]}</div>`;
+      reel.classList.remove('lead', 'hit');
+      reel.classList.add('spinning');
+      strip.style.transition = 'none';
+      strip.style.transform = 'translateY(0)';
+      strip.getBoundingClientRect(); // commit the start position
+      const ms = base + i * stagger;
+      strip.style.transition = `transform ${ms}ms cubic-bezier(.15,.75,.25,1.04)`;
+      strip.style.transform = `translateY(-${(k / (k + 1)) * 100}%)`;
+      let done = false;
+      const settle = () => { // transitionend, or the timer if the tab paused the animation
+        if (done) return;
+        done = true;
+        reel.classList.remove('spinning');
+        reel.classList.toggle('lead', i < lead);
+        strip.style.transition = 'none';
+        strip.style.transform = '';
+        strip.innerHTML = `<div>${s[i]}</div>`;
+        if (speed === 1) tick(i);
+        resolve();
+      };
+      strip.addEventListener('transitionend', settle, { once: true });
+      setTimeout(settle, ms + 150);
+    }))).then(() => $('reels').setAttribute('aria-label', fmt(n)));
+  }
+
+  // ---- particles ----------------------------------------------------------------------------
+  const canvas = $('fx'), ctx = canvas.getContext('2d');
+  let parts = [], raf = 0;
+  function sizeCanvas() { canvas.width = innerWidth * devicePixelRatio; canvas.height = innerHeight * devicePixelRatio; }
+  sizeCanvas();
+  addEventListener('resize', sizeCanvas);
+  function burst(color, count, power) {
+    if (reducedMotion) return;
+    const r = $('machine').getBoundingClientRect();
+    const cx = (r.left + r.width / 2) * devicePixelRatio, cy = (r.top + r.height / 2) * devicePixelRatio;
+    for (let i = 0; i < count; i++) {
+      const a = Math.random() * Math.PI * 2, v = (Math.random() * 0.8 + 0.2) * power * devicePixelRatio;
+      parts.push({ x: cx + (Math.random() - .5) * r.width * devicePixelRatio * .8, y: cy, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 4 * devicePixelRatio, life: 1, size: (Math.random() * 3 + 1.5) * devicePixelRatio, color, spin: Math.random() * 6 });
+    }
+    if (!raf) raf = requestAnimationFrame(frame);
+  }
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    parts = parts.filter(p => p.life > 0);
+    for (const p of parts) {
+      p.vy += 0.22 * devicePixelRatio; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.life -= 0.012; p.spin += 0.2;
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.spin);
+      ctx.fillRect(-p.size, -p.size / 2, p.size * 2, p.size);
+      ctx.restore();
+    }
+    raf = parts.length ? requestAnimationFrame(frame) : 0;
+    if (!raf) ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  const cssColor = id => getComputedStyle(document.documentElement).getPropertyValue(`--r-${id}`).trim();
+
+  function celebrate(tier, speed) {
+    const i = TIER_INDEX[tier.id];
+    const color = cssColor(tier.id);
+    document.documentElement.style.setProperty('--glow', color);
+    if (speed === 3 && i < 5) return;
+    if (i >= 3) burst(color, [0, 0, 0, 40, 90, 160, 320][i], [0, 0, 0, 7, 9, 12, 16][i]);
+    if (i === 6) burst('#ffffff', 80, 14);
+    const m = $('machine');
+    if (i >= 5) {
+      m.classList.remove('shake', 'shake-big'); void m.offsetWidth;
+      m.classList.add(i === 6 ? 'shake-big' : 'shake');
+      const f = $('flash');
+      f.style.setProperty('--tc', color);
+      f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
+    }
+    reels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', i >= 4 && !r.classList.contains('lead')); });
+    if (speed !== 3) fanfare(i);
+  }
+
+  // ---- result ---------------------------------------------------------------------------------
+  let shown = null;
+  const beats = pct => (pct >= 99.99 ? '99.99' : pct >= 99 ? pct.toFixed(2) : pct.toFixed(1));
+  const odds = p =>(1 / p < 10 ? `1 in ${(1 / p).toFixed(1)}` : `1 in ${fmt(1 / p)}`);
+
+  function card(b, { locked = false, times = 0, delay = null } = {}) {
+    const r = RARITIES[b.rarity];
+    const li = document.createElement('li');
+    li.className = `card r-${r.id}` + (locked ? ' locked' : '') + (delay !== null ? ' in' : '');
+    li.style.setProperty('--rc', tierColor(r.id));
+    if (delay !== null) li.style.animationDelay = delay + 'ms';
+    li.innerHTML = '<div class="name"></div><div class="desc"></div><div class="right"><div><span class="rar"></span> <span class="pts"></span></div><div class="odds"></div></div>';
+    li.querySelector('.name').textContent = b.name;
+    li.querySelector('.desc').textContent = b.desc;
+    li.querySelector('.rar').textContent = r.name;
+    li.querySelector('.pts').textContent = '+' + fmt(b.ep);
+    li.querySelector('.odds').textContent = times ? `${odds(b.p)} · ×${fmt(times)}` : odds(b.p);
+    return li;
+  }
+
+  function countUp(el, to, ms) {
+    if (ms <= 0 || reducedMotion) { el.textContent = fmt(to); return; }
+    const t0 = performance.now();
+    const step = now => {
+      const k = Math.min(1, (now - t0) / ms);
+      el.textContent = fmt(to * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }
+
+  function showResult(n, t, { animate = false, speed = 1, preview = false } = {}) {
+    const r = score(n, dayKey(t));
+    const { pct, tier } = rollTier(r.ep);
+    shown = { n, t, r, pct, tier };
+    $('result').hidden = false;
+    const el = $('tier');
+    el.textContent = tier.name;
+    el.style.setProperty('--tc', tierColor(tier.id));
+    el.className = 'tier' + (tier.id === 'mythic' ? ' mythic' : '');
+    if (animate && speed !== 3) { void el.offsetWidth; el.classList.add('pop'); }
+    $('ep').innerHTML = `<b class="mono" id="epNum"></b> EP · beats ${beats(pct)}% of rolls`;
+    countUp($('epNum'), r.ep, animate && speed === 1 ? 700 : 0);
+    $('badgeHead').textContent = r.badges.length === 1 ? '1 badge' : `${r.badges.length} badges`;
+    const list = $('badges');
+    list.replaceChildren();
+    if (!r.badges.length) {
+      const p = document.createElement('p');
+      p.className = 'empty';
+      p.textContent = 'No badges. Some numbers are just numbers.';
+      list.appendChild(p);
+    }
+    r.badges.forEach((b, i) => list.appendChild(card(b, { delay: animate && speed === 1 ? i * 70 : null })));
+    $('shareBtn').hidden = preview;
+    return tier;
+  }
+
+  function shareText() {
+    const { n, r, pct, tier } = shown;
+    const squares = ['⬜', '🟩', '🟦', '🟪', '🟧', '🟨'];
+    return [
+      'RNGdle 9',
+      grouped(n),
+      `${tier.name} · ${fmt(r.ep)} EP · beats ${beats(pct)}% of rolls`,
+      r.badges.map(b => squares[b.rarity]).join('') || '—',
+    ].join('\n');
+  }
+  $('shareBtn').addEventListener('click', async () => {
+    const text = shareText();
+    try { await navigator.clipboard.writeText(text); } catch {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+    }
+    $('shareBtn').textContent = 'Copied';
+    setTimeout(() => { $('shareBtn').textContent = 'Copy result'; }, 1400);
+  });
+
+  // ---- rolling ---------------------------------------------------------------------------------
+  let speed = 1, auto = false, busy = false, sessionRolls = 0, sessionBest = null;
+
+  async function rollOnce() {
+    const n = randomRoll(), t = Date.now();
+    const { r, tier } = record(state, n, t);
+    save();
+    sessionRolls++;
+    if (!sessionBest || r.ep > sessionBest.ep) sessionBest = { ep: r.ep, tier };
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    $('previewNote').textContent = '';
+    if (speed !== 3) $('result').hidden = true;
+    await spinTo(n, speed);
+    showResult(n, t, { animate: true, speed });
+    celebrate(tier, speed);
+    paintSession();
+    return tier;
+  }
+
+  function paintSession() {
+    if (!sessionRolls) { $('session').textContent = ''; return; }
+    const b = sessionBest;
+    $('session').innerHTML = `This session: <b class="mono">${fmt(sessionRolls)}</b> rolls · best <b style="color:${tierColor(b.tier.id)}">${b.tier.name}</b> <span class="mono">${fmt(b.ep)} EP</span>`;
+  }
+
+  $('rollBtn').addEventListener('click', async () => {
+    if (auto) { setAuto(false); return; }
+    if (busy) return;
+    busy = true;
+    $('rollBtn').disabled = true;
+    await rollOnce();
+    busy = false;
+    $('rollBtn').disabled = false;
+  });
+
+  function setAuto(on) {
+    auto = on;
+    $('autoBtn').setAttribute('aria-pressed', String(on));
+    $('rollBtn').textContent = on ? 'STOP' : 'ROLL';
+    $('rollBtn').classList.toggle('auto-on', on);
+    $('rollBtn').disabled = false;
+    if (on && !busy) autoLoop();
+  }
+  async function autoLoop() {
+    busy = true;
+    while (auto) {
+      const tier = await rollOnce();
+      if (TIER_INDEX[tier.id] >= +$('stopAt').value) { setAuto(false); break; }
+      await sleep(speed === 1 ? 900 : speed === 2 ? 350 : 60);
+    }
+    busy = false;
+  }
+  $('autoBtn').addEventListener('click', () => setAuto(!auto));
+  $('speed').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b) return;
+    speed = +b.dataset.speed;
+    $('speed').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  });
+  document.addEventListener('keydown', e => {
+    if (e.code !== 'Space' || e.target.closest('button, select, input') || $('tab-roll').hidden) return;
+    e.preventDefault();
+    $('rollBtn').click();
+  });
+
+  // #123456789 shows any number without recording it.
+  function fromHash() {
+    const m = location.hash.match(/^#(\d{1,9})$/);
+    if (!m) return;
+    const n = Number(m[1]);
+    setReels(n);
+    const tier = showResult(n, Date.now(), { preview: true });
+    document.documentElement.style.setProperty('--glow', cssColor(tier.id));
+    $('previewNote').textContent = 'Preview only, not recorded as a roll.';
+    selectTab('roll');
+  }
+
+  // ---- collection --------------------------------------------------------------------------------
+  function renderCollection() {
+    const all = BADGES.concat(datedBadges(dayKey()));
+    const got = all.filter(b => state.counts[b.id]).length;
+    $('collCount').textContent = `${got} of ${all.length}`;
+    $('collBar').style.width = (100 * got / all.length) + '%';
+    const root = $('collection');
+    root.replaceChildren();
+    for (const cat of CATEGORIES) {
+      const list = all.filter(b => b.cat === cat).sort((a, b) => b.p - a.p);
+      const have = list.filter(b => state.counts[b.id]).length;
+      const sec = document.createElement('div');
+      sec.className = 'cat';
+      sec.innerHTML = `<h2>${cat} <span>${have} of ${list.length}</span></h2>`;
+      const ul = document.createElement('ul');
+      ul.className = 'cards';
+      list.forEach(b => ul.appendChild(card(b, { locked: !state.counts[b.id], times: state.counts[b.id] || 0 })));
+      sec.appendChild(ul);
+      root.appendChild(sec);
+    }
+  }
+
+  // ---- log -----------------------------------------------------------------------------------------
+  function renderLog() {
+    const stat = (v, k) => `<div class="stat"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+    $('stats').innerHTML =
+      stat(fmt(state.total), 'Rolls') +
+      stat(state.best ? fmt(state.best.ep) : '—', 'Best EP') +
+      stat(fmt(state.tiers.mythic || 0), 'Mythics') +
+      stat(fmt(state.ep), 'Total EP');
+
+    const bar = $('tierbar'), legend = $('legend');
+    bar.replaceChildren(); legend.replaceChildren();
+    for (const t of ROLL_TIERS) {
+      const k = state.tiers[t.id] || 0;
+      if (k) {
+        const i = document.createElement('i');
+        i.style.cssText = `width:${100 * k / state.total}%;background:${tierColor(t.id)}`;
+        i.title = `${t.name}: ${fmt(k)}`;
+        bar.appendChild(i);
+      }
+      const s = document.createElement('span');
+      s.style.setProperty('--c', tierColor(t.id));
+      s.textContent = `${t.name} ${fmt(k)}`;
+      legend.appendChild(s);
+    }
+
+    const ul = $('log');
+    ul.replaceChildren();
+    if (!state.log.length) { ul.innerHTML = '<li><span class="e" style="text-align:left">No rolls yet.</span></li>'; return; }
+    for (const { n, t } of state.log) {
+      const r = score(n, dayKey(t));
+      const { tier } = rollTier(r.ep);
+      const li = document.createElement('li');
+      li.innerHTML = '<a></a><span class="t"></span><span class="e"></span>';
+      li.firstChild.href = '#' + n;
+      li.firstChild.textContent = grouped(n);
+      li.children[1].textContent = tier.name;
+      li.children[1].style.color = tierColor(tier.id);
+      li.children[2].textContent = fmt(r.ep);
+      ul.appendChild(li);
+    }
+  }
+
+  $('resetBtn').addEventListener('click', () => {
+    if (!confirm('Erase every roll, badge and stat from this browser? This cannot be undone.')) return;
+    setAuto(false);
+    const sound = state.sound;
+    Object.assign(state, blank(), { sound });
+    try { localStorage.removeItem('rngdle9:rolls'); } catch { /* ignore */ }
+    save();
+    renderLog();
+  });
+
+  // ---- tabs ------------------------------------------------------------------------------------------
+  function selectTab(name) {
+    document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+    for (const t of ['roll', 'collection', 'log']) $('tab-' + t).hidden = t !== name;
+    if (name === 'collection') renderCollection();
+    if (name === 'log') renderLog();
+  }
+  document.querySelectorAll('nav button').forEach(b => b.addEventListener('click', () => selectTab(b.dataset.tab)));
+
+  paintSound();
+  distribution(); // build the percentile sample up front so the first roll is instant
+  if (state.log.length && !location.hash) {
+    const last = state.log[0];
+    setReels(last.n);
+    const tier = showResult(last.n, last.t);
+    document.documentElement.style.setProperty('--glow', cssColor(tier.id));
+  }
+  addEventListener('hashchange', fromHash);
+  fromHash();
+})();
+</script>
+</body>
+</html>

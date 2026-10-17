@@ -1,0 +1,9 @@
+{
+  "name": "rngdle9",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "counts": "node --max-old-space-size=2048 tools/exact-counts.js",
+    "check": "node tools/check.js"
+  }
+}
