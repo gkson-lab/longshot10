@@ -56,6 +56,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v2.6.1: the offline copy no longer mixes files from two releases when it updates in the first minutes after a deploy.
 - v2.6: luck charms up to ×1,000,000 (run on worker threads), drop boosters up to ×100, and fusing items into the next one up.
 - v2.5, the Inventory update: inventory with luck charms, the Multiplier Lens and Overclock; item drops, achievement rewards and a daily gift; items are saved with each save file.
 - v2.2: Endless on Turbo rolls about 85 times a second (up from about 22) without blocking the page, and 1× and 2× cycle about twice as fast; long runs now save as they go; save files; sharing saves through GitHub Discussions.
