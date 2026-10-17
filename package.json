@@ -4,6 +4,7 @@
   "type": "commonjs",
   "scripts": {
     "data": "node tools/build-data.js",
+    "icons": "node tools/icons.js",
     "check": "node tools/check.js"
   }
 }

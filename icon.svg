@@ -1,8 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="96" fill="#0c0c10"/>
-  <rect x="96" y="128" width="148" height="256" rx="24" fill="#060608" stroke="#2c2c37" stroke-width="6"/>
-  <rect x="268" y="128" width="148" height="256" rx="24" fill="#060608" stroke="#2c2c37" stroke-width="6"/>
-  <text x="170" y="318" font-family="ui-monospace, Consolas, monospace" font-size="176" font-weight="700" text-anchor="middle" fill="#f6f1e3">1</text>
-  <text x="342" y="318" font-family="ui-monospace, Consolas, monospace" font-size="176" font-weight="700" text-anchor="middle" fill="#f6f1e3">0</text>
+  <rect x="0" y="0" width="512" height="512" rx="96" fill="#0c0c10"/>
+  <rect x="93" y="125" width="154" height="262" rx="27" fill="#2c2c37"/>
+  <rect x="265" y="125" width="154" height="262" rx="27" fill="#2c2c37"/>
+  <rect x="99" y="131" width="142" height="250" rx="21" fill="#060608"/>
+  <rect x="271" y="131" width="142" height="250" rx="21" fill="#060608"/>
+  <rect x="158" y="176" width="30" height="160" rx="6" fill="#f6f1e3"/>
+  <rect x="132" y="176" width="50" height="28" rx="6" fill="#f6f1e3"/>
+  <rect x="128" y="314" width="90" height="26" rx="6" fill="#f6f1e3"/>
+  <rect x="294" y="176" width="96" height="164" rx="42" fill="#f6f1e3"/>
+  <rect x="322" y="204" width="40" height="108" rx="18" fill="#060608"/>
   <rect x="96" y="410" width="320" height="16" rx="8" fill="#d6a84a"/>
 </svg>
