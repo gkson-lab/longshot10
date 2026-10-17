@@ -73,7 +73,7 @@
     v: 4, log: [], total: 0, totals: perMode(() => 0), counts: {}, first: {}, mults: {}, firstMult: {},
     tiers: perMode(() => ({})), hof: perMode(() => []), favs: [], ach: {}, huntsDone: 0, shares: 0,
     settings: { theme: 'midnight', effects: 'full', sound: true }, mode: 'classic',
-    inv: {}, effects: {}, boosted: 0, lastGift: '',
+    inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0,
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -635,6 +635,38 @@
     ['cosmic', [['luck1k', 0.4], ['luck10k', 0.05], ['goose', 0.1]]],
     ['transcendent', [['luck10k', 0.4], ['luck100k', 0.1], ['luck1m', 0.02], ['goose', 0.3]]],
   ];
+  // The coin slot: each spin costs one coin and pays out from this table. Chances are whole parts
+  // in 100,000 and add up to exactly 100,000. [item or null, quantity, parts, reel symbol]
+  const COIN_CHANCE = 0.25;
+  const SLOT_UNITS = 100000;
+  const SLOT_PRIZES = [
+    [null, 0, 35000, ''],
+    ['luck2', 1, 25000, '×2'],
+    ['luck2', 3, 10000, '×2'],
+    ['luck5', 1, 10000, '×5'],
+    ['magnet', 1, 6000, 'Mag'],
+    ['lens', 1, 5000, 'Lens'],
+    ['luck10', 1, 4000, '×10'],
+    ['map', 1, 2000, 'Map'],
+    ['overclock', 1, 1500, 'OC'],
+    ['luck100', 1, 1000, '×100'],
+    ['horn', 1, 300, 'Horn'],
+    ['luck1k', 1, 100, '×1k'],
+    ['goose', 1, 80, 'Goose'],
+    ['goose', 2, 15, 'Goose'],
+    ['goose', 5, 5, 'Goose'],
+  ];
+  if (SLOT_PRIZES.reduce((t, p) => t + p[2], 0) !== SLOT_UNITS) throw new Error('slot prize table does not add up');
+  function randInt(n) { // uniform integer in [0, n) from the CSPRNG, without modulo bias
+    const buf = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
+    do crypto.getRandomValues(buf); while (buf[0] >= lim);
+    return buf[0] % n;
+  }
+  function spinOnce() {
+    let u = randInt(SLOT_UNITS);
+    for (const p of SLOT_PRIZES) { if (u < p[2]) return p; u -= p[2]; }
+    return SLOT_PRIZES[0];
+  }
   const ACH_REWARD = { uncommon: 'luck2', rare: 'luck2', epic: 'luck5', legendary: 'lens', anomaly: 'luck10', mythic: 'luck100', divine: 'luck1k', cosmic: 'luck10k', transcendent: 'luck100k', ethereal: 'luck1m', celestial: 'luck1m', eternal: 'luck1m', c25: 'magnet', c60: 'map', c100: 'horn', call: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
@@ -647,6 +679,14 @@
     const fx = state.effects, D = fx.drop && fx.drop.left > 0 ? fx.drop.D : 1;
     if (D > 1) fx.drop.left--;
     const i = T(tierId);
+    if (i >= T('rare')) { // a 1 in 4 chance of a coin for the slot machine, boosted like any other drop
+      const c = COIN_CHANCE * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
+      if (k) {
+        state.coins += k;
+        toast(`Coin found${k > 1 ? `: <b>×${fmt(k)}</b>` : ''}, ${fmt(state.coins)} in hand`, 'mythic');
+        if (!$('tab-inventory').hidden) renderSlot();
+      }
+    }
     const row = [...DROPS].reverse().find(([id]) => i >= T(id));
     if (!row) return;
     for (const [id, chance] of row[1]) {
@@ -698,8 +738,56 @@
         + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></div></li>`;
     }).join('');
     const last = DROPS.length - 1;
-    $('dropTable').innerHTML = DROPS.map(([tier, items], r) => `<tr><td style="color:${tierVar(tier)};font-weight:700">${ROLL_TIERS[T(tier)].name}${r === last ? ' or rarer' : ''}</td><td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('');
+    $('dropTable').innerHTML = `<tr><td style="color:${tierVar('rare')};font-weight:700">Rare or rarer</td><td>A coin for the slot machine, ${COIN_CHANCE * 100}%</td></tr>` + DROPS.map(([tier, items], r) => `<tr><td style="color:${tierVar(tier)};font-weight:700">${ROLL_TIERS[T(tier)].name}${r === last ? ' or rarer' : ''}</td><td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('');
   }
+  // The slot uses the same reels as the game: three matching symbols name the prize.
+  const slotReels = [0, 1, 2].map(() => {
+    const r = document.createElement('div');
+    r.className = 'reel slot-reel lead';
+    r.innerHTML = '<div class="strip"><div>?</div></div>';
+    $('slotReels').appendChild(r);
+    return r;
+  });
+  const SLOT_FACES = [...new Set(SLOT_PRIZES.filter(p => p[0]).map(p => p[3]))];
+  const slotFace = () => SLOT_FACES[randInt(SLOT_FACES.length)];
+  let slotBusy = false;
+  async function spinSlot(n) {
+    if (slotBusy || state.coins < n) return;
+    slotBusy = true;
+    state.coins -= n;
+    state.spins += n;
+    const results = Array.from({ length: n }, spinOnce);
+    for (const [id, qty] of results) if (id) state.inv[id] = (state.inv[id] || 0) + qty;
+    checkAchievements();
+    save();
+    renderSlot();
+    // Show the best prize of the batch on the reels: matching symbols for a prize, a mismatch for none.
+    const best = results.reduce((a, b) => (b[2] < a[2] ? b : a));
+    let faces;
+    if (best[0]) faces = [best[3], best[3], best[3]];
+    else { do faces = [slotFace(), slotFace(), slotFace()]; while (faces[0] === faces[1] && faces[1] === faces[2]); }
+    const color = best[0] ? tierVar(RARITIES[ITEM_BY_ID[best[0]].rarity].id) : '';
+    if (effects() === 'off') slotReels.forEach((r, i) => setReel(r, faces[i], false));
+    else await Promise.all(slotReels.map((r, i) => spinReel(r, faces[i], 500 + i * 220, 14 + i * 4, false, slotFace, () => tick(i))));
+    slotReels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', !!best[0] && ITEM_BY_ID[best[0]].rarity >= 5); });
+    const won = results.filter(p => p[0]);
+    $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: ${p[0] ? `<b style="color:${tierVar(RARITIES[ITEM_BY_ID[p[0]].rarity].id)}">${esc(ITEM_BY_ID[p[0]].name)}${p[1] > 1 ? ` ×${p[1]}` : ''}</b>` : 'no prize'}</li>`).join('') : '')
+      + `<li><b>${won.length ? `Won ${won.map(p => `${ITEM_BY_ID[p[0]].name}${p[1] > 1 ? ` ×${p[1]}` : ''}`).map(esc).join(', ')}` : 'No prize this time'}</b></li>`;
+    if (won.some(p => p[0] === 'goose')) {
+      toast('Jackpot: <b>Golden Goose</b>', 'transcendent');
+      if (effects() === 'full') burst(cssVar('--r-transcendent'), 200, 14);
+    } else if (won.length && speed !== 3) fanfare(Math.min(6, 2 + won.length));
+    slotBusy = false;
+    renderSlot();
+    if (!$('tab-inventory').hidden) renderInventory();
+  }
+  function renderSlot() {
+    $('coinCount').textContent = `${fmt(state.coins)} ${state.coins === 1 ? 'coin' : 'coins'}`;
+    document.querySelectorAll('[data-spin]').forEach(b => { b.disabled = slotBusy || state.coins < +b.dataset.spin; });
+    $('slotOdds').innerHTML = SLOT_PRIZES.map(([id, qty, units]) => `<tr><td>${id ? `<span style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)};font-weight:700">${esc(ITEM_BY_ID[id].name)}</span>${qty > 1 ? ` ×${qty}` : ''}` : 'No prize'}</td><td class="num">${+(units / 1000).toFixed(3)}%</td></tr>`).join('');
+  }
+  $('slotButtons').addEventListener('click', ev => { const b = ev.target.closest('[data-spin]'); if (b) spinSlot(+b.dataset.spin); });
+
   function fuseItem(id) {
     const it = ITEM_BY_ID[id];
     if (!it.next || (state.inv[id] || 0) < it.next[1]) return;
@@ -1094,6 +1182,8 @@
     { id: 'share', name: 'Show and tell', desc: 'Copy or save a roll to share', test: () => state.shares >= 1 },
     { id: 'marathon', name: 'Marathon', desc: 'Roll 1,000 times in one session', test: () => session.rolls >= 1000 },
     { id: 'owl', name: 'Night owl', desc: 'Roll between 2 and 4 a.m.', test: rec => rec && [2, 3].includes(new Date(rec.entry.t).getHours()) },
+    { id: 'slot', name: 'Pull the lever', desc: 'Spin the coin slot', test: () => state.spins >= 1 },
+    { id: 'slot100', name: 'Slot regular', desc: 'Spin the coin slot 100 times', test: () => state.spins >= 100 },
   ];
   function checkAchievements(rec) {
     for (const a of ACHIEVEMENTS) {
@@ -1225,7 +1315,7 @@
     if (name === 'collection') renderCollection();
     if (name === 'trophies') renderTrophies();
     if (name === 'log') renderLog();
-    if (name === 'inventory') renderInventory();
+    if (name === 'inventory') { renderInventory(); renderSlot(); }
   }
   const tabBar = document.querySelector('.tabs');
   tabBar.addEventListener('click', ev => { const b = ev.target.closest('[role="tab"]'); if (b) selectTab(b.dataset.tab); });

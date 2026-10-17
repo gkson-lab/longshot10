@@ -38,6 +38,10 @@ Each save file has an inventory of items you can use from the Inventory tab:
 
 Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Two once a day, and several of one item fuse into the next one up (five Charms of a Hundred Thousand make a Charm of a Million). Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
 
+## Coin slot
+
+Every Rare or rarer plain roll has a 1 in 4 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin, up to five spins at a time. Each spin pays out from a fixed table shown in the game: no prize 35% of the time, item prizes from a Charm of Two to a Charm of a Thousand, and a 0.1% jackpot of one, two or five Golden Geese.
+
 ## Sharing save files
 
 Export a save from Settings > Save files, then post it in [Discussions > Show and tell](https://github.com/gkson-lab/rngexp10/discussions/categories/show-and-tell); the post form asks for the file and your best roll. To play someone else's save, download their `.json` file and choose Import a save file.

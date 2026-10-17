@@ -336,6 +336,17 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 .items { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 8px; }
 .items li { position: relative; display: flex; gap: 12px; justify-content: space-between; align-items: center; padding: 10px 12px 10px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--line); }
 .items li::before { content: ""; position: absolute; left: 0; top: 10px; bottom: 10px; width: 4px; border-radius: 0 4px 4px 0; background: var(--rc); }
+.cabinet.slot { margin-bottom: 10px; }
+.slot-reels { display: flex; justify-content: center; gap: 8px; }
+.reel.slot-reel { --h: clamp(52px, 12vw, 72px); width: clamp(84px, 24vw, 120px); }
+.reel.slot-reel .strip div { font-size: clamp(18px, 4.5vw, 24px); white-space: nowrap; }
+.reel.slot-reel.lead .strip div { color: var(--cell-lead); }
+.slot-buttons { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-top: 14px; }
+.slot-buttons .roll { min-height: 44px; padding: 0 28px; font-size: 16px; }
+.slot-result { list-style: none; margin: 12px 0 0; padding: 0; text-align: center; font-size: 14px; }
+.slot-result li { padding: 2px 0; }
+.slot-odds { margin: 0 0 22px; }
+.slot-odds summary { cursor: pointer; color: var(--muted); min-height: 44px; display: flex; align-items: center; }
 .item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .items li.none { opacity: 0.62; }
 .items li.none::before { background: var(--line); }

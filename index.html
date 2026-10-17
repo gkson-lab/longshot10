@@ -114,6 +114,22 @@
     <section id="tab-inventory" role="tabpanel" aria-labelledby="tab-btn-inventory" hidden>
       <div class="two-col">
         <div>
+          <div class="section-head"><h2>Coin slot</h2><span id="coinCount"></span></div>
+          <div class="cabinet slot">
+            <div class="slot-reels" id="slotReels" role="img" aria-label="Slot reels"></div>
+            <div class="slot-buttons" id="slotButtons" role="group" aria-label="Spin the slot">
+              <button class="roll" type="button" data-spin="1">Spin</button>
+              <button class="btn" type="button" data-spin="2">Spin ×2</button>
+              <button class="btn" type="button" data-spin="3">Spin ×3</button>
+              <button class="btn" type="button" data-spin="4">Spin ×4</button>
+              <button class="btn" type="button" data-spin="5">Spin ×5</button>
+            </div>
+            <ul class="slot-result" id="slotResult" role="status"><li class="muted">Each spin costs one coin. Coins come from Rare or rarer rolls.</li></ul>
+          </div>
+          <details class="slot-odds">
+            <summary>Prize odds per spin</summary>
+            <table class="luck"><tbody id="slotOdds"></tbody></table>
+          </details>
           <div class="section-head"><h2>Inventory</h2><span id="invCount"></span></div>
           <ul class="items" id="invList"></ul>
           <p class="muted" id="invMsg" role="status"></p>
