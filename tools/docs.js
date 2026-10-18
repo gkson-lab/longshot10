@@ -102,7 +102,7 @@ p('## Exponents', '', `In Exponent mode the exponent is 1 half the time, 2 a qua
 table(['Exponent', 'Chance'], [1, 2, 3, 4, 5, 6, 8, 10, 12, 20, E_MAX].map(e => [String(e), oneIn(pExp(e))]));
 
 p('## Difficulties', '',
-  'A difficulty changes your score but not the yardstick: 1/N always compares a roll with the Standard game of its mode. So harder difficulties reach each tier far less often. Luck charms and permanent luck work on every difficulty, but off Standard every one of the L rolls is played for real, so luck counts as at most ×100,000 there; lenses do nothing without the reel. These frequencies come from 400,000 sampled Classic rolls each (0 means none turned up).', '');
+  'A difficulty changes your score but not the yardstick: 1/N always compares a roll with the Standard game of its mode. So harder difficulties reach each tier far less often. Luck charms and permanent luck work in full on every difficulty; off Standard the lucky roll is built from rare badge numbers instead of the multiplier reel (within about 1.5× of the true best-of odds in tests), and lenses do nothing without the reel. These frequencies come from 400,000 sampled Classic rolls each (0 means none turned up).', '');
 {
   const R = 4e5, rows = [];
   for (const d of g.DIFFICULTIES) {

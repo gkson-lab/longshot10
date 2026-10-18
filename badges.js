@@ -1097,38 +1097,165 @@
     // at least that good is built: a random number and its mode extras, and a multiplier drawn from
     // the reel's own odds among those big enough to reach the target. At these sizes the best of
     // millions of rolls is decided by a rare multiplier, so this is how such rolls really look.
-    // Inverse of pBeat, cached at steps of 0.1% in q so repeat lookups are instant.
+    // Inverse of pBeat, cached at steps of about 0.5% in q so repeat lookups are instant.
     const rankCache = {};
     function rankFor(q, mode) {
       const cache = rankCache[mode] || (rankCache[mode] = new Map());
-      const key = Math.round(Math.log10(q) * 2000);
+      const key = Math.round(Math.log10(q) * 500);
       if (cache.has(key)) return cache.get(key);
-      q = 10 ** (key / 2000);
+      q = 10 ** (key / 500);
       let lo = -1, hi = 1;
       while (pBeat(hi, mode).p > q && hi < 1e300) { lo = hi; hi *= 2; }
       for (let i = 0; i < 60 && hi - lo > 1e-9 * Math.max(1, Math.abs(hi)); i++) { const mid = (lo + hi) / 2; if (pBeat(mid, mode).p > q) lo = mid; else hi = mid; }
       if (cache.size < 50000) cache.set(key, hi);
       return hi;
     }
-    function luckyPick(mode, L, date) {
+    function luckyPick(mode, L, date, tries = 8) {
       const u = randomBelow(2 ** 32) / 2 ** 32;
       const q = -Math.expm1(Math.log1p(-u) / L);
       const target = rankFor(Math.max(q, 1e-300), mode);
-      // Of 16 candidates, keep the one that clears the target by the least, so the result lands
-      // on the drawn luck rather than past it.
+      // Of a few candidates, keep the one that clears the target by the least, so the result lands
+      // on the drawn luck rather than past it. The multiplier adds e × its log to the rank, so each
+      // candidate is scored once.
       let best = null;
-      for (let attempt = 0; attempt < 16 || (!best && attempt < 64); attempt++) {
+      for (let attempt = 0; attempt < tries || (!best && attempt < 64); attempt++) {
         const params = randomParams(mode), n = randomBelow(SPACE);
-        const plain = score(n, date, { ...params, mult: 'unity' });
-        const need = (target - plain.rank) / (params.e || 1);
+        const plain = score(n, date, { ...params, mult: 'unity' }), e = params.e || 1;
+        const need = (target - plain.rank) / e;
         const mult = MULT_ASC.find(m => m.log >= need);
         if (!mult) continue;
-        const roll = { ...params, mult: mult.id }, rank = score(n, date, roll).rank;
-        if (!best || rank < best.rank) best = { roll, n, rank };
+        const rank = plain.rank + e * mult.log;
+        if (!best || rank < best.rank) best = { roll: { ...params, mult: mult.id }, n, rank };
       }
       return best; // null when the target is past every multiplier; the caller rolls normally
     }
     const MULT_ASC = [...MULTIPLIERS].sort((a, b) => a.log - b.log);
+
+    // Best of L on the harder difficulties, which have no multiplier reel. The best roll's luck is
+    // drawn the same way, from that difficulty's own odds, and the roll is built from the number
+    // side instead: a member of a rare badge whose EP reaches the target, a number near the target
+    // in Target mode, or a multiple of the modulus in Modulo mode. Of a few candidates that clear
+    // the target, the closest is kept.
+    function dfaSampler(d) { // uniform over the numbers a badge's automaton accepts
+      const key = d.key || String, memo = new Map();
+      const ways = (st, rem) => {
+        const k = key(st) + '|' + rem;
+        let v = memo.get(k);
+        if (v !== undefined) return v;
+        if (rem === 0) v = d.accept(st) ? 1 : 0;
+        else { v = 0; for (let x = 0; x <= 9; x++) v += ways(d.step(st, x), rem - 1); }
+        memo.set(k, v);
+        return v;
+      };
+      const zero = d.accept(d.step(d.init, 0)) ? 1 : 0, byLen = [];
+      let total = zero;
+      for (let len = 1; len <= DIGITS; len++) {
+        let t = 0;
+        for (let x = 1; x <= 9; x++) t += ways(d.step(d.init, x), len - 1);
+        byLen[len] = t;
+        total += t;
+      }
+      if (!total) return null;
+      return () => {
+        let u = randomBelow(total);
+        if (u < zero) return 0;
+        u -= zero;
+        let len = 1;
+        while (u >= byLen[len]) { u -= byLen[len]; len++; }
+        let st = d.init, s = '';
+        for (let pos = 0; pos < len; pos++) {
+          for (let x = pos === 0 ? 1 : 0; x <= 9; x++) {
+            const nx = d.step(st, x), w = ways(nx, len - pos - 1);
+            if (u < w) { st = nx; s += x; break; }
+            u -= w;
+          }
+        }
+        return +s;
+      };
+    }
+    function memberPicker(b) {
+      if (b.pickMember !== undefined) return b.pickMember;
+      let pick = null;
+      const list = b.set ? [...b.set] : b.among ? [...b.among].filter(n => b.test(n, String(n), { prime: P.isPrime(n) })) : null;
+      if (list && list.length) pick = () => list[randomBelow(list.length)];
+      else if (b.dfa) pick = dfaSampler(b.dfa);
+      b.pickMember = pick;
+      return pick;
+    }
+    // Badges a lucky number can be built from, rarest last. Built lazily: some samplers take a moment.
+    let PICKABLE = null;
+    const pickable = () => PICKABLE || (PICKABLE = BADGES.filter(b => b.p < 1e-2 && (b.set || b.among || b.dfa)).sort((a, b) => a.ep - b.ep));
+    const hardCache = {};
+    function hardRankFor(q, mode, diff) {
+      const id = mode + diff.id, cache = hardCache[id] || (hardCache[id] = new Map());
+      const key = Math.round(Math.log10(q) * 500);
+      if (cache.has(key)) return cache.get(key);
+      q = 10 ** (key / 500);
+      const Q = tables[mode];
+      const pHard = rank => {
+        let p = 0;
+        for (const [e, pe, bonus] of mode === 'exp' ? E_TERMS : [[1, 1, 0]]) p += pe * tailX((rank * diff.root - bonus) / e, Q).p;
+        return p;
+      };
+      let lo = -1, hi = 1;
+      while (pHard(hi) > q && hi < 1e6) { lo = hi; hi *= 2; }
+      for (let i = 0; i < 60 && hi - lo > 1e-9 * Math.max(1, Math.abs(hi)); i++) { const mid = (lo + hi) / 2; if (pHard(mid) > q) lo = mid; else hi = mid; }
+      cache.set(key, hi);
+      return hi;
+    }
+    function hardPick(mode, L, date, diffId, tries = 8) {
+      const diff = DIFF_BY_ID[diffId];
+      if (!diff || diff.mult || !tables[mode]) return null;
+      const u = randomBelow(2 ** 32) / 2 ** 32;
+      const target = hardRankFor(Math.max(-Math.expm1(Math.log1p(-u) / L), 1e-300), mode, diff);
+      const list = pickable();
+      // In Exponent mode the exponent of a roll that reaches the target is drawn from its odds of
+      // doing so: P(e) × P(the number brings enough for that e).
+      let eWeights = null;
+      if (mode === 'exp') {
+        eWeights = E_TERMS.map(([e, pe, bonus]) => pe * tailX((target * diff.root - bonus) / e, tables[mode]).p);
+        const sum = eWeights.reduce((a, b) => a + b, 0);
+        eWeights = eWeights.map(w => w / sum);
+      }
+      let best = null, top = null, found = 0;
+      for (let attempt = 0; attempt < 200 && found < tries; attempt++) {
+        const params = { ...randomParams(mode), mult: 'unity', d: diffId };
+        if (eWeights) { let w = randomBelow(1e9) / 1e9; params.e = E_TERMS.length; for (let i = 0; i < eWeights.length; i++) { if (w < eWeights[i]) { params.e = i + 1; break; } w -= eWeights[i]; } }
+        const e = params.e || 1, bonus = mode === 'exp' ? E_TERMS[e - 1][2] : 0;
+        const need = (target * diff.root - bonus) / e; // the log of the EP the number must bring
+        let n;
+        const coin = randomBelow(2);
+        if (need < 0.5) n = randomBelow(SPACE);
+        else if (mode === 'target' && coin) {
+          // Land near the target: first a distance that brings the whole bonus, then widen it by
+          // what the badges of the number found already bring, so the roll lands just past the target.
+          // A distance that would leave the range lands on the other side instead (clamping to 0 or the
+          // top would land on special numbers).
+          const side = randomBelow(2);
+          const at = D => { const up = params.t + D, down = params.t - D; return (side ? up < SPACE : down < 0) ? up : down >= 0 ? down : up < SPACE ? up : -1; };
+          const maxD = Math.max(0, Math.floor(SPACE / 10 ** need) - 1);
+          n = at(randomBelow(maxD + 1));
+          if (n < 0) continue;
+          const own = Math.log10(score(n, date, params).base); // what its badges alone bring
+          const D2 = Math.max(0, Math.floor(SPACE / 10 ** Math.max(0, need - own)) - 1);
+          n = at(Math.floor(D2 / 2) + randomBelow(D2 - Math.floor(D2 / 2) + 1));
+          if (n < 0) continue;
+        } else if (mode === 'mod' && coin && Math.log10(params.m) > need - 0.8 && Math.log10(params.m) < need + 0.2) n = params.m * randomBelow(Math.floor((SPACE - 1) / params.m) + 1);
+        else {
+          // a badge that brings the EP on its own, picked in proportion to how many numbers have it
+          const floor = 10 ** need / 2, fits = list.filter(b => b.ep >= floor);
+          const pool = fits.length ? fits : list.slice(-1);
+          let w = randomBelow(1e9) / 1e9 * pool.reduce((t, b) => t + b.p, 0), b = pool[pool.length - 1];
+          for (const c of pool) { if (w < c.p) { b = c; break; } w -= c.p; }
+          const pick = memberPicker(b);
+          n = pick ? pick() : randomBelow(SPACE);
+        }
+        const rank = score(n, date, params).rank;
+        if (!top || rank > top.rank) top = { roll: params, n, rank };
+        if (rank >= target) { found++; if (!best || rank < best.rank) best = { roll: params, n, rank }; }
+      }
+      return best || top;
+    }
     // 1 in N, floored at 2 so an ordinary roll reads 1/2. Trash is the bottom 1%.
     function rollTier(rank, mode) {
       const { p, estimated } = pBeat(rank, mode);
@@ -1177,7 +1304,7 @@
       DIGITS, SPACE, E_MAX, M_LO, M_HI, MULT_UNITS, BADGES, POWER_BADGES, MOD_BADGES, TARGET_BADGES, RADAR_BADGES,
       MODES, MODE_BY_ID, DIFFICULTIES, DIFF_BY_ID, MULTIPLIERS, MULT_BY_ID, RARITIES, ROLL_TIERS, GRID,
       CATEGORIES: ['Size', 'Math', 'Sequences', 'Digits', 'Memes', 'Combos', 'Powers', 'Modulo', 'Target', 'Radar', 'Daily'],
-      datedBadges, evaluate, score, rollTier, percentile, luckyPick, warmUp, tierShares, factorize, nearestPrimeDistance,
+      datedBadges, evaluate, score, rollTier, percentile, luckyPick, hardPick, warmUp, tierShares, factorize, nearestPrimeDistance,
       randomRoll: () => randomBelow(SPACE), randomParams, sampleRoll, sampleLogs, tableFromSorted, pickMultiplier,
       randomExponent, pExp, computeCount, MODE_SEED,
     };

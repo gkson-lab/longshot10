@@ -605,14 +605,14 @@ In Exponent mode the exponent is 1 half the time, 2 a quarter of the time, and s
 
 ## Difficulties
 
-A difficulty changes your score but not the yardstick: 1/N always compares a roll with the Standard game of its mode. So harder difficulties reach each tier far less often. Luck charms and permanent luck work on every difficulty, but off Standard every one of the L rolls is played for real, so luck counts as at most ×100,000 there; lenses do nothing without the reel. These frequencies come from 400,000 sampled Classic rolls each (0 means none turned up).
+A difficulty changes your score but not the yardstick: 1/N always compares a roll with the Standard game of its mode. So harder difficulties reach each tier far less often. Luck charms and permanent luck work in full on every difficulty; off Standard the lucky roll is built from rare badge numbers instead of the multiplier reel (within about 1.5× of the true best-of odds in tests), and lenses do nothing without the reel. These frequencies come from 400,000 sampled Classic rolls each (0 means none turned up).
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 1% | 1 in 10 | 1 in 103 | 1 in 1,093 | 1 in 9,091 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.52% | 1 in 16 | 1 in 334 | 1 in 2,985 | 1 in 66,667 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.36% | 1 in 726 | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 44,444 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1.02% | 1 in 10 | 1 in 102 | 1 in 1,130 | 1 in 12,121 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.51% | 1 in 16 | 1 in 343 | 1 in 3,636 | 1 in 133,333 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.43% | 1 in 688 | 1 in 30,769 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20% | 1 in 40,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 | Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels

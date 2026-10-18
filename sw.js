@@ -1,7 +1,7 @@
 // Offline support: each release installs its own complete copy of the game's files and serves
 // them from that copy. A copy is only ever replaced by the next release, never piecemeal.
 const CACHE = 'rngdle10-v3.3';
-const FILES = ['./', 'index.html', 'styles.css', 'app.js', 'badges.js', 'data.js', 'worker.js', 'icon.svg', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest'];
+const FILES = ['./', 'index.html', 'styles.css', 'app.js', 'badges.js', 'data.js', 'icon.svg', 'icon-192.png', 'icon-512.png', 'manifest.webmanifest'];
 
 self.addEventListener('install', ev => {
   // The version query makes GitHub's CDN fetch fresh files too: right after a deploy, some of its

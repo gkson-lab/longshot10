@@ -820,7 +820,6 @@
     const out = [];
     if (permLuck() > 1) out.push(`Permanent luck ×${fmt(permLuck())}`);
     if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left`);
-    if (hard() && luckActive() * permLuck() > HARD_LUCK_CAP) out.push(`Luck counts as ×${fmt(HARD_LUCK_CAP)} on ${G.DIFF_BY_ID[state.difficulty].name}`);
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
     if ((state.effects.kaleido || 0) > 0) out.push(`Kaleidoscope Lens, ${rollsText(state.effects.kaleido)} left`);
     if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
@@ -1027,10 +1026,9 @@
     return text;
   }
   $('fuseEverything').addEventListener('click', fuseEverything);
-
-  // Luck: keep the best of L independent rolls. Up to INLINE_LUCK that runs right here; beyond it
-  // the work is shared out to worker threads (a million rolls takes a few seconds), with progress.
-  const INLINE_LUCK = 32;
+  // Luck: keep the best of L independent rolls. Up to INLINE_LUCK the L rolls are really rolled;
+  // beyond it the lucky roll is built (see pickSync below).
+  const INLINE_LUCK = 8;
   function pickInline(mode, L, lens, t) {
     let pick = null;
     for (let k = 0; k < L; k++) {
@@ -1042,71 +1040,22 @@
     }
     return pick;
   }
-  let pool = null, jobSeq = 0, heavy = null;
-  function workerPool() {
-    if (pool) return pool;
-    pool = [];
-    if (location.protocol.startsWith('http') && 'Worker' in window) {
-      const k = Math.min(8, Math.max(2, (navigator.hardwareConcurrency || 4) - 1));
-      try { for (let i = 0; i < k; i++) pool.push(new Worker('worker.js')); } catch { pool = []; }
-    }
-    return pool;
-  }
-  function inWorker(w, msg) {
-    return new Promise((resolve, reject) => {
-      const onMsg = ({ data }) => {
-        if (data.id !== msg.id) return;
-        if (data.progress) { heavy.done += data.progress; paintStatus(); }
-        if (data.best) { w.removeEventListener('message', onMsg); resolve(data.best); }
-      };
-      w.addEventListener('message', onMsg);
-      w.addEventListener('error', reject, { once: true });
-      w.postMessage(msg);
-    });
-  }
-  // Luck in play: a charm times your permanent luck level. Without the multiplier reel the instant
-  // best-of-L has nothing to build on, so harder difficulties roll every one of the L rolls for real,
-  // on the worker threads, up to HARD_LUCK_CAP. Lenses do nothing there: there is no reel to spin.
-  const HARD_LUCK_CAP = 1e5;
+  // Luck in play: a charm times your permanent luck level, on every difficulty. Above INLINE_LUCK the
+  // best of L is not rolled L times: its luck is drawn from the exact odds of a best-of-L and a real
+  // roll that lucky is built, which takes about a millisecond however big L is. On Standard the roll is
+  // built from the multiplier reel (G.luckyPick); the harder difficulties have no reel, so it is built
+  // from rare badge numbers (G.hardPick). A lens multiplies the tries like luck does; with no reel to
+  // spin, lenses do nothing off Standard.
   const permLuck = () => (state.luckLevel || 0) + 1;
   const hard = () => state.difficulty && state.difficulty !== 'standard';
-  const effLuck = () => (hard() ? Math.min(HARD_LUCK_CAP, luckActive() * permLuck()) : luckActive() * permLuck());
+  const effLuck = () => luckActive() * permLuck();
   const effLens = () => (hard() ? 1 : lensActive());
-  // Above INLINE_LUCK the best of L is drawn straight from its exact distribution (G.luckyPick),
-  // which takes a few milliseconds however big L is. A lens multiplies the tries like luck does.
   function pickSync(mode, L, lens, t) {
     if (L <= INLINE_LUCK) return pickInline(mode, L, lens, t);
-    if (hard()) return pickInline(mode, Math.min(L, 2000), lens, t); // only when no async path is possible
-    return G.luckyPick(mode, L * lens, dayKey(t)) || pickInline(mode, INLINE_LUCK, lens, t);
+    const built = hard() ? G.hardPick(mode, L, dayKey(t), state.difficulty) : G.luckyPick(mode, L * lens, dayKey(t));
+    return built || pickInline(mode, INLINE_LUCK, lens, t);
   }
-  async function pickRoll(mode, L, lens, t) {
-    if (L <= INLINE_LUCK || !hard()) return pickSync(mode, L, lens, t);
-    heavy = { L, done: 0 };
-    paintStatus();
-    let best = null;
-    try {
-      const ws = workerPool();
-      if (!ws.length) throw new Error('no workers');
-      const per = Math.ceil(L / ws.length), id = ++jobSeq, date = dayKey(t);
-      const parts = await Promise.all(ws.map((w, i) => {
-        const count = Math.min(per, L - i * per);
-        return count > 0 ? inWorker(w, { id, mode, count, date, lens, d: state.difficulty }) : null;
-      }));
-      for (const p of parts) if (p && (!best || p.rank > best.rank)) best = p;
-    } catch {
-      // No workers (the game opened as a file): run in slices on the page, still with progress.
-      for (let done = 0; done < L;) {
-        const k = Math.min(10000, L - done), p = pickInline(mode, k, lens, t);
-        if (!best || p.rank > best.rank) best = p;
-        done += k;
-        heavy.done = done;
-        paintStatus();
-        await sleep(0);
-      }
-    }
-    heavy = null;
-    return best;
-  }
+  async function pickRoll(mode, L, lens, t) { return pickSync(mode, L, lens, t); }
   // One roll's bookkeeping, with no drawing, so Turbo can take several per screen frame.
   const takeRoll = () => { const t = Date.now(), L = effLuck(), lens = effLens(); return commitRoll(pickSync(state.mode, L, lens, t), state.mode, L, lens, t); };
   async function takeRollAsync() {
@@ -1194,14 +1143,6 @@
       if (best && !document.hidden) { drawRoll(best, 3, changed); best = null; changed = false; }
     };
     while (auto === kind && speed === 3 && ready[state.mode]) {
-      if (hard() && effLuck() > INLINE_LUCK) { // big luck on a hard difficulty: real rolls on the workers, one roll at a time
-        const roll = await takeRollAsync();
-        freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
-        drawRoll(roll, 3, !!freshEntry);
-        if (kind === 'auto' && (roll.found || T(roll.rec.tier.id) >= +$('stopAt').value)) { setAuto(null); return; }
-        last = performance.now();
-        continue;
-      }
       await sleep(15);
       const now = performance.now();
       const rate = turboRate() * turboSpeedup();
@@ -1228,7 +1169,6 @@
 
   function paintStatus() {
     const parts = [];
-    if (heavy) parts.push(`<b>Rolling with luck ×${fmt(heavy.L)}:</b> <span class="num">${Math.min(99, Math.floor((100 * heavy.done) / heavy.L))}%</span>`);
     if (session.rolls) {
       const best = session.best[state.mode][0];
       parts.push(`This session: <b class="num">${fmt(session.rolls)}</b> ${session.rolls === 1 ? 'roll' : 'rolls'}`
@@ -1236,7 +1176,9 @@
     }
     if (auto === 'endless') {
       const secs = (performance.now() - run.start) / 1000;
-      parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`);
+      const L = effLuck();
+      parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`
+        + (L > 1 && speed === 3 ? ` (luck ×${fmt(L)} makes every roll the best of ${fmt(L)}, which is slower than a plain roll)` : ''));
     }
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
     if (hard()) parts.push(`<b>${esc(G.DIFF_BY_ID[state.difficulty].name)}:</b> no multiplier, only badges count`);
@@ -2061,11 +2003,10 @@
         if (!ready[state.mode]) { print('The odds are still loading. Try again in a moment.'); break; }
         if (auto) setAuto(null);
         const n = Math.max(1, Math.min(1e4, Math.floor(+arg.replace(/,/g, '') || 1)));
-        const slow = hard() && effLuck() > INLINE_LUCK;
-        (async () => {
+        (() => {
           let best = null;
           for (let i = 0; i < n; i++) {
-            const r = slow ? await takeRollAsync() : takeRoll();
+            const r = takeRoll();
             if (!best || r.rec.entry.oneInLog > best.rec.entry.oneInLog) best = r;
             if (n <= 10) print(rollLine(r.rec.entry));
           }
