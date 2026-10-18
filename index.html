@@ -132,6 +132,7 @@
           <div class="modes">
             <div class="seg" id="modeSeg" role="group" aria-label="Mode"></div>
             <p class="mode-desc" id="modeDesc"></p>
+            <div class="diff-row"><label class="field">Difficulty <select id="diffSel"></select></label><span class="mode-desc" id="diffDesc"></span></div>
           </div>
 
           <div class="cabinet" id="cabinet">
@@ -231,6 +232,16 @@
               <thead><tr><th>Prize</th><th>Chance</th><th>Odds</th><th>Pity</th></tr></thead>
               <tbody id="slotOdds"></tbody>
             </table>
+          </div>
+          <div class="coins-panel tokens">
+            <div class="coins-in-hand"><span class="num" id="tokenCount">0</span><span>lucky tokens</span></div>
+            <p><b id="luckLevel"></b></p>
+            <p class="muted">Every roll has a 1 in 2 chance to drop a lucky token, more on harder difficulties. Spend them on permanent luck: each level makes every roll the best of one more roll, for good. Charms multiply it, and it does not stop item drops.</p>
+            <p class="muted" id="nextLevel"></p>
+            <div class="item-actions" style="justify-content:flex-start">
+              <button class="btn" type="button" id="upgradeOne">Upgrade luck</button>
+              <button class="btn" type="button" id="upgradeMax">Upgrade max</button>
+            </div>
           </div>
           <div class="section-head"><h2>Active now</h2></div>
           <ul class="effects" id="effects"></ul>

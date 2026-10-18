@@ -39,7 +39,7 @@
   }
 
   // A roll entry: { n, t, mode, e?, m?, tg?, x } (tg = target, x = multiplier id).
-  const rollOf = x => ({ mode: x.mode, e: x.e, m: x.m, t: x.tg, mult: x.x });
+  const rollOf = x => ({ mode: x.mode, e: x.e, m: x.m, t: x.tg, mult: x.x, d: x.d });
   const scoreOf = x => G.score(x.n, dayKey(x.t), rollOf(x));
   const label = x => fmt(x.n) + (x.e > 1 ? sup(x.e) : '');
   function hashOf(x) {
@@ -49,6 +49,7 @@
     if (x.m) q.set('m', x.m);
     if (x.tg !== undefined) q.set('t', x.tg);
     if (x.x && x.x !== 'unity') q.set('x', x.x);
+    if (x.d) q.set('d', x.d);
     return '#' + q.toString();
   }
 
@@ -75,6 +76,7 @@
     settings: { theme: 'midnight', effects: 'full', sound: true }, mode: 'classic',
     inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0, pity: {},
     skins: [], book: {}, quests: {}, prestige: 0, prestigeAt: 0, daily: {},
+    difficulty: 'standard', tokens: 0, luckLevel: 0,
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -174,7 +176,7 @@
       state.mults[x.x] = (state.mults[x.x] || 0) + 1;
     }
     // Boosted rolls are not random draws of the plain game, so they stay out of the luck table.
-    if (x.b || x.lens) state.boosted++;
+    if (x.b || x.lens || x.d) state.boosted++;
     else state.tiers[x.mode][tier.id] = (state.tiers[x.mode][tier.id] || 0) + 1;
     const madeHof = insertTop(state.hof[x.mode], entry);
     const madeSession = insertTop(session.best[x.mode], entry);
@@ -238,6 +240,14 @@
   }
   function paintMult(m) {
     const w = $('multWindow');
+    if (state.difficulty && state.difficulty !== 'standard') {
+      w.style.setProperty('--rc', 'var(--line)');
+      w.classList.add('unity');
+      setReel($('multReel'), '–', false);
+      $('multName').textContent = `No multiplier on ${G.DIFF_BY_ID[state.difficulty].name}`;
+      $('multMeta').textContent = 'Only your badges count';
+      return;
+    }
     w.style.setProperty('--rc', tierVar(RARITIES[m.rarity].id));
     w.classList.toggle('unity', m.id === 'unity');
     setReel($('multReel'), m.symbol, false);
@@ -464,6 +474,7 @@
       const b = G.SPACE / (r.c.D + 1);
       s += ` × ${b < 100 ? b.toFixed(2) : bigText(Math.log10(b))}`;
     }
+    if (r.diff && r.diff.root > 1) s = `(${s})${r.diff.root === 1.5 ? '²ᐟ³' : r.diff.root === 2 ? '¹ᐟ²' : '¹ᐟ³'}`;
     return s;
   }
   const rollsText = k => `${fmt(k)} ${k === 1 ? 'roll' : 'rolls'}`;
@@ -698,7 +709,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -754,9 +765,43 @@
     renderInventory();
     paintStatus();
   }
+  // Lucky tokens: a 1 in 2 chance on every roll, more on harder difficulties. They buy permanent
+  // luck levels; level k makes every roll the best of k + 1. Each level costs 12% more than the last.
+  const TOKENS_PER = { standard: 1, hardcore: 2, nightmare: 3, abyss: 5, oblivion: 10 };
+  const levelCost = k => Math.ceil(20 * 1.12 ** k);
+  function upgradeLuck(times = 1) {
+    let k = 0;
+    while (k < times && (state.tokens || 0) >= levelCost(state.luckLevel || 0)) {
+      state.tokens -= levelCost(state.luckLevel || 0);
+      state.luckLevel = (state.luckLevel || 0) + 1;
+      k++;
+    }
+    if (k) {
+      toast(`Luck upgraded to level ${fmt(state.luckLevel)}: every roll is the best of ${fmt(permLuck())}`, 'legendary');
+      checkAchievements();
+      save();
+      if (!$('tab-inventory').hidden) renderInventory();
+      paintStatus();
+    }
+    return k;
+  }
+  function renderTokens() {
+    const lv = state.luckLevel || 0, cost = levelCost(lv);
+    $('tokenCount').textContent = fmt(state.tokens || 0);
+    $('luckLevel').textContent = `Level ${fmt(lv)}: permanent luck ×${fmt(permLuck())}`;
+    $('nextLevel').textContent = `Next level costs ${fmt(cost)} tokens and makes every roll the best of ${fmt(permLuck() + 1)}.`;
+    $('upgradeOne').disabled = (state.tokens || 0) < cost;
+    let n = 0, t = state.tokens || 0;
+    while (t >= levelCost(lv + n) && n < 1e4) { t -= levelCost(lv + n); n++; }
+    $('upgradeMax').disabled = n < 2;
+    $('upgradeMax').textContent = n > 1 ? `Upgrade ${fmt(n)} levels` : 'Upgrade max';
+  }
+  $('upgradeOne').addEventListener('click', () => upgradeLuck(1));
+  $('upgradeMax').addEventListener('click', () => upgradeLuck(Infinity));
   function effectsText() {
     const out = [];
-    if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left`);
+    if (permLuck() > 1) out.push(`Permanent luck ×${fmt(permLuck())}${hard() ? ' (paused on this difficulty)' : ''}`);
+    if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left${hard() ? ' (paused on this difficulty)' : ''}`);
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
     if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
     if ((state.effects.lens || 0) > 0) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
@@ -766,6 +811,7 @@
     return out;
   }
   function renderInventory() {
+    renderTokens();
     const fx = effectsText();
     $('effects').innerHTML = fx.length ? fx.map(t => `<li>${esc(t)}</li>`).join('') : '<li class="muted">Nothing active. Use an item below.</li>';
     const total = ITEMS.reduce((t, i) => t + (state.inv[i.id] || 0), 0);
@@ -910,11 +956,12 @@
 
   // Luck: keep the best of L independent rolls. Up to INLINE_LUCK that runs right here; beyond it
   // the work is shared out to worker threads (a million rolls takes a few seconds), with progress.
-  const INLINE_LUCK = 2000;
+  const INLINE_LUCK = 32;
   function pickInline(mode, L, lens, t) {
     let pick = null;
     for (let k = 0; k < L; k++) {
       const roll = G.randomParams(mode), n = G.randomRoll();
+      if (state.difficulty !== 'standard') { roll.d = state.difficulty; roll.mult = 'unity'; }
       for (let j = 1; j < lens; j++) { const alt = G.randomParams(mode).mult; if (MULT_BY_ID[alt].log > MULT_BY_ID[roll.mult].log) roll.mult = alt; }
       const rank = L > 1 ? G.score(n, dayKey(t), roll).rank : 0;
       if (!pick || rank > pick.rank) pick = { roll, n, rank };
@@ -943,6 +990,12 @@
       w.postMessage(msg);
     });
   }
+  // Luck in play: a charm times your permanent luck level. Harder difficulties pause both, since
+  // without the multiplier reel there is nothing for the instant best-of-L to build on.
+  const permLuck = () => (state.luckLevel || 0) + 1;
+  const hard = () => state.difficulty && state.difficulty !== 'standard';
+  const effLuck = () => (hard() ? 1 : luckActive() * permLuck());
+  const effLens = () => (hard() ? 1 : lensActive());
   // Above INLINE_LUCK the best of L is drawn straight from its exact distribution (G.luckyPick),
   // which takes a few milliseconds however big L is. A lens multiplies the tries like luck does.
   function pickSync(mode, L, lens, t) {
@@ -978,9 +1031,9 @@
     return best;
   }
   // One roll's bookkeeping, with no drawing, so Turbo can take several per screen frame.
-  const takeRoll = () => { const t = Date.now(); return commitRoll(pickSync(state.mode, luckActive(), lensActive(), t), state.mode, luckActive(), lensActive(), t); };
+  const takeRoll = () => { const t = Date.now(), L = effLuck(), lens = effLens(); return commitRoll(pickSync(state.mode, L, lens, t), state.mode, L, lens, t); };
   async function takeRollAsync() {
-    const mode = state.mode, L = luckActive(), lens = lensActive(), t = Date.now();
+    const mode = state.mode, L = effLuck(), lens = effLens(), t = Date.now();
     return commitRoll(await pickRoll(mode, L, lens, t), mode, L, lens, t);
   }
   function commitRoll(pick, mode, L, lens, t) {
@@ -989,14 +1042,18 @@
     if (roll.e) x.e = roll.e;
     if (roll.m) x.m = roll.m;
     if (roll.t !== undefined) x.tg = roll.t;
-    if (L > 1) { x.b = L; state.effects.luck.left = Math.max(0, state.effects.luck.left - 1); }
+    if (hard()) x.d = state.difficulty;
+    const charmed = !hard() && luckActive() > 1; // charms block drops; permanent luck does not
+    if (L > 1) x.b = L;
+    if (charmed) state.effects.luck.left = Math.max(0, state.effects.luck.left - 1);
     if (lens > 1) {
       x.lens = lens;
       const which = lens === 10 ? 'prism' : 'lens';
       state.effects[which] = Math.max(0, state.effects[which] - 1);
     }
     const rec = record(x);
-    if (!x.b && !x.lens) rollDrops(rec.entry.oneInLog); // boosted rolls never drop items, so boosts cannot feed themselves
+    if (!charmed && !x.lens) rollDrops(rec.entry.oneInLog); // charm and lens rolls never drop items, so boosts cannot feed themselves
+    if (randInt(2) === 0) state.tokens = (state.tokens || 0) + TOKENS_PER[state.difficulty || 'standard']; // lucky tokens: 1 in 2 rolls, any tier
     save();
     run.rolls++;
     for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id);
@@ -1097,8 +1154,10 @@
       parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`);
     }
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
+    if (hard()) parts.push(`<b>${esc(G.DIFF_BY_ID[state.difficulty].name)}:</b> no multiplier, only badges count`);
     const fx = effectsText();
     if (fx.length) parts.push(`<b>Active:</b> ${esc(fx.join(' · '))}`);
+    parts.push(`<span class="muted">Lucky tokens: <b class="num">${fmt(state.tokens || 0)}</b></span>`);
     $('status').innerHTML = parts.join('<br>');
   }
 
@@ -1205,6 +1264,18 @@
     save();
   }
   $('modeSeg').addEventListener('click', ev => { const b = ev.target.closest('button'); if (b) setMode(b.dataset.mode); });
+  for (const d of G.DIFFICULTIES) $('diffSel').appendChild(new Option(d.name, d.id));
+  function setDifficulty(id) {
+    if (!G.DIFF_BY_ID[id]) return;
+    state.difficulty = id;
+    $('diffSel').value = id;
+    $('diffDesc').textContent = id === 'standard' ? '' : `${G.DIFF_BY_ID[id].desc} Lucky tokens ×${TOKENS_PER[id]}.`;
+    document.documentElement.dataset.difficulty = id;
+    paintMult(MULT_BY_ID.unity);
+    paintStatus();
+    save();
+  }
+  $('diffSel').addEventListener('change', () => setDifficulty($('diffSel').value));
 
   function fillHunt() {
     const sel = $('hunt'), keep = hunt;
@@ -1245,6 +1316,7 @@
       if (!Number.isInteger(n) || n < 0 || n >= G.SPACE) return;
       const mode = MODE_BY_ID[q.get('mode')] ? q.get('mode') : 'classic';
       x = { n, mode, x: MULT_BY_ID[q.get('x')] ? q.get('x') : 'unity' };
+      if (G.DIFF_BY_ID[q.get('d')] && q.get('d') !== 'standard') x.d = q.get('d');
       if (mode === 'exp') x.e = Math.min(G.E_MAX, Math.max(1, +q.get('e') || 1));
       if (mode === 'mod') x.m = Math.min(G.M_HI, Math.max(G.M_LO, +q.get('m') || G.M_LO));
       if (mode === 'target') x.tg = Math.min(G.SPACE - 1, Math.max(0, +q.get('t') || 0));
@@ -1364,6 +1436,14 @@
     { id: 'luck1k', name: 'Loaded dice', desc: 'Roll with luck ×1,000 or more', test: rec => rec && rec.entry.b >= 1000 },
     { id: 'prismRoll', name: 'Through the prism', desc: 'Roll with the Prism Lens', test: rec => rec && rec.entry.lens === 10 },
     { id: 'trash100', name: 'Trash collector', desc: 'Roll Trash 100 times', test: () => MODE_IDS.reduce((t, m) => t + (state.tiers[m].trash || 0), 0) >= 100 },
+    { id: 'hcEpic', name: 'Hardcore', desc: 'Roll Epic or rarer on Hardcore', test: rec => rec && rec.entry.d === 'hardcore' && T(rec.entry.tier) >= T('epic') },
+    { id: 'nmUncommon', name: 'Woke up screaming', desc: 'Roll Uncommon or rarer on Nightmare', test: rec => rec && rec.entry.d === 'nightmare' && T(rec.entry.tier) >= T('uncommon') },
+    { id: 'abyssUncommon', name: 'Stared back', desc: 'Roll Uncommon or rarer on Abyss', test: rec => rec && rec.entry.d === 'abyss' && T(rec.entry.tier) >= T('uncommon') },
+    { id: 'oblivionCommon', name: 'Not forgotten', desc: 'Roll anything but Trash on Oblivion', test: rec => rec && rec.entry.d === 'oblivion' && rec.entry.tier !== 'trash' },
+    { id: 'oblivionRare', name: 'Impossible', desc: 'Roll Rare or rarer on Oblivion', test: rec => rec && rec.entry.d === 'oblivion' && T(rec.entry.tier) >= T('rare') },
+    { id: 'luck10lv', name: 'Lucky streak', desc: 'Reach luck level 10', test: () => (state.luckLevel || 0) >= 10 },
+    { id: 'luck50lv', name: 'Born lucky', desc: 'Reach luck level 50', test: () => (state.luckLevel || 0) >= 50 },
+    { id: 'luck100lv', name: 'Fortune incarnate', desc: 'Reach luck level 100', test: () => (state.luckLevel || 0) >= 100 },
     { id: 'pile12', name: 'Badge avalanche', desc: 'Earn 12 or more badges on one roll', test: rec => rec && rec.r.badges.length >= 12 },
   ];
   function checkAchievements(rec) {
@@ -1479,7 +1559,7 @@
       html += `<tr><td><b>Rare or better</b></td><td></td><td class="num"><b>${(100 * yours).toFixed(1)}%</b></td><td class="num"><b>${(100 * expected).toFixed(1)}%</b></td></tr></tbody>`;
     }
     $('luck').innerHTML = html || '<tbody><tr><td class="empty-state">Roll a few times and this compares your tiers with how often each tier really comes up.</td></tr></tbody>';
-    $('luckNote').textContent = state.boosted ? `${rollsText(state.boosted)} made with a luck charm or the Multiplier Lens are left out, since they are not plain rolls.` : '';
+    $('luckNote').textContent = state.boosted ? `${rollsText(state.boosted)} made with luck, a lens or a harder difficulty are left out, since they are not plain rolls.` : '';
     $('log').innerHTML = state.log.length ? state.log.map(x => rowHtml(entryFor(x), false)).join('')
       : '<li class="empty-state">No rolls yet. Your last 200 rolls appear here.</li>';
     renderCharts();
@@ -1846,6 +1926,8 @@
     'SPEED 1|2|TURBO        Auto and Endless speed.',
     'RATE 90 to 5000        Turbo rolls per second: 90, 250, 500, 1000, 2000 or 5000.',
     'MODE [name]            Show or change the mode.',
+    'DIFF [name]            Difficulty: standard, hardcore, nightmare, abyss, oblivion.',
+    'TOKENS, UPGRADE [n|MAX]  Lucky tokens, and buying permanent luck levels.',
     'STATS                  Totals, best roll, collection.',
     'LUCK [mode]            Your tiers against the expected shares.',
     'LOG [n]                Your last n rolls (default 10).',
@@ -1929,6 +2011,22 @@
         print(`Turbo rate set to ${fmt(v)} a second.`);
         break;
       }
+      case 'diff': case 'difficulty': {
+        const d = a && G.DIFFICULTIES.find(x => x.id === a || x.name.toLowerCase() === a);
+        if (a && !d) { print(`Difficulties: ${G.DIFFICULTIES.map(x => x.id).join(', ')}`); break; }
+        if (d) setDifficulty(d.id);
+        const cur = G.DIFF_BY_ID[state.difficulty || 'standard'];
+        print(`${cur.name}: ${cur.desc} Lucky tokens ×${TOKENS_PER[cur.id]}.`);
+        break;
+      }
+      case 'tokens':
+        print(`Lucky tokens: ${fmt(state.tokens || 0)}`, `Luck level ${fmt(state.luckLevel || 0)}: every roll is the best of ${fmt(permLuck())}.`, `Next level: ${fmt(levelCost(state.luckLevel || 0))} tokens. UPGRADE or UPGRADE MAX.`, '');
+        break;
+      case 'upgrade': {
+        const k = upgradeLuck(a === 'max' || a === 'all' ? Infinity : Math.max(1, Math.floor(+a || 1)));
+        print(k ? `Upgraded ${fmt(k)} ${k === 1 ? 'level' : 'levels'}: luck level ${fmt(state.luckLevel)}, every roll the best of ${fmt(permLuck())}. ${fmt(state.tokens)} tokens left.` : `Not enough tokens: the next level costs ${fmt(levelCost(state.luckLevel || 0))}, you have ${fmt(state.tokens || 0)}.`, '');
+        break;
+      }
       case 'mode': {
         const m = modeArg();
         if (!m) { print(`Modes: ${MODES.map(x => x.id).join(', ')}`); break; }
@@ -1942,7 +2040,8 @@
           `Today          ${rollsText(state.daily[dayKey()] || 0)}`, `Best roll      ${bestAny ? rollLine(bestAny) : 'none yet'}`,
           `Badges         ${collected()} / ${collectable().length}`, `Multipliers    ${multsFound()} / ${MULTS.length}`,
           `Achievements   ${Object.keys(state.ach).length} / ${ACHIEVEMENTS.length}`, `Coins          ${fmt(state.coins)}`,
-          `Prestige       ${state.prestige || 0} (drops ×${prestigeBonus()})`, '');
+          `Prestige       ${state.prestige || 0} (drops ×${prestigeBonus()})`, `Lucky tokens   ${fmt(state.tokens || 0)}, luck level ${fmt(state.luckLevel || 0)}`,
+          `Difficulty     ${G.DIFF_BY_ID[state.difficulty || 'standard'].name}`, '');
         break;
       }
       case 'luck': {
@@ -2521,6 +2620,7 @@
   paintSound();
   paintMult(MULT_BY_ID.unity);
   setMode(state.mode);
+  setDifficulty(G.DIFF_BY_ID[state.difficulty] ? state.difficulty : 'standard');
   for (const m of MODE_IDS) warm(m);
   if (state.log.length) {
     const last = state.log[0];

@@ -958,13 +958,25 @@
       });
       return { badges, c };
     }
+    // Difficulties change your score, never the yardstick: 1/N always compares a roll with the
+    // Standard game of its mode, so a harder difficulty reaches each tier far less often.
+    // Hardcore drops the multiplier reel (only badges count); the others also take a root of the score.
+    const DIFFICULTIES = [
+      { id: 'standard', name: 'Standard', root: 1, mult: true, desc: 'Badges and the multiplier reel.' },
+      { id: 'hardcore', name: 'Hardcore', root: 1, mult: false, desc: 'No multiplier reel: only your badges count. Charms and lenses are paused.' },
+      { id: 'nightmare', name: 'Nightmare', root: 1.5, mult: false, desc: 'Badges only, and your score is raised to the power 2/3.' },
+      { id: 'abyss', name: 'Abyss', root: 2, mult: false, desc: 'Badges only, and your score is square-rooted.' },
+      { id: 'oblivion', name: 'Oblivion', root: 3, mult: false, desc: 'Badges only, and your score is cube-rooted. Astronomically hard.' },
+    ];
+    const DIFF_BY_ID = Object.fromEntries(DIFFICULTIES.map(d => [d.id, d]));
     function score(n, date, roll = {}) {
       const mode = roll.mode || 'classic';
+      const diff = DIFF_BY_ID[roll.d] || DIFFICULTIES[0];
       const { badges, c } = evaluate(n, date, roll);
       const ep = badges.reduce((t, b) => t + b.ep, 0);
       const factor = badges.filter(b => b.factor).reduce((t, b) => t + b.ep, 0) || 1;
       const base = Math.max(ep - (factor > 1 ? factor : 0), 1); // a roll with no badges still counts as 1 EP
-      const mult = MULT_BY_ID[roll.mult] || MULT_BY_ID.unity;
+      const mult = (diff.mult && MULT_BY_ID[roll.mult]) || MULT_BY_ID.unity;
       // x is the number's own part of the score (badges plus the modulus or target bonus); the
       // multiplier and the exponent are drawn independently of it. Equal scores are ordered by
       // the number itself (the tiny last term), so every tier holds exactly its share.
@@ -972,9 +984,10 @@
       let x = Math.log10(base) + tie;
       if (mode === 'mod' && c.r === 0) x += Math.log10(roll.m);
       if (mode === 'target') x += Math.log10(SPACE / (c.D + 1));
-      const rank = mode === 'exp' ? roll.e * (x + mult.log) + Math.log10(factor) : x + mult.log;
-      const log = mode === 'exp' ? rank - roll.e * tie : rank - tie;
-      return { n, mode, roll, badges, ep, base, factor, mult, log, x, rank, c };
+      const full = mode === 'exp' ? roll.e * (x + mult.log) + Math.log10(factor) : x + mult.log;
+      const rank = full / diff.root;
+      const log = (mode === 'exp' ? full - roll.e * tie : full - tie) / diff.root;
+      return { n, mode, roll, badges, ep, base, factor, mult, log, x, rank, c, diff };
     }
 
     // Roll tiers: Trash is the bottom 1%; every other roll takes the rarity of its 1 in N.
@@ -1082,20 +1095,27 @@
     // at least that good is built: a random number and its mode extras, and a multiplier drawn from
     // the reel's own odds among those big enough to reach the target. At these sizes the best of
     // millions of rolls is decided by a rare multiplier, so this is how such rolls really look.
+    // Inverse of pBeat, cached at steps of 0.1% in q so repeat lookups are instant.
+    const rankCache = {};
     function rankFor(q, mode) {
+      const cache = rankCache[mode] || (rankCache[mode] = new Map());
+      const key = Math.round(Math.log10(q) * 2000);
+      if (cache.has(key)) return cache.get(key);
+      q = 10 ** (key / 2000);
       let lo = -1, hi = 1;
       while (pBeat(hi, mode).p > q && hi < 1e300) { lo = hi; hi *= 2; }
-      for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (pBeat(mid, mode).p > q) lo = mid; else hi = mid; }
+      for (let i = 0; i < 60 && hi - lo > 1e-9 * Math.max(1, Math.abs(hi)); i++) { const mid = (lo + hi) / 2; if (pBeat(mid, mode).p > q) lo = mid; else hi = mid; }
+      if (cache.size < 50000) cache.set(key, hi);
       return hi;
     }
     function luckyPick(mode, L, date) {
       const u = randomBelow(2 ** 32) / 2 ** 32;
       const q = -Math.expm1(Math.log1p(-u) / L);
       const target = rankFor(Math.max(q, 1e-300), mode);
-      // Of 64 candidates, keep the one that clears the target by the least, so the result lands
+      // Of 16 candidates, keep the one that clears the target by the least, so the result lands
       // on the drawn luck rather than past it.
       let best = null;
-      for (let attempt = 0; attempt < 64; attempt++) {
+      for (let attempt = 0; attempt < 16 || (!best && attempt < 64); attempt++) {
         const params = randomParams(mode), n = randomBelow(SPACE);
         const plain = score(n, date, { ...params, mult: 'unity' });
         const need = (target - plain.rank) / (params.e || 1);
@@ -1153,7 +1173,7 @@
 
     return {
       DIGITS, SPACE, E_MAX, M_LO, M_HI, MULT_UNITS, BADGES, POWER_BADGES, MOD_BADGES, TARGET_BADGES, RADAR_BADGES,
-      MODES, MODE_BY_ID, MULTIPLIERS, MULT_BY_ID, RARITIES, ROLL_TIERS, GRID,
+      MODES, MODE_BY_ID, DIFFICULTIES, DIFF_BY_ID, MULTIPLIERS, MULT_BY_ID, RARITIES, ROLL_TIERS, GRID,
       CATEGORIES: ['Size', 'Math', 'Sequences', 'Digits', 'Memes', 'Combos', 'Powers', 'Modulo', 'Target', 'Radar', 'Daily'],
       datedBadges, evaluate, score, rollTier, percentile, luckyPick, warmUp, tierShares, factorize, nearestPrimeDistance,
       randomRoll: () => randomBelow(SPACE), randomParams, sampleRoll, sampleLogs, tableFromSorted, pickMultiplier,

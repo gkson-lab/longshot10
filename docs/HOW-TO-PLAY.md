@@ -25,6 +25,24 @@ Because 1/N is measured against every roll of the mode, it means exactly what it
 
 Each mode has badges of its own. Your 1/N always compares you with rolls of the same mode.
 
+## Difficulties
+
+Pick a difficulty under the mode buttons. It changes your score but not the yardstick, so the harder it is, the rarer every tier gets:
+
+| Difficulty | Rule |
+| --- | --- |
+| Standard | Badges and the multiplier reel. |
+| Hardcore | No multiplier reel: only badges count. |
+| Nightmare | Badges only, and your score is raised to the power 2/3. |
+| Abyss | Badges only, and your score is square-rooted. |
+| Oblivion | Badges only, and your score is cube-rooted. Three in four rolls are Trash. |
+
+Charms and lenses are paused on every difficulty but Standard. Harder difficulties pay more lucky tokens: ×2, ×3, ×5 and ×10. How often each one reaches each tier is in [ODDS.md](ODDS.md#difficulties).
+
+## Lucky tokens and permanent luck
+
+Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend tokens in the Inventory tab on permanent luck levels: at level k, every roll is the best of k + 1 rolls, for good. Each level costs 12% more than the last. Permanent luck multiplies with charms, keeps working through prestige, and unlike charms it does not stop item drops.
+
 ## Rolling a lot
 
 - **Roll** (or Space) rolls once.
@@ -37,7 +55,7 @@ Each mode has badges of its own. Your 1/N always compares you with rolls of the 
 
 Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use items from the Inventory tab:
 
-- **Luck charms** (×10 up to ×10,000,000) make each roll the best of that many rolls. Anything rare turns up about that many times as often. The 1/N shown is still the roll's true chance in the plain game. Above ×2,000 the game draws the best roll's luck straight from its exact odds instead of rolling every one, so even ×10,000,000 is instant.
+- **Luck charms** (×10 up to ×10,000,000) make each roll the best of that many rolls. Anything rare turns up about that many times as often. Above ×32 the game draws the best roll's luck straight from its exact odds instead of rolling every one, so even ×10,000,000 is instant. The 1/N shown is still the roll's true chance in the plain game.
 - **Drop boosters** (Horn of Plenty, Golden Goose, Diamond Goose) multiply item and coin drop chances for a number of rolls.
 - **Lenses** spin the multiplier reel 2 or 10 times and keep the biggest.
 - **Overclocks** make Turbo 2 or 4 times as fast for 3 minutes.
@@ -52,7 +70,7 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 
 - **Collection:** every badge and multiplier, with search and filters. Select one for its exact count and how often you have found it against the expectation.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
-- **Achievements:** 94 of them, each with an item reward.
+- **Achievements:** 102 of them, each with an item reward.
 - **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
 
 ## Daily things

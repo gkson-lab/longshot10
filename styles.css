@@ -484,6 +484,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-swatch="spectrum"] { background: linear-gradient(135deg, #f4f4f8 55%, #3b5bdb 55%); }
 #buyBundle { margin-bottom: 4px; }
 #fuseEverything { margin-bottom: 10px; }
+.diff-row { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; justify-content: center; margin-top: 8px; }
+.diff-row .mode-desc { margin: 0; }
+.tokens .coins-in-hand .num { color: var(--r-uncommon); }
+.tokens p { margin: 6px 0; }
 /* The hidden command line: always a console, whatever the skin. */
 .terminal { margin-top: 14px; padding: 10px 12px; background: #0c0c0c; color: #cccccc; border-radius: 6px; font: 14px/1.4 "Cascadia Mono", Consolas, "Lucida Console", ui-monospace, monospace; }
 .terminal pre { margin: 0; max-height: 200px; overflow: auto; white-space: pre-wrap; font: inherit; }

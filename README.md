@@ -6,6 +6,14 @@ Each roll is a number from 0 to 9,999,999,999, checked against 308 badges (plus 
 
 Every roll shows its odds as 1/N: the chance that a random roll of the same mode does at least as well, measured against two million sampled rolls. An ordinary roll is 1/2. The tier comes straight from N on one ladder shared with badges and multipliers: Common, Uncommon (1/5), Rare (1/25), Epic (1/100), Legendary (1/500), Anomaly (1/2,500), Mythic (1/10,000), Divine (1/50,000), Cosmic (1/250,000), Transcendent (1/1,000,000), Ethereal (1/5,000,000), Celestial (1/25,000,000), Eternal (1/100,000,000), Infinite (1/10⁹), Omega (1/10¹¹), Absolute (1/10¹³), Primordial (1/10¹⁵) and Unfathomable (1/10²⁰), plus Trash for the bottom 1%.
 
+## Difficulties
+
+Hardcore removes the multiplier reel, so only badges count. Nightmare, Abyss and Oblivion also raise the score to the power 2/3, 1/2 and 1/3. The 1/N still compares with the Standard game, so on Oblivion three rolls in four are Trash. Charms and lenses are paused off Standard; harder difficulties pay more lucky tokens.
+
+## Lucky tokens
+
+Every roll has a 1 in 2 chance to drop a lucky token. Tokens buy permanent luck levels in the Inventory tab: at level k every roll is the best of k + 1, for good. Each level costs 12% more than the last.
+
 ## Modes
 
 - Classic: EP times the multiplier.
@@ -19,7 +27,7 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 ## Other things it does
 
 - Collection of badges and multipliers with search and filters; select any of them for the exact count or chance and how often you have landed it against the expectation
-- 94 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- 102 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
 - A luck table comparing your tiers with how often each tier really comes up
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
@@ -75,6 +83,7 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
+- Difficulties and lucky tokens: Hardcore (no multiplier reel, only badges count) and three astronomically hard difficulties, Nightmare, Abyss and Oblivion; 1/N still compares with the Standard game, so tiers get far rarer. Lucky tokens drop on 1 in 2 rolls and buy permanent luck levels. Instant luck now starts above ×32, and is about four times faster. 102 achievements.
 - v3.05: luck charms above ×2,000 roll instantly: the best of L is drawn straight from its exact distribution instead of rolling L times (a ×10,000,000 roll took about a minute, now a few milliseconds); Turbo goes up to 2,000 and 5,000 rolls a second.
 - v3.1: renamed Long Shot 10; badges doubled to 308 (plus 41 mode and 5 daily badges), all still counted exactly; achievements doubled to 94; Fuse all and Fuse everything; three new full-screen skins to play with: Chat, Handheld and Calculator; how-to-play, odds and skins documents.
 - v3.0 (skins): sixteen skins, including secret ones, a 500-coin bundle, a hidden command line in Settings, a text-only Terminal skin, a Console skin that plays the whole game by typed commands, and five legendary skins from the new badge book; Endless on Turbo up to 1,000 rolls a second; easier tiers (Uncommon is now 1 in 5, Rare 1 in 25) and five new ones past Eternal, up to Unfathomable at 1 in 10²⁰; daily quests; prestige; charts in the Log. Item and coin drops are tied to a roll's 1/N rather than its tier, so they come as often as before.

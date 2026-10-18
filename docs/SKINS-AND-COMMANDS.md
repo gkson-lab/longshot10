@@ -38,6 +38,8 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `SPEED 1`, `SPEED 2`, `SPEED TURBO` | Auto and Endless speed |
 | `RATE 90`, `250`, `500`, `1000`, `2000` or `5000` | Turbo rolls per second |
 | `MODE [name]` | Show or change the mode |
+| `DIFF [name]` | Difficulty: standard, hardcore, nightmare, abyss or oblivion |
+| `TOKENS`, `UPGRADE [n or MAX]` | Lucky tokens, and buying permanent luck levels |
 | `STATS` | Totals, best roll, collection, coins, prestige |
 | `LUCK [mode]` | Your tiers against the expected shares |
 | `LOG [n]`, `BEST [mode]` | Recent rolls, hall of fame |
