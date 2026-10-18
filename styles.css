@@ -14,6 +14,7 @@
   --r-legendary: #ff9f45; --r-anomaly: #ff7272; --r-mythic: #ffd447; --r-divine: #6ee7de; --r-cosmic: #ff7ad1;
   --r-transcendent: #ffffff; --r-ethereal: #cbb8ff; --r-celestial: #ffe6a0; --r-eternal: #ffb0c4;
   --r-infinite: #a5f3c0; --r-omega: #ffb38a; --r-absolute: #e4e4ea; --r-primordial: #ffcf6e; --r-unfathomable: #ff6b9e;
+  --r-paradox: #9ee7f7; --r-singularity: #f0abfc; --r-multiversal: #d9f99d; --r-omniversal: #fca5a5; --r-ineffable: #c7d2fe; --r-beyond: #fde7f3;
 }
 /* The same scale, darkened to read on light skins. */
 :root[data-tone="light"] {
@@ -22,6 +23,7 @@
   --r-legendary: #a14a00; --r-anomaly: #bf2530; --r-mythic: #8d6200; --r-divine: #0b6e66; --r-cosmic: #a8166f;
   --r-transcendent: #1b1a17; --r-ethereal: #5a3fa8; --r-celestial: #6e5300; --r-eternal: #a3204a;
   --r-infinite: #0f6b3a; --r-omega: #9a3b0e; --r-absolute: #3d3d45; --r-primordial: #7a4f00; --r-unfathomable: #9e1446;
+  --r-paradox: #0b5f73; --r-singularity: #86198f; --r-multiversal: #4d6200; --r-omniversal: #a11d1d; --r-ineffable: #3a3f9e; --r-beyond: #831843;
 }
 /* The reels stay dark on light skins too, so inside the cabinet the dark scale applies. */
 :root[data-tone="light"] .cabinet {
@@ -29,6 +31,7 @@
   --r-legendary: #ff9f45; --r-anomaly: #ff7272; --r-mythic: #ffd447; --r-divine: #6ee7de; --r-cosmic: #ff7ad1;
   --r-transcendent: #ffffff; --r-ethereal: #cbb8ff; --r-celestial: #ffe6a0; --r-eternal: #ffb0c4;
   --r-infinite: #a5f3c0; --r-omega: #ffb38a; --r-absolute: #e4e4ea; --r-primordial: #ffcf6e; --r-unfathomable: #ff6b9e;
+  --r-paradox: #9ee7f7; --r-singularity: #f0abfc; --r-multiversal: #d9f99d; --r-omniversal: #fca5a5; --r-ineffable: #c7d2fe; --r-beyond: #fde7f3;
 }
 
 /* Free skins */

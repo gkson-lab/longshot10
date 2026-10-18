@@ -4,7 +4,7 @@ A ten-digit luck game, formerly RNGdle 10, in the spirit of [RNGdle](https://www
 
 Each roll is a number from 0 to 9,999,999,999, checked against 308 badges (plus 41 mode badges and 5 daily ones): primes, palindromes, straights, sequences like Fibonacci and Catalan, meme numbers, and combos such as palindromic and twin primes. A badge is worth EP equal to its odds, so a 1-in-143 badge adds 143 EP. A second reel lands on one of 100 math multipliers, from ×∛2 to ×⁵2, or on ×1. A roll with no badges still counts as 1 EP, so its multiplier matters.
 
-Every roll shows its odds as 1/N: the chance that a random roll of the same mode does at least as well, measured against two million sampled rolls. An ordinary roll is 1/2. The tier comes straight from N on one ladder shared with badges and multipliers: Common, Uncommon (1/5), Rare (1/25), Epic (1/100), Legendary (1/500), Anomaly (1/2,500), Mythic (1/10,000), Divine (1/50,000), Cosmic (1/250,000), Transcendent (1/1,000,000), Ethereal (1/5,000,000), Celestial (1/25,000,000), Eternal (1/100,000,000), Infinite (1/10⁹), Omega (1/10¹¹), Absolute (1/10¹³), Primordial (1/10¹⁵) and Unfathomable (1/10²⁰), plus Trash for the bottom 1%.
+Every roll shows its odds as 1/N: the chance that a random roll of the same mode does at least as well, measured against two million sampled rolls. An ordinary roll is 1/2. The tier comes straight from N on one ladder shared with badges and multipliers: Common, Uncommon (1/5), Rare (1/25), Epic (1/100), Legendary (1/500), Anomaly (1/2,500), Mythic (1/10,000), Divine (1/50,000), Cosmic (1/250,000), Transcendent (1/1,000,000), Ethereal (1/5,000,000), Celestial (1/25,000,000), Eternal (1/100,000,000), Infinite (1/10⁹), Omega (1/10¹¹), Absolute (1/10¹³), Primordial (1/10¹⁵), Unfathomable (1/10²⁰), Paradox (1/10²⁵), Singularity (1/10³⁰), Multiversal (1/10⁴⁰), Omniversal (1/10⁵⁰), Ineffable (1/10⁷⁵) and Beyond (1/10¹⁰⁰), plus Trash for the bottom 1%.
 
 ## Difficulties
 
@@ -27,7 +27,7 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 ## Other things it does
 
 - Collection of badges and multipliers with search and filters; select any of them for the exact count or chance and how often you have landed it against the expectation
-- 102 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- 108 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
 - A luck table comparing your tiers with how often each tier really comes up
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
@@ -47,10 +47,10 @@ Skins are picked in Settings and belong to the save file. Midnight, Felt and Day
 
 Each save file has an inventory of items you can use from the Inventory tab:
 
-- Luck charms, from the Charm of Ten (luck ×10, the baseline) up to the Charm of Ten Million (luck ×10,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the game does not roll L times: it draws how lucky the best of L rolls would be, from its exact distribution, and builds a real roll that lucky, so even ×10,000,000 takes a few milliseconds.
-- Drop boosters: Horn of Plenty (×25), Golden Goose (×100) and Diamond Goose (×1,000) multiply item drop chances for a number of rolls; past 100% you get several of an item at once.
-- Multiplier Lens and Prism Lens: for 30 rolls the multiplier reel spins 2 or 10 times and keeps the biggest multiplier.
-- Overclock and Overclock II: Turbo rolls 2 or 4 times as fast for 3 minutes.
+- Luck charms, from the Charm of Ten (luck ×10, the baseline) up to the Charm of Ten Billion (luck ×10,000,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the game does not roll L times: it draws how lucky the best of L rolls would be, from its exact distribution, and builds a real roll that lucky, so even ×10,000,000 takes a few milliseconds.
+- Drop boosters: Horn of Plenty (×25), Golden Goose (×100), Diamond Goose (×1,000), Platinum Goose (×10,000) and Cosmic Goose (×100,000) multiply item drop chances for a number of rolls; past 100% you get several of an item at once.
+- Multiplier Lens, Prism Lens and Kaleidoscope Lens: for 30 rolls the multiplier reel spins 2, 10 or 100 times and keeps the biggest multiplier.
+- Overclock, Overclock II and Overclock III: Turbo rolls 2, 4 or 8 times as fast for 3 minutes.
 
 Items drop from plain rolls of 1/100 or rarer (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up (ten Charms of a Million make a Charm of Ten Million). Fuse all fuses every set of one item at once, and Fuse everything pushes every item as far up its line as it goes. The Charm of Two, Charm of Five, Magnet and Treasure Map are retired: they no longer drop, but any you own still work and fuse upwards. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
 
@@ -83,6 +83,7 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
+- New tiers: six rarity tiers past Unfathomable, up to Beyond at 1/10¹⁰⁰; Charms of a Hundred Million, a Billion and Ten Billion; Platinum Goose (drops ×10,000) and Cosmic Goose (×100,000); Kaleidoscope Lens (100 multiplier spins); Overclock III (Turbo ×8). Lenses and Overclocks now fuse upwards too. The new items drop from 1/10¹⁰ rolls and rarer, and four of them are slot prizes; a Charm of a Hundred Million has a 30,000,000-spin pity. 108 achievements.
 - v3.26: luck charms and permanent luck work on every difficulty. Off Standard every roll of the best-of is played for real, so luck counts as at most ×100,000 there; lenses do nothing without the multiplier reel.
 - v3.25: the coin slot handles any number of coins. Batches over 100,000 spins are counted instead of played one by one, so spinning a billion coins takes well under a second; pity still pays out and its counts carry on correctly. Use all uses every one of an item at once, adding up their rolls or minutes.
 - v3.2: difficulties and lucky tokens. Hardcore (no multiplier reel, only badges count) and three astronomically hard difficulties, Nightmare, Abyss and Oblivion; 1/N still compares with the Standard game, so tiers get far rarer. Lucky tokens drop on 1 in 2 rolls and buy permanent luck levels. Instant luck now starts above ×32, and is about four times faster. 102 achievements.

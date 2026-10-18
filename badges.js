@@ -857,6 +857,8 @@
       ['cosmic', 'Cosmic', 2.5e5], ['transcendent', 'Transcendent', 1e6], ['ethereal', 'Ethereal', 5e6],
       ['celestial', 'Celestial', 2.5e7], ['eternal', 'Eternal', 1e8], ['infinite', 'Infinite', 1e9], ['omega', 'Omega', 1e11],
       ['absolute', 'Absolute', 1e13], ['primordial', 'Primordial', 1e15], ['unfathomable', 'Unfathomable', 1e20],
+      ['paradox', 'Paradox', 1e25], ['singularity', 'Singularity', 1e30], ['multiversal', 'Multiversal', 1e40],
+      ['omniversal', 'Omniversal', 1e50], ['ineffable', 'Ineffable', 1e75], ['beyond', 'Beyond', 1e100],
     ].map(([id, name, from], i, all) => ({ id, name, from, min: i === all.length - 1 ? 0 : 1 / all[i + 1][2] }));
     const rarityOf = p => RARITIES.findIndex(r => p >= r.min);
 

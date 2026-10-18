@@ -9,7 +9,7 @@ Long Shot 10 is a luck game about one ten-digit number. Press Roll and you get a
 3. **EP.** Each badge is worth EP equal to its odds: a badge that 1 number in 143 earns is worth 143 EP. Your badges add up. Some badges sit in a group (a power of two is also a perfect power), and then only the rarest one in the group counts, so nothing is counted twice. A roll with no badges at all still counts as 1 EP.
 4. **The multiplier.** A second reel lands on ×1 most of the time, or on one of 100 math constants from ×∛2 up to ×⁵2. Rarer multipliers are bigger. Your score is your EP times the multiplier.
 5. **Your 1/N.** Finally the game asks: out of every possible roll in this mode, what share would score at least this high? If 1 roll in 500 would, your roll is **1/500**. An ordinary roll is about 1/2.
-6. **The tier.** The 1/N decides the tier, from Common up through Legendary, Mythic and Eternal to Unfathomable at 1/10²⁰. The bottom 1% of rolls are Trash.
+6. **The tier.** The 1/N decides the tier, from Common up through Legendary, Mythic and Eternal to Unfathomable at 1/10²⁰ and Beyond at 1/10¹⁰⁰. The bottom 1% of rolls are Trash.
 
 Because 1/N is measured against every roll of the mode, it means exactly what it says: a 1/500 or better roll really does come up 1 time in 500, whichever mode you play.
 
@@ -55,10 +55,10 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 
 Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use items from the Inventory tab:
 
-- **Luck charms** (×10 up to ×10,000,000) make each roll the best of that many rolls. Anything rare turns up about that many times as often. Above ×32 the game draws the best roll's luck straight from its exact odds instead of rolling every one, so even ×10,000,000 is instant. The 1/N shown is still the roll's true chance in the plain game.
-- **Drop boosters** (Horn of Plenty, Golden Goose, Diamond Goose) multiply item and coin drop chances for a number of rolls.
-- **Lenses** spin the multiplier reel 2 or 10 times and keep the biggest.
-- **Overclocks** make Turbo 2 or 4 times as fast for 3 minutes.
+- **Luck charms** (×10 up to ×10,000,000,000) make each roll the best of that many rolls. Anything rare turns up about that many times as often. Above ×32 the game draws the best roll's luck straight from its exact odds instead of rolling every one, so even ×10,000,000 is instant. The 1/N shown is still the roll's true chance in the plain game.
+- **Drop boosters** (Horn of Plenty, then Golden, Diamond, Platinum and Cosmic Goose, up to ×100,000) multiply item and coin drop chances for a number of rolls.
+- **Lenses** spin the multiplier reel 2, 10 or 100 times and keep the biggest.
+- **Overclocks** make Turbo 2, 4 or 8 times as fast for 3 minutes.
 
 Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
 
@@ -70,7 +70,7 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 
 - **Collection:** every badge and multiplier, with search and filters. Select one for its exact count and how often you have found it against the expectation.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
-- **Achievements:** 102 of them, each with an item reward.
+- **Achievements:** 108 of them, each with an item reward.
 - **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
 
 ## Daily things

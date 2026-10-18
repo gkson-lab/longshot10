@@ -40,7 +40,13 @@ Every roll gets a 1/N: the chance that a random roll of the same mode scores at 
 | Omega | 1/100,000,000,000 | 9.9e-10% | 1 in 101,010,101,010 |
 | Absolute | 1/10,000,000,000,000 | 9.9e-12% | 1 in 10,101,010,101,010 |
 | Primordial | 1/1,000,000,000,000,000 | 1e-13% | 1 in 1,000,010,000,100,001 |
-| Unfathomable | 1/100,000,000,000,000,000,000 | 1e-18% | 1 in 100,000,000,000,000,000,000 |
+| Unfathomable | 1/100,000,000,000,000,000,000 | 1e-18% | 1 in 100,001,000,010,000,100,000 |
+| Paradox | 1/10,000,000,000,000,000,000,000,000 | 1e-23% | 1 in 10,000,100,001,000,012,000,000,000 |
+| Singularity | 1/1,000,000,000,000,000,000,000,000,000,000 | 1e-28% | 1 in 1,000,000,000,100,000,000,000,000,000,000 |
+| Multiversal | 1/10,000,000,000,000,000,000,000,000,000,000,000,000,000 | 1e-38% | 1 in 10,000,000,001,000,002,000,000,000,000,000,000,000,000 |
+| Omniversal | 1/100,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000 | 1e-48% | 1 in 100,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000 |
+| Ineffable | 1/1,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000 | 1e-73% | 1 in 1,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000 |
+| Beyond | 1/10,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000 | 1e-98% | 1 in 10,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000 |
 
 Badges and multipliers use the same ladder: a badge that comes up 1 time in 3,000 is Anomaly, because 3,000 is past Anomaly's 2,500.
 
@@ -603,11 +609,11 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 0.984% | 1 in 10 | 1 in 102 | 1 in 971 | 1 in 9,756 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.53% | 1 in 16 | 1 in 342 | 1 in 2,899 | 1 in 80,000 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.42% | 1 in 727 | 1 in 50,000 | 0 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 36,364 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
-| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.2% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1% | 1 in 10 | 1 in 103 | 1 in 1,093 | 1 in 9,091 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.52% | 1 in 16 | 1 in 334 | 1 in 2,985 | 1 in 66,667 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.36% | 1 in 726 | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 44,444 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels
 
@@ -641,7 +647,11 @@ Rolls made with a luck charm or a lens never drop items or coins; permanent luck
 | 1/1,000,000 | Charm of a Hundred 50%, Charm of a Thousand 10%, Overclock 40%, Horn of Plenty 20%, Prism Lens 5% |
 | 1/10,000,000 | Charm of a Thousand 30%, Golden Goose 10%, Prism Lens 20% |
 | 1/100,000,000 | Charm of Ten Thousand 20%, Golden Goose 30%, Overclock II 20% |
-| 1/1,000,000,000 or rarer | Charm of a Hundred Thousand 15%, Charm of a Million 3%, Diamond Goose 10%, Overclock II 30% |
+| 1/1,000,000,000 | Charm of a Hundred Thousand 15%, Charm of a Million 3%, Diamond Goose 10%, Overclock II 30% |
+| 1/10,000,000,000 | Charm of a Million 20%, Charm of Ten Million 5%, Platinum Goose 5%, Kaleidoscope Lens 20%, Overclock III 30% |
+| 1/1,000,000,000,000 | Charm of Ten Million 30%, Charm of a Hundred Million 5%, Platinum Goose 20%, Cosmic Goose 2%, Kaleidoscope Lens 50% |
+| 1/1,000,000,000,000,000 | Charm of a Hundred Million 30%, Charm of a Billion 5%, Cosmic Goose 10%, Overclock III 100% |
+| 1/100,000,000,000,000,000,000 or rarer | Charm of a Billion 30%, Charm of Ten Billion 5%, Cosmic Goose 30% |
 
 Drop boosters (Horn of Plenty ×25, Golden Goose ×100, Diamond Goose ×1,000) and prestige multiply every chance above, coins included. Past 100%, the whole part drops for sure and the rest is a chance at one more.
 
@@ -671,6 +681,10 @@ One coin per spin. Every spin wins exactly one prize from this table, in parts o
 | Charm of a Hundred Thousand | 0.014% | 1 in 7,055 | 20,000 spins |
 | Charm of a Million | 0.00075% | 1 in 133,333 | 250,000 spins |
 | Charm of Ten Million | 0.000075% | 1 in 1,333,333 | 2,500,000 spins |
+| Kaleidoscope Lens | 0.00015% | 1 in 666,667 |  |
+| Overclock III | 0.00015% | 1 in 666,667 |  |
+| Charm of a Hundred Million | 0.0000075% | 1 in 13,333,333 | 30,000,000 spins |
+| Platinum Goose | 0.0000045% | 1 in 22,222,222 |  |
 
 Hard pity: go that many spins without the prize and the next spin pays it for sure. Winning one naturally resets its count. If two are due at once, the rarer one is paid first and the other on the next spin.
 
@@ -686,14 +700,21 @@ Up to 100,000 spins at once are played one by one. Bigger batches are counted in
 | Charm of Ten Thousand | Luck ×10,000 for 5 rolls: each roll is the best of 10,000. | 5 → 1 Charm of a Hundred Thousand |
 | Charm of a Hundred Thousand | Luck ×100,000 for 3 rolls: each roll is the best of 100,000. | 5 → 1 Charm of a Million |
 | Charm of a Million | Luck ×1,000,000 for 3 rolls: each roll is the best of 1,000,000. | 10 → 1 Charm of Ten Million |
-| Charm of Ten Million | Luck ×10,000,000 for 1 roll: each roll is the best of 10,000,000. |  |
+| Charm of Ten Million | Luck ×10,000,000 for 1 roll: each roll is the best of 10,000,000. | 10 → 1 Charm of a Hundred Million |
+| Charm of a Hundred Million | Luck ×100,000,000 for 1 roll: each roll is the best of 100,000,000. | 10 → 1 Charm of a Billion |
+| Charm of a Billion | Luck ×1,000,000,000 for 1 roll: each roll is the best of 1,000,000,000. | 10 → 1 Charm of Ten Billion |
+| Charm of Ten Billion | Luck ×10,000,000,000 for 1 roll: each roll is the best of 10,000,000,000. |  |
 | Horn of Plenty | Items drop 25 times as often for 200 rolls. | 5 → 1 Golden Goose |
 | Golden Goose | Items drop 100 times as often for 100 rolls. | 5 → 1 Diamond Goose |
-| Diamond Goose | Items drop 1,000 times as often for 100 rolls. |  |
-| Multiplier Lens | For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier. |  |
-| Prism Lens | For 30 rolls the multiplier reel spins ten times and keeps the biggest multiplier. |  |
-| Overclock | Turbo rolls twice as fast for 3 minutes. |  |
-| Overclock II | Turbo rolls four times as fast for 3 minutes. |  |
+| Diamond Goose | Items drop 1,000 times as often for 100 rolls. | 10 → 1 Platinum Goose |
+| Platinum Goose | Items drop 10,000 times as often for 100 rolls. | 10 → 1 Cosmic Goose |
+| Cosmic Goose | Items drop 100,000 times as often for 100 rolls. |  |
+| Multiplier Lens | For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier. | 10 → 1 Prism Lens |
+| Prism Lens | For 30 rolls the multiplier reel spins ten times and keeps the biggest multiplier. | 10 → 1 Kaleidoscope Lens |
+| Kaleidoscope Lens | For 30 rolls the multiplier reel spins a hundred times and keeps the biggest multiplier. |  |
+| Overclock | Turbo rolls twice as fast for 3 minutes. | 5 → 1 Overclock II |
+| Overclock II | Turbo rolls four times as fast for 3 minutes. | 10 → 1 Overclock III |
+| Overclock III | Turbo rolls eight times as fast for 3 minutes. |  |
 
 Retired items (Charm of Two, Charm of Five, Magnet, Treasure Map) no longer drop but still work and fuse upwards. Fuse all fuses every full set of one item; Fuse everything works up every line from the bottom, so new items feed the next fuse.
 

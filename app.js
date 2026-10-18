@@ -496,7 +496,7 @@
     $('oneInNote').textContent = (rt.estimated
       ? 'estimated: rarer than any of the two million sampled rolls'
       : `of ${MODE_BY_ID[x.mode].name} rolls do at least this well`)
-      + (x.b ? `, rolled with luck ×${fmt(x.b)}` : '') + (x.lens ? `, with the ${x.lens === 10 ? 'Prism' : 'Multiplier'} Lens` : '');
+      + (x.b ? `, rolled with luck ×${fmt(x.b)}` : '') + (x.lens ? `, with the ${x.lens === 100 ? 'Kaleidoscope' : x.lens === 10 ? 'Prism' : 'Multiplier'} Lens` : '');
 
     const f = formula(x, r), plain = f === `${fmt(r.base)} EP`;
     $('scoreLine').innerHTML = (plain ? '' : `<span class="formula num">${esc(f)} =</span> `)
@@ -633,14 +633,21 @@
     luckItem('luck10k', 'Charm of Ten Thousand', 1e4, 5, 5, ['luck100k', 5]),
     luckItem('luck100k', 'Charm of a Hundred Thousand', 1e5, 3, 6, ['luck1m', 5]),
     luckItem('luck1m', 'Charm of a Million', 1e6, 3, 7, ['luck10m', 10]),
-    luckItem('luck10m', 'Charm of Ten Million', 1e7, 1, 9),
+    luckItem('luck10m', 'Charm of Ten Million', 1e7, 1, 9, ['luck100m', 10]),
+    luckItem('luck100m', 'Charm of a Hundred Million', 1e8, 1, 10, ['luck1b', 10]),
+    luckItem('luck1b', 'Charm of a Billion', 1e9, 1, 11, ['luck10b', 10]),
+    luckItem('luck10b', 'Charm of Ten Billion', 1e10, 1, 13),
     dropItem('horn', 'Horn of Plenty', 25, 200, 3, ['goose', 5]),
     dropItem('goose', 'Golden Goose', 100, 100, 5, ['goose2', 5]),
-    dropItem('goose2', 'Diamond Goose', 1000, 100, 7),
-    { id: 'lens', name: 'Multiplier Lens', kind: 'lens', tries: 2, rolls: 30, rarity: 2, desc: 'For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.' },
-    { id: 'prism', name: 'Prism Lens', kind: 'lens', tries: 10, rolls: 30, rarity: 4, desc: 'For 30 rolls the multiplier reel spins ten times and keeps the biggest multiplier.' },
-    { id: 'overclock', name: 'Overclock', kind: 'overclock', speedup: 2, minutes: 3, rarity: 2, desc: 'Turbo rolls twice as fast for 3 minutes.' },
-    { id: 'overclock2', name: 'Overclock II', kind: 'overclock', speedup: 4, minutes: 3, rarity: 4, desc: 'Turbo rolls four times as fast for 3 minutes.' },
+    dropItem('goose2', 'Diamond Goose', 1000, 100, 7, ['goose3', 10]),
+    dropItem('goose3', 'Platinum Goose', 1e4, 100, 9, ['goose4', 10]),
+    dropItem('goose4', 'Cosmic Goose', 1e5, 100, 11),
+    { id: 'lens', name: 'Multiplier Lens', kind: 'lens', tries: 2, rolls: 30, rarity: 2, next: ['prism', 10], desc: 'For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.' },
+    { id: 'prism', name: 'Prism Lens', kind: 'lens', tries: 10, rolls: 30, rarity: 4, next: ['kaleido', 10], desc: 'For 30 rolls the multiplier reel spins ten times and keeps the biggest multiplier.' },
+    { id: 'kaleido', name: 'Kaleidoscope Lens', kind: 'lens', tries: 100, rolls: 30, rarity: 7, desc: 'For 30 rolls the multiplier reel spins a hundred times and keeps the biggest multiplier.' },
+    { id: 'overclock', name: 'Overclock', kind: 'overclock', speedup: 2, minutes: 3, rarity: 2, next: ['overclock2', 5], desc: 'Turbo rolls twice as fast for 3 minutes.' },
+    { id: 'overclock2', name: 'Overclock II', kind: 'overclock', speedup: 4, minutes: 3, rarity: 4, next: ['overclock3', 10], desc: 'Turbo rolls four times as fast for 3 minutes.' },
+    { id: 'overclock3', name: 'Overclock III', kind: 'overclock', speedup: 8, minutes: 3, rarity: 7, desc: 'Turbo rolls eight times as fast for 3 minutes.' },
     { ...luckItem('luck2', 'Charm of Two', 2, 50, 0, ['luck5', 5]), retired: true },
     { ...luckItem('luck5', 'Charm of Five', 5, 50, 0, ['luck10', 4]), retired: true },
     { ...dropItem('magnet', 'Magnet', 2, 500, 0, ['map', 5]), retired: true },
@@ -658,6 +665,10 @@
     [1e7, [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2]]],
     [1e8, [['luck10k', 0.2], ['goose', 0.3], ['overclock2', 0.2]]],
     [1e9, [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
+    [1e10, [['luck1m', 0.2], ['luck10m', 0.05], ['goose3', 0.05], ['kaleido', 0.2], ['overclock3', 0.3]]],
+    [1e12, [['luck10m', 0.3], ['luck100m', 0.05], ['goose3', 0.2], ['goose4', 0.02], ['kaleido', 0.5]]],
+    [1e15, [['luck100m', 0.3], ['luck1b', 0.05], ['goose4', 0.1], ['overclock3', 1]]],
+    [1e20, [['luck1b', 0.3], ['luck10b', 0.05], ['goose4', 0.3]]],
   ];
   const COIN_FROM = 100; // coins drop from rolls of 1 in 100 or rarer
   const tierOfN = n => ROLL_TIERS[1 + RARITIES.findIndex(r => 1 / n >= r.min)].id;
@@ -666,7 +677,7 @@
   const COIN_CHANCE = 1 / 3;
   const SLOT_UNITS = 1e9;
   const SLOT_PRIZES = [ // every spin wins something
-    ['luck10', 1, 400000000, '×10'], // the base prize; every other prize is 1.5× its v2.8.1 chance
+    ['luck10', 1, 399996880, '×10'], // the base prize; it gave 3,120 parts to the v3.3 prizes
     ['luck10', 3, 150000000, '×10'],
     ['lens', 1, 120000000, 'Lens'],
     ['overclock', 1, 90000000, 'OC'],
@@ -684,11 +695,15 @@
     ['luck100k', 1, 141750, '×100k'],
     ['luck1m', 1, 7500, '×1M'],
     ['luck10m', 1, 750, '×10M'],
+    ['kaleido', 1, 1500, 'Kaleido'],
+    ['overclock3', 1, 1500, 'OC III'],
+    ['luck100m', 1, 75, '×100M'],
+    ['goose3', 1, 45, 'Platinum'],
   ];
   if (SLOT_PRIZES.reduce((t, p) => t + p[2], 0) !== SLOT_UNITS) throw new Error('slot prize table does not add up');
   // Hard pity: go this many spins without one of these and the next spin pays it out for sure.
   // A natural win resets the count. If several are due at once, the rarest is paid first.
-  const SLOT_PITY = { goose: 2000, luck10k: 3000, goose2: 7000, luck100k: 20000, luck1m: 250000, luck10m: 2500000 };
+  const SLOT_PITY = { goose: 2000, luck10k: 3000, goose2: 7000, luck100k: 20000, luck1m: 250000, luck10m: 2500000, luck100m: 30000000 };
   const PITY_ORDER = Object.keys(SLOT_PITY).sort((a, b) => SLOT_PITY[b] - SLOT_PITY[a]);
   function randInt(n) { // uniform integer in [0, n) from the CSPRNG, without modulo bias
     const buf = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
@@ -709,7 +724,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -739,11 +754,12 @@
   }
   const luckActive = () => (state.effects.luck && state.effects.luck.left > 0 ? state.effects.luck.L : 1);
   const dropActive = () => (state.effects.drop && state.effects.drop.left > 0 ? state.effects.drop.D : 1);
-  // Multiplier spins per roll: 10 with the Prism Lens, 2 with the Multiplier Lens, else 1.
-  const lensActive = () => ((state.effects.prism || 0) > 0 ? 10 : (state.effects.lens || 0) > 0 ? 2 : 1);
+  // Multiplier spins per roll: 100 with the Kaleidoscope Lens, 10 with the Prism Lens, 2 with the Multiplier Lens, else 1.
+  const lensActive = () => ((state.effects.kaleido || 0) > 0 ? 100 : (state.effects.prism || 0) > 0 ? 10 : (state.effects.lens || 0) > 0 ? 2 : 1);
   const overclockLeft = () => Math.max(0, (state.effects.overclock || 0) - Date.now());
   const overclock2Left = () => Math.max(0, (state.effects.overclock2 || 0) - Date.now());
-  const turboSpeedup = () => (overclock2Left() ? 4 : overclockLeft() ? 2 : 1);
+  const overclock3Left = () => Math.max(0, (state.effects.overclock3 || 0) - Date.now());
+  const turboSpeedup = () => (overclock3Left() ? 8 : overclock2Left() ? 4 : overclockLeft() ? 2 : 1);
   // Use `times` of an item at once (Infinity: all of them). Their rolls or minutes add up.
   function useItem(id, times = 1) {
     const it = ITEM_BY_ID[id], fx = state.effects;
@@ -806,6 +822,7 @@
     if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left`);
     if (hard() && luckActive() * permLuck() > HARD_LUCK_CAP) out.push(`Luck counts as ×${fmt(HARD_LUCK_CAP)} on ${G.DIFF_BY_ID[state.difficulty].name}`);
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
+    if ((state.effects.kaleido || 0) > 0) out.push(`Kaleidoscope Lens, ${rollsText(state.effects.kaleido)} left`);
     if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
     if ((state.effects.lens || 0) > 0) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
     const clock = ms => {
@@ -814,6 +831,7 @@
       if (h >= 1) return `${h} h ${m % 60} min`;
       return `${m}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
     };
+    if (overclock3Left()) out.push(`Overclock III, ${clock(overclock3Left())} left`);
     if (overclock2Left()) out.push(`Overclock II, ${clock(overclock2Left())} left`);
     if (overclockLeft()) out.push(`Overclock, ${clock(overclockLeft())} left`);
     return out;
@@ -1107,7 +1125,7 @@
     if (charmed) state.effects.luck.left = Math.max(0, state.effects.luck.left - 1);
     if (lens > 1) {
       x.lens = lens;
-      const which = lens === 10 ? 'prism' : 'lens';
+      const which = lens === 100 ? 'kaleido' : lens === 10 ? 'prism' : 'lens';
       state.effects[which] = Math.max(0, state.effects[which] - 1);
     }
     const rec = record(x);
@@ -1430,7 +1448,9 @@
     ...[['uncommon', 'Off the beaten path'], ['rare', 'Shiny'], ['epic', 'Epic moment'], ['legendary', 'The stuff of legend'],
       ['anomaly', 'Anomaly detected'], ['mythic', 'Myth made real'], ['divine', 'Divine intervention'], ['cosmic', 'Cosmic'],
       ['transcendent', 'Beyond'], ['ethereal', 'Ethereal'], ['celestial', 'Written in the stars'], ['eternal', 'Forever'],
-      ['infinite', 'To infinity'], ['omega', 'The last letter'], ['absolute', 'Absolute unit'], ['primordial', 'Before time'], ['unfathomable', 'Unfathomable']]
+      ['infinite', 'To infinity'], ['omega', 'The last letter'], ['absolute', 'Absolute unit'], ['primordial', 'Before time'], ['unfathomable', 'Unfathomable'],
+      ['paradox', 'Paradox'], ['singularity', 'Event horizon'], ['multiversal', 'Many worlds'], ['omniversal', 'Everything everywhere'],
+      ['ineffable', 'Words fail'], ['beyond', 'Beyond a googol']]
       .map(([id, name]) => {
         const r = RARITIES.find(x => x.id === id);
         return { id, name, desc: `Roll 1/${fmt(r.from)} or rarer (${r.name})`, test: () => reached(id) };
