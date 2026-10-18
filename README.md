@@ -83,6 +83,7 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
+- v3.26: luck charms and permanent luck work on every difficulty. Off Standard every roll of the best-of is played for real, so luck counts as at most ×100,000 there; lenses do nothing without the multiplier reel.
 - v3.25: the coin slot handles any number of coins. Batches over 100,000 spins are counted instead of played one by one, so spinning a billion coins takes well under a second; pity still pays out and its counts carry on correctly. Use all uses every one of an item at once, adding up their rolls or minutes.
 - v3.2: difficulties and lucky tokens. Hardcore (no multiplier reel, only badges count) and three astronomically hard difficulties, Nightmare, Abyss and Oblivion; 1/N still compares with the Standard game, so tiers get far rarer. Lucky tokens drop on 1 in 2 rolls and buy permanent luck levels. Instant luck now starts above ×32, and is about four times faster. 102 achievements.
 - v3.05: luck charms above ×2,000 roll instantly: the best of L is drawn straight from its exact distribution instead of rolling L times (a ×10,000,000 roll took about a minute, now a few milliseconds); Turbo goes up to 2,000 and 5,000 rolls a second.
