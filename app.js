@@ -74,6 +74,7 @@
     tiers: perMode(() => ({})), hof: perMode(() => []), favs: [], ach: {}, huntsDone: 0, shares: 0,
     settings: { theme: 'midnight', effects: 'full', sound: true }, mode: 'classic',
     inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0, pity: {},
+    skins: [], book: {}, quests: {}, prestige: 0, prestigeAt: 0, daily: {},
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -160,6 +161,8 @@
     if (state.log.length > LOG_LIMIT) state.log.length = LOG_LIMIT;
     state.total++;
     state.totals[x.mode]++;
+    const day = dayKey(x.t);
+    state.daily[day] = (state.daily[day] || 0) + 1;
     const fresh = new Set();
     for (const b of r.badges) {
       if (!state.counts[b.id]) { fresh.add(b.id); state.first[b.id] = x; }
@@ -320,16 +323,18 @@
   const cssVar = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   function celebrate(tierId, speed) {
     const i = T(tierId), color = cssVar(`--r-${tierId}`);
-    for (const r of reels.concat($('expReel'))) { r.style.setProperty('--tc', tierVar(tierId)); r.classList.toggle('hit', i >= T('anomaly') && !r.classList.contains('lead')); }
-    if (speed !== 3) fanfare(i);
-    if (effects() !== 'full' || (speed === 3 && i < T('mythic'))) return;
-    if (i >= T('rare')) burst(color, Math.min(400, 20 * 2 ** (i - 2)), 6 + i);
+    // Effects are anchored to odds, not tier names: confetti from 1/100 (Epic), glowing reels and
+    // the flash from 1/50,000 (Divine), and in Turbo only from 1/1,000,000 (Transcendent).
+    for (const r of reels.concat($('expReel'))) { r.style.setProperty('--tc', tierVar(tierId)); r.classList.toggle('hit', i >= T('divine') && !r.classList.contains('lead')); }
+    if (speed !== 3) fanfare(Math.max(1, i - 2));
+    if (effects() !== 'full' || (speed === 3 && i < T('transcendent'))) return;
+    if (i >= T('epic')) burst(color, Math.min(400, 20 * 2 ** (i - T('epic'))), 6 + i - T('epic'));
     // No shake or flash in Turbo, and never more than one flash every 3 seconds.
-    if (i >= T('anomaly') && speed !== 3 && Date.now() - lastFlash > 3000) {
+    if (i >= T('divine') && speed !== 3 && Date.now() - lastFlash > 3000) {
       lastFlash = Date.now();
       const c = $('cabinet');
       c.classList.remove('shake', 'shake-big'); void c.offsetWidth;
-      c.classList.add(i >= T('divine') ? 'shake-big' : 'shake');
+      c.classList.add(i >= T('celestial') ? 'shake-big' : 'shake');
       const f = $('flash');
       f.style.setProperty('--tc', color);
       f.classList.remove('go'); void f.offsetWidth; f.classList.add('go');
@@ -337,6 +342,7 @@
   }
 
   function toast(html, colorId) {
+    if (consoleOn()) { conPrint(plain(html)); return; }
     if (auto && speed === 3 && $('toasts').children.length >= 4) return; // Turbo can earn badges faster than anyone can read
     const el = document.createElement('div');
     el.className = 'toast';
@@ -472,8 +478,8 @@
     const w = $('tierWord'), i = T(tier.id);
     w.textContent = tier.name;
     w.style.setProperty('--tc', tierVar(tier.id));
-    w.className = 'tier-word' + (i >= T('epic') ? ' glow' : '');
-    if (animate && speed !== 3 && effects() !== 'off') { void w.offsetWidth; w.classList.add(i >= T('mythic') ? 'sheen' : 'pop'); }
+    w.className = 'tier-word' + (i >= T('legendary') ? ' glow' : '');
+    if (animate && speed !== 3 && effects() !== 'off') { void w.offsetWidth; w.classList.add(i >= T('transcendent') ? 'sheen' : 'pop'); }
     $('oneIn').textContent = oneText(rt);
     $('oneIn').style.setProperty('--tc', tierVar(tier.id));
     $('oneInNote').textContent = (rt.estimated
@@ -622,8 +628,8 @@
     dropItem('goose2', 'Diamond Goose', 1000, 100, 7),
     { id: 'lens', name: 'Multiplier Lens', kind: 'lens', tries: 2, rolls: 30, rarity: 2, desc: 'For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.' },
     { id: 'prism', name: 'Prism Lens', kind: 'lens', tries: 10, rolls: 30, rarity: 4, desc: 'For 30 rolls the multiplier reel spins ten times and keeps the biggest multiplier.' },
-    { id: 'overclock', name: 'Overclock', kind: 'overclock', speedup: 2, minutes: 3, rarity: 2, desc: 'Turbo rolls twice as fast, about 180 a second, for 3 minutes.' },
-    { id: 'overclock2', name: 'Overclock II', kind: 'overclock', speedup: 4, minutes: 3, rarity: 4, desc: 'Turbo rolls four times as fast, about 360 a second, for 3 minutes.' },
+    { id: 'overclock', name: 'Overclock', kind: 'overclock', speedup: 2, minutes: 3, rarity: 2, desc: 'Turbo rolls twice as fast for 3 minutes.' },
+    { id: 'overclock2', name: 'Overclock II', kind: 'overclock', speedup: 4, minutes: 3, rarity: 4, desc: 'Turbo rolls four times as fast for 3 minutes.' },
     { ...luckItem('luck2', 'Charm of Two', 2, 50, 0, ['luck5', 5]), retired: true },
     { ...luckItem('luck5', 'Charm of Five', 5, 50, 0, ['luck10', 4]), retired: true },
     { ...dropItem('magnet', 'Magnet', 2, 500, 0, ['map', 5]), retired: true },
@@ -631,16 +637,19 @@
   ];
   const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
   // Drop chances after a plain roll, by its tier; each row covers its tier and up to the next row.
+  // Keyed by the roll's 1 in N rather than tier names, so the economy stays put when tiers move.
   const DROPS = [
-    ['rare', [['luck10', 0.03]]],
-    ['epic', [['luck10', 0.15], ['lens', 0.05], ['overclock', 0.02]]],
-    ['legendary', [['luck10', 0.3], ['lens', 0.15], ['overclock', 0.05], ['horn', 0.03]]],
-    ['anomaly', [['luck10', 0.4], ['luck100', 0.25], ['overclock', 0.2], ['horn', 0.1]]],
-    ['mythic', [['luck100', 0.5], ['luck1k', 0.1], ['overclock', 0.4], ['horn', 0.2], ['prism', 0.05]]],
-    ['divine', [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2]]],
-    ['cosmic', [['luck10k', 0.2], ['goose', 0.3], ['overclock2', 0.2]]],
-    ['transcendent', [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
+    [100, [['luck10', 0.03]]],
+    [1e3, [['luck10', 0.15], ['lens', 0.05], ['overclock', 0.02]]],
+    [1e4, [['luck10', 0.3], ['lens', 0.15], ['overclock', 0.05], ['horn', 0.03]]],
+    [1e5, [['luck10', 0.4], ['luck100', 0.25], ['overclock', 0.2], ['horn', 0.1]]],
+    [1e6, [['luck100', 0.5], ['luck1k', 0.1], ['overclock', 0.4], ['horn', 0.2], ['prism', 0.05]]],
+    [1e7, [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2]]],
+    [1e8, [['luck10k', 0.2], ['goose', 0.3], ['overclock2', 0.2]]],
+    [1e9, [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
   ];
+  const COIN_FROM = 100; // coins drop from rolls of 1 in 100 or rarer
+  const tierOfN = n => ROLL_TIERS[1 + RARITIES.findIndex(r => 1 / n >= r.min)].id;
   // The coin slot: each spin costs one coin and pays out from this table. Chances are whole parts
   // of a billion and add up to exactly one billion. [item, quantity, parts, reel symbol]
   const COIN_CHANCE = 1 / 3;
@@ -689,7 +698,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -697,19 +706,20 @@
     if (!$('tab-inventory').hidden) renderInventory();
   }
   // A drop booster multiplies each chance; past 100% the whole part drops for sure and the rest is a chance at one more.
-  function rollDrops(tierId) {
-    const fx = state.effects, D = fx.drop && fx.drop.left > 0 ? fx.drop.D : 1;
-    if (D > 1) fx.drop.left--;
-    const i = T(tierId);
-    if (i >= T('rare')) { // a 1 in 3 chance of a coin for the slot machine, boosted like any other drop
+  function rollDrops(oneInLog) {
+    const fx = state.effects, boost = fx.drop && fx.drop.left > 0 ? fx.drop.D : 1;
+    if (boost > 1) fx.drop.left--;
+    const D = boost * prestigeBonus(), n = 10 ** oneInLog;
+    if (n >= COIN_FROM) { // a 1 in 3 chance of a coin for the slot machine, boosted like any other drop
       const c = COIN_CHANCE * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
       if (k) {
         state.coins += k;
+        questEvent('coin', k);
         toast(`Coin found${k > 1 ? `: <b>×${fmt(k)}</b>` : ''}, ${fmt(state.coins)} in hand`, 'mythic');
         if (!$('tab-inventory').hidden) renderSlot();
       }
     }
-    const row = [...DROPS].reverse().find(([id]) => i >= T(id));
+    const row = [...DROPS].reverse().find(([from]) => n >= from);
     if (!row) return;
     for (const [id, chance] of row[1]) {
       const c = chance * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
@@ -766,7 +776,10 @@
         + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></div></li>`;
     }).join('');
     const last = DROPS.length - 1;
-    $('dropTable').innerHTML = `<tr><td style="color:${tierVar('rare')};font-weight:700">Rare or rarer</td><td>A coin for the slot machine, 1 in ${Math.round(1 / COIN_CHANCE)}</td></tr>` + DROPS.map(([tier, items], r) => `<tr><td style="color:${tierVar(tier)};font-weight:700">${ROLL_TIERS[T(tier)].name}${r === last ? ' or rarer' : ''}</td><td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('');
+    const rowHead = (n, all) => `<td style="color:${tierVar(tierOfN(n))};font-weight:700">1/${fmt(n)}${all ? ' or rarer' : ''}</td>`;
+    $('dropTable').innerHTML = `<tr>${rowHead(COIN_FROM, true)}<td>A coin for the slot machine, 1 in ${Math.round(1 / COIN_CHANCE)}</td></tr>`
+      + DROPS.map(([from, items], r) => `<tr>${rowHead(from, r === last)}<td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('')
+      + (prestigeBonus() > 1 ? `<tr><td colspan="2" class="muted">Your prestige multiplies every chance above by ${prestigeBonus()}.</td></tr>` : '');
   }
   // The slot uses the same reels as the game: three matching symbols name the prize.
   const slotReels = [0, 1, 2].map(() => {
@@ -786,6 +799,7 @@
     state.coins -= n;
     state.spins += n;
     const results = Array.from({ length: n }, spinOnce);
+    questEvent('spin', n);
     for (const [id, qty] of results) if (id) state.inv[id] = (state.inv[id] || 0) + qty;
     checkAchievements();
     save();
@@ -936,7 +950,7 @@
       state.effects[which] = Math.max(0, state.effects[which] - 1);
     }
     const rec = record(x);
-    if (!x.b && !x.lens) rollDrops(rec.tier.id); // boosted rolls never drop items, so boosts cannot feed themselves
+    if (!x.b && !x.lens) rollDrops(rec.entry.oneInLog); // boosted rolls never drop items, so boosts cannot feed themselves
     save();
     run.rolls++;
     for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id);
@@ -952,7 +966,13 @@
         huntRolls = 0;
       }
     }
+    questEvent('roll');
+    questEvent('mode', 1, q => q.mode === x.mode);
+    questEvent('tier', 1, q => T(rec.entry.tier) >= T(q.tier));
+    if (rec.fresh.size) questEvent('fresh');
+    if (rec.r.mult.id !== 'unity' && rec.r.mult.rarity >= 2) questEvent('mult');
     checkAchievements(rec);
+    if (consoleOn()) consoleRoll(rec.entry);
     return { x, rec, found };
   }
   // In Turbo the result changes many times a second and its height with it (more or fewer badges),
@@ -975,17 +995,18 @@
   async function rollOnce() {
     const roll = await takeRollAsync();
     if (speed !== 3) $('result').hidden = true;
-    await spinTo(roll.x, speed);
+    await spinTo(roll.x, consoleOn() ? 3 : speed); // the Console shows no reels, so nothing to wait for
     freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
     drawRoll(roll, speed, !!freshEntry);
     return { tier: roll.rec.tier, found: roll.found };
   }
 
-  // Turbo: rolls run on their own steady clock (90 a second) in small slices that never block the
+  // Turbo: rolls run on their own steady clock (90 to 1,000 a second, set under Auto settings) in small slices that never block the
   // page for more than a few milliseconds. Drawing happens at most once per screen frame and shows
   // the rarest roll since the last frame, so a Mythic is never skipped over. A hidden tab or a
   // throttled screen slows the drawing, never the rolling.
-  const TURBO_RATE = 90; // rolls per second
+  const TURBO_RATES = [90, 250, 500, 1000]; // rolls per second
+  const turboRate = () => (TURBO_RATES.includes(state.settings.turboRate) ? state.settings.turboRate : 90);
   async function turboLoop(kind) {
     let last = performance.now(), owed = 0, best = null, changed = false, framePending = false, statusAt = 0;
     const draw = () => {
@@ -1003,11 +1024,12 @@
       }
       await sleep(15);
       const now = performance.now();
-      const rate = TURBO_RATE * turboSpeedup();
+      const rate = turboRate() * turboSpeedup();
       owed = Math.min(owed + ((now - last) / 1000) * rate, rate); // at most a second of catch-up
       // Small slices keep the page smooth; when the browser throttles timers (a hidden tab), ticks
       // come late, so take a bigger slice, still under the 50 ms that feels like lag.
-      const budget = now - last > 100 ? 40 : 6;
+      // Faster rates get a bigger slice of each tick.
+      const budget = now - last > 100 ? 40 : rate > 300 ? 10 : 6;
       last = now;
       let stop = false;
       const start = performance.now();
@@ -1092,6 +1114,8 @@
   ROLL_TIERS.slice(3).forEach(t => $('stopAt').appendChild(new Option(`${t.name} or better`, String(T(t.id)))));
   $('stopAt').appendChild(new Option('Never', '99'));
   $('stopAt').value = String(T('legendary'));
+  $('turboRate').value = String(turboRate());
+  $('turboRate').addEventListener('change', () => { state.settings.turboRate = +$('turboRate').value; save(); });
 
   function paintRollButton() {
     const btn = $('rollBtn');
@@ -1227,7 +1251,8 @@
     { id: 'r100k', name: 'Six figures', desc: 'Roll 100,000 times', test: () => state.total >= 1e5 },
     ...[['uncommon', 'Off the beaten path'], ['rare', 'Shiny'], ['epic', 'Epic moment'], ['legendary', 'The stuff of legend'],
       ['anomaly', 'Anomaly detected'], ['mythic', 'Myth made real'], ['divine', 'Divine intervention'], ['cosmic', 'Cosmic'],
-      ['transcendent', 'Beyond'], ['ethereal', 'Ethereal'], ['celestial', 'Written in the stars'], ['eternal', 'Forever']]
+      ['transcendent', 'Beyond'], ['ethereal', 'Ethereal'], ['celestial', 'Written in the stars'], ['eternal', 'Forever'],
+      ['infinite', 'To infinity'], ['omega', 'The last letter'], ['absolute', 'Absolute unit'], ['primordial', 'Before time'], ['unfathomable', 'Unfathomable']]
       .map(([id, name]) => {
         const r = RARITIES.find(x => x.id === id);
         return { id, name, desc: `Roll 1/${fmt(r.from)} or rarer (${r.name})`, test: () => reached(id) };
@@ -1373,6 +1398,68 @@
     $('luckNote').textContent = state.boosted ? `${rollsText(state.boosted)} made with a luck charm or the Multiplier Lens are left out, since they are not plain rolls.` : '';
     $('log').innerHTML = state.log.length ? state.log.map(x => rowHtml(entryFor(x), false)).join('')
       : '<li class="empty-state">No rolls yet. Your last 200 rolls appear here.</li>';
+    renderCharts();
+  }
+
+  // Stats charts, drawn as SVG. Bars for rolls per day (one series, so no legend); a dot plot on a
+  // log scale for tier shares, where yours is a filled dot and the expected share a ring, so the two
+  // differ by shape as well as colour. Hovering any mark shows its exact value.
+  for (const m of MODES) $('chartMode').appendChild(new Option(m.name, m.id));
+  $('chartMode').addEventListener('change', renderCharts);
+  const niceMax = v => { const e = 10 ** Math.floor(Math.log10(v)); return [1, 2, 2.5, 5, 10].map(k => k * e).find(k => k >= v); };
+  function renderCharts() {
+    const W = 360, H = 170, L = 40, B = 22, top = 8;
+    const days = Array.from({ length: 14 }, (_, i) => dayKey(Date.now() - (13 - i) * 864e5));
+    const vals = days.map(d => state.daily[d] || 0), max = niceMax(Math.max(10, ...vals));
+    const bw = (W - L) / 14, y = v => top + (H - top - B) * (1 - v / max);
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Rolls per day for the last 14 days: ${days.map((d, i) => `${d} ${vals[i]}`).join(', ')}">`;
+    for (const g of [0, max / 2, max]) svg += `<line class="grid" x1="${L}" x2="${W}" y1="${y(g)}" y2="${y(g)}"/><text x="${L - 6}" y="${y(g) + 4}" text-anchor="end">${fmt(g)}</text>`;
+    vals.forEach((v, i) => {
+      const x = L + i * bw + 1, h = Math.max(0, y(0) - y(v)), d = new Date(days[i] + 'T12:00');
+      const tip = `${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}: ${fmt(v)} ${v === 1 ? 'roll' : 'rolls'}`;
+      svg += `<rect class="hit" x="${x - 1}" y="${top}" width="${bw}" height="${H - top - B}" data-tip="${esc(tip)}"/>`;
+      // 4px rounded top anchored to the baseline: a rounded rect with its bottom corners squared off by a plain one
+      if (h > 0) svg += `<path class="bar" d="M${x} ${y(0)}V${y(v) + Math.min(4, h)}q0 -${Math.min(4, h)} ${Math.min(4, h)} -${Math.min(4, h)}H${x + bw - 6}q${Math.min(4, h)} 0 ${Math.min(4, h)} ${Math.min(4, h)}V${y(0)}Z"/>`;
+      if (i % 2 === 1) svg += `<text x="${x + (bw - 2) / 2}" y="${H - 6}" text-anchor="middle">${d.getDate()}</text>`;
+    });
+    $('dailyChart').innerHTML = svg + '</svg>';
+
+    const mode = $('chartMode').value || state.mode, total = tierTotal(mode), shares = G.tierShares(mode);
+    const LO = -10, rows = ROLL_TIERS.filter(t => (shares[t.id] || 0) >= 10 ** LO || state.tiers[mode][t.id]);
+    const RH = 18, W2 = 360, L2 = 92, H2 = top + rows.length * RH + 24;
+    const x = p => L2 + (W2 - L2 - 8) * (Math.max(LO, Math.log10(p)) - LO) / -LO;
+    let s2 = `<svg viewBox="0 0 ${W2} ${H2}" role="img" aria-label="Share of rolls per tier, yours against expected, ${MODE_BY_ID[mode].name} mode. The Luck table below lists the same numbers.">`;
+    for (let e = LO; e <= 0; e += 2) s2 += `<line class="grid" x1="${x(10 ** e)}" x2="${x(10 ** e)}" y1="${top}" y2="${H2 - 20}"/><text x="${x(10 ** e)}" y="${H2 - 6}" text-anchor="middle">${e === 0 ? '100%' : `10${sup(e).replace('-', '⁻')}`}</text>`;
+    const pctOf = v => (v === 0 ? 'none' : v >= 0.001 ? `${+(100 * v).toPrecision(3)}%` : `1 in ${fmt(1 / v)}`);
+    rows.forEach((t, i) => {
+      const cy = top + i * RH + RH / 2, exp = shares[t.id] || 0, you = total ? (state.tiers[mode][t.id] || 0) / total : 0;
+      const tip = `${t.name}: you ${pctOf(you)}, expected ${pctOf(exp)}`;
+      s2 += `<g class="row"><rect class="hit" x="0" y="${cy - RH / 2}" width="${W2}" height="${RH}" data-tip="${esc(tip)}"/>`
+        + `<text x="${L2 - 8}" y="${cy + 4}" text-anchor="end" style="fill:${tierVar(t.id)};font-weight:700">${t.name}</text>`
+        + (exp > 0 ? `<circle class="expected" cx="${x(exp)}" cy="${cy}" r="5"/>` : '')
+        + (you > 0 ? `<circle class="you" cx="${x(you)}" cy="${cy}" r="5"/>` : '') + '</g>';
+    });
+    $('tierChart').innerHTML = total ? s2 + '</svg><div class="legend"><span><i class="k-you"></i>You</span><span><i class="k-exp"></i>Expected</span></div>'
+      : '<p class="muted">No plain rolls in this mode yet.</p>';
+  }
+  // One tooltip for both charts, placed at the hovered mark.
+  const chartTip = document.createElement('div');
+  chartTip.className = 'chart-tip';
+  chartTip.hidden = true;
+  for (const id of ['dailyChart', 'tierChart']) {
+    const box = $(id);
+    box.addEventListener('pointermove', ev => {
+      const hit = ev.target.closest('[data-tip]');
+      if (!hit) { chartTip.hidden = true; return; }
+      const fig = box.closest('.chart'), r = fig.getBoundingClientRect();
+      if (chartTip.parentNode !== fig) fig.appendChild(chartTip);
+      chartTip.textContent = hit.dataset.tip;
+      chartTip.hidden = false;
+      const left = Math.min(r.width - chartTip.offsetWidth - 4, Math.max(4, ev.clientX - r.left + 12));
+      chartTip.style.left = left + 'px';
+      chartTip.style.top = (ev.clientY - r.top - 34) + 'px';
+    });
+    box.addEventListener('pointerleave', () => { chartTip.hidden = true; });
   }
 
   // Tabs, with arrow-key movement between them
@@ -1384,8 +1471,8 @@
       b.tabIndex = on ? 0 : -1;
     });
     for (const t of TABS) $('tab-' + t).hidden = t !== name;
-    if (name === 'collection') renderCollection();
-    if (name === 'trophies') renderTrophies();
+    if (name === 'collection') { renderBook(); renderCollection(); }
+    if (name === 'trophies') { renderQuests(); renderPrestige(); renderTrophies(); }
     if (name === 'log') renderLog();
     if (name === 'inventory') { renderInventory(); renderSlot(); }
   }
@@ -1402,16 +1489,18 @@
   // Settings
   function applySettings() {
     const s = state.settings;
+    if (!ownsSkin(s.theme)) s.theme = 'midnight'; // a skin this save file does not own, e.g. after switching saves
     document.documentElement.dataset.theme = s.theme;
+    document.documentElement.dataset.tone = SKIN_BY_ID[s.theme].light ? 'light' : 'dark';
+    paintConsole();
     document.documentElement.dataset.effects = s.effects;
     document.querySelector('meta[name="theme-color"]').content = cssVar('--bg');
-    for (const r of document.querySelectorAll('#settingsDialog input[name="theme"]')) r.checked = r.value === s.theme;
     for (const r of document.querySelectorAll('#settingsDialog input[name="effects"]')) r.checked = r.value === s.effects;
   }
-  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); $('settingsDialog').showModal(); });
+  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); renderSkins(); $('settingsDialog').showModal(); });
   $('settingsDialog').addEventListener('change', ev => {
-    if (ev.target.name === 'theme') state.settings.theme = ev.target.value;
-    if (ev.target.name === 'effects') state.settings.effects = ev.target.value;
+    if (ev.target.name !== 'effects') return;
+    state.settings.effects = ev.target.value;
     applySettings();
     save();
   });
@@ -1563,12 +1652,532 @@
     if (fuse) fuseItem(fuse.dataset.fuse);
   });
 
+  // Skins. Free ones are always owned; the rest are found in the page, bought as one bundle, or
+  // earned from the badge book. Owned skins belong to the save file.
+  const SKINS = [
+    { id: 'midnight', name: 'Midnight', how: 'free' },
+    { id: 'felt', name: 'Felt', how: 'free' },
+    { id: 'daylight', name: 'Daylight', how: 'free', light: true },
+    { id: 'neon', name: 'Neon', how: 'secret', hint: 'The logo hides something.' },
+    { id: 'lcd', name: 'LCD', how: 'secret', hint: 'Keep pressing the version number.' },
+    { id: 'blueprint', name: 'Blueprint', how: 'secret', hint: 'Search the collection for the plans.' },
+    { id: 'terminal', name: 'Terminal', how: 'secret', hint: 'Settings has a command line somewhere.' },
+    { id: 'console', name: 'Console', how: 'secret', hint: 'Comes with Terminal.' },
+    { id: 'gold', name: 'Gold', how: 'bundle' },
+    { id: 'ruby', name: 'Ruby', how: 'bundle' },
+    { id: 'aurora', name: 'Aurora', how: 'bundle' },
+    { id: 'graph', name: 'Graph Paper', how: 'book', light: true },
+    { id: 'spiral', name: 'Golden Spiral', how: 'book' },
+    { id: 'odometer', name: 'Odometer', how: 'book' },
+    { id: 'vapor', name: 'Vaporwave', how: 'book' },
+    { id: 'spectrum', name: 'Spectrum', how: 'book', light: true },
+  ];
+  const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
+  const BUNDLE_PRICE = 500;
+  const ownsSkin = id => SKIN_BY_ID[id] && (SKIN_BY_ID[id].how === 'free' || state.skins.includes(id));
+  function unlockSkin(id, why) {
+    if (ownsSkin(id)) return false;
+    state.skins.push(id);
+    toast(`${esc(why)}: <b>${esc(SKIN_BY_ID[id].name)}</b> skin unlocked`, 'legendary');
+    save();
+    if ($('settingsDialog').open) renderSkins();
+    return true;
+  }
+  function wearSkin(id) {
+    if (!ownsSkin(id)) return;
+    state.settings.theme = id;
+    applySettings();
+    save();
+  }
+  function renderSkins() {
+    const groups = [['free', 'Free'], ['secret', 'Secret'], ['bundle', `Bundle, ${BUNDLE_PRICE} coins`], ['book', 'Badge book']];
+    $('skinList').innerHTML = groups.map(([how, title]) => `<li class="skin-group"><b>${title}</b></li>` + SKINS.filter(s => s.how === how).map(s => {
+      const own = ownsSkin(s.id), on = state.settings.theme === s.id;
+      const page = BOOK.find(p => p.skin === s.id);
+      const note = own ? '' : how === 'secret' ? s.hint : how === 'book' ? `Complete the ${page.cat} page` : `${BUNDLE_PRICE} coins`;
+      return `<li><button class="skin${on ? ' on' : ''}" type="button" data-skin="${s.id}" aria-pressed="${on}" ${own ? '' : 'disabled'}>`
+        + `<span class="swatch" data-swatch="${s.id}" aria-hidden="true"></span><span><b>${own || how !== 'secret' ? esc(s.name) : '???'}</b>`
+        + `${note ? `<br><span class="muted">${esc(note)}</span>` : ''}</span></button></li>`;
+    }).join('')).join('');
+    const bundleOwned = SKINS.filter(s => s.how === 'bundle').every(s => ownsSkin(s.id));
+    $('buyBundle').hidden = bundleOwned;
+    $('buyBundle').disabled = state.coins < BUNDLE_PRICE;
+    $('buyBundle').textContent = `Buy Gold, Ruby and Aurora for ${BUNDLE_PRICE} coins (you have ${fmt(state.coins)})`;
+  }
+  $('skinList').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-skin]');
+    if (b) { wearSkin(b.dataset.skin); renderSkins(); }
+  });
+  function buyBundle() {
+    if (state.coins < BUNDLE_PRICE || SKINS.filter(s => s.how === 'bundle').every(s => ownsSkin(s.id))) return false;
+    state.coins -= BUNDLE_PRICE;
+    for (const s of SKINS) if (s.how === 'bundle' && !ownsSkin(s.id)) state.skins.push(s.id);
+    toast('Bundle bought: <b>Gold, Ruby and Aurora</b> skins unlocked', 'legendary');
+    save();
+    if ($('settingsDialog').open) renderSkins();
+    return true;
+  }
+  $('buyBundle').addEventListener('click', buyBundle);
+
+  // Secret skins. Neon: press the 10 in the logo ten times in a row. LCD: press the version seven times.
+  // Blueprint: search the collection for "blueprint".
+  function presses(el, need, fire) {
+    let n = 0, last = 0;
+    el.addEventListener('click', () => {
+      const now = Date.now();
+      n = now - last < 1500 ? n + 1 : 1;
+      last = now;
+      if (n >= need) { n = 0; fire(); }
+    });
+  }
+  presses(document.querySelector('.mark .cells'), 10, () => { if (unlockSkin('neon', 'Secret found')) wearSkin('neon'); });
+  presses($('version'), 7, () => { if (unlockSkin('lcd', 'Secret found')) wearSkin('lcd'); });
+  $('collSearch').addEventListener('input', () => {
+    if ($('collSearch').value.trim().toLowerCase() === 'blueprint' && unlockSkin('blueprint', 'Secret found')) wearSkin('blueprint');
+  });
+
+  // The command line. The same shell runs in the hidden terminal in Settings and, full screen, in the
+  // Console skin, where it is the whole game: every screen has a command.
+  const TERMINAL_CODE = 'M@D3W1THL0V3';
+  const PROMPT = 'PS C:\\RNGdle10> ';
+  const plain = html => { const d = document.createElement('div'); d.innerHTML = html; return d.textContent; };
+  const pad = (s, n) => String(s).padEnd(n);
+  const findItem = q => {
+    q = q.toLowerCase();
+    return ITEMS.find(i => i.id === q) || ITEMS.find(i => i.name.toLowerCase() === q) || ITEMS.find(i => i.name.toLowerCase().includes(q));
+  };
+  const rollLine = e => `${pad(label(e), 16)}${pad(ROLL_TIERS[T(e.tier)].name, 14)}${pad(oneText(e), 18)}${MODE_BY_ID[e.mode].name}${e.x && e.x !== 'unity' ? ` × ${MULT_BY_ID[e.x].symbol}` : ''}`;
+  const SHELL_HELP = [
+    'ROLL [n]               Roll once, or n times (up to 10,000) and show the best.',
+    'AUTO [tier]            Roll until a tier or better, e.g. AUTO mythic.',
+    'ENDLESS                Roll until you type STOP.',
+    'STOP                   Stop Auto or Endless.',
+    'SPEED 1|2|TURBO        Auto and Endless speed.',
+    'RATE 90|250|500|1000   Turbo rolls per second.',
+    'MODE [name]            Show or change the mode.',
+    'STATS                  Totals, best roll, collection.',
+    'LUCK [mode]            Your tiers against the expected shares.',
+    'LOG [n]                Your last n rolls (default 10).',
+    'BEST [mode]            Hall of fame.',
+    'INV                    Inventory and active effects.',
+    'USE item               Use an item, e.g. USE luck100 or USE goose.',
+    'FUSE item              Fuse several of an item into the next one up.',
+    'SPIN [n|ALL]           Spin the coin slot.',
+    'ODDS                   The slot prize table and your pity.',
+    'QUESTS [CLAIM n]       Today\'s quests, or claim one.',
+    'BOOK [CLAIM page]      Badge book pages, or claim one.',
+    'BADGES [word]          Badges by category, or the ones matching a word.',
+    'ACH                    Achievements.',
+    'PRESTIGE [YES]         Prestige progress, or prestige.',
+    'SKINS, SKIN id         Your skins, or wear one.  BUY BUNDLE buys three.',
+    'SOUND ON|OFF           Sound.',
+    'VER, CLS, GUI          Version, clear the screen, back to the clickable Terminal look.',
+  ];
+  function shell(line, print) {
+    const cmd = line.trim();
+    if (!cmd) return;
+    if (cmd === TERMINAL_CODE) {
+      const fresh = unlockSkin('terminal', 'Code accepted');
+      unlockSkin('console', 'Code accepted');
+      if (!consoleOn()) wearSkin('terminal');
+      print(fresh ? 'Code accepted. Terminal and Console skins unlocked.' : 'You already have the Terminal and Console skins.', 'SKIN console plays the whole game from this command line.', '');
+      return;
+    }
+    const [word, ...rest] = cmd.split(/\s+/);
+    const arg = rest.join(' '), w = word.toLowerCase(), a = arg.toLowerCase();
+    const modeArg = () => (a ? MODES.find(m => m.id === a || m.name.toLowerCase().startsWith(a)) : MODE_BY_ID[state.mode]);
+    switch (w) {
+      case 'help': case '?': print(...SHELL_HELP, ''); break;
+      case 'ver': print('', `RNGdle 10 [Version ${$('version').textContent.slice(1)}]`, ''); break;
+      case 'cls': case 'clear': print.clear(); break;
+      case 'exit': if (print.exit) print.exit(); else print('Type GUI to leave the Console skin.'); break;
+      case 'gui': wearSkin('terminal'); break;
+      case 'roll': {
+        if (!ready[state.mode]) { print('The odds are still loading. Try again in a moment.'); break; }
+        if (auto) setAuto(null);
+        const n = Math.max(1, Math.min(1e4, Math.floor(+arg.replace(/,/g, '') || 1)));
+        let best = null;
+        for (let i = 0; i < n; i++) {
+          const r = takeRoll();
+          if (!best || r.rec.entry.oneInLog > best.rec.entry.oneInLog) best = r;
+          if (n <= 10) print(rollLine(r.rec.entry));
+        }
+        if (n > 10) print(`${fmt(n)} rolls. Best:`, rollLine(best.rec.entry));
+        drawRoll(best, 3, true);
+        break;
+      }
+      case 'auto': case 'endless': {
+        if (w === 'auto' && a) {
+          const t = ROLL_TIERS.find(x => x.name.toLowerCase() === a);
+          if (!t) { print(`No tier called ${arg}.`); break; }
+          $('stopAt').value = String(T(t.id));
+        }
+        setAuto(w);
+        const stopTier = ROLL_TIERS[+$('stopAt').value];
+        print(w === 'auto' ? `Auto: rolling until ${stopTier ? `${stopTier.name} or better` : 'you type STOP'}.` : 'Endless: rolling until you type STOP.', 'Epic or rarer rolls print as they come.');
+        break;
+      }
+      case 'stop': { const k = run.rolls; setAuto(null); print(`Stopped after ${rollsText(k)}.`); break; }
+      case 'speed': {
+        const v = { 1: 1, '1x': 1, 2: 2, '2x': 2, turbo: 3, 3: 3 }[a];
+        if (!v) { print(`Speed is ${['', '1×', '2×', 'Turbo'][speed]}. SPEED 1, 2 or TURBO changes it.`); break; }
+        $('speed').querySelector(`[data-speed="${v}"]`).click();
+        print(`Speed set to ${['', '1×', '2×', 'Turbo'][v]}.`);
+        break;
+      }
+      case 'rate': {
+        const v = +a.replace(/,/g, '');
+        if (!TURBO_RATES.includes(v)) { print(`Turbo rolls ${fmt(turboRate())} a second. RATE ${TURBO_RATES.join(', ')} changes it.`); break; }
+        state.settings.turboRate = v;
+        $('turboRate').value = String(v);
+        save();
+        print(`Turbo rate set to ${fmt(v)} a second.`);
+        break;
+      }
+      case 'mode': {
+        const m = modeArg();
+        if (!m) { print(`Modes: ${MODES.map(x => x.id).join(', ')}`); break; }
+        if (a) setMode(m.id);
+        print(`${m.name}: ${m.desc}`);
+        break;
+      }
+      case 'stats': {
+        const bestAny = MODE_IDS.map(m => state.hof[m][0]).filter(Boolean).sort((p, q) => q.log - p.log)[0];
+        print(`Rolls          ${fmt(state.total)}`, ...MODES.map(m => `  ${pad(m.name, 13)}${fmt(state.totals[m.id])}`),
+          `Today          ${rollsText(state.daily[dayKey()] || 0)}`, `Best roll      ${bestAny ? rollLine(bestAny) : 'none yet'}`,
+          `Badges         ${collected()} / ${collectable().length}`, `Multipliers    ${multsFound()} / ${MULTS.length}`,
+          `Achievements   ${Object.keys(state.ach).length} / ${ACHIEVEMENTS.length}`, `Coins          ${fmt(state.coins)}`,
+          `Prestige       ${state.prestige || 0} (drops ×${prestigeBonus()})`, '');
+        break;
+      }
+      case 'luck': {
+        const m = modeArg(), total = m ? tierTotal(m.id) : 0;
+        if (!total) { print('No plain rolls in that mode yet.'); break; }
+        const shares = G.tierShares(m.id), pc = v => (v === 0 ? '0%' : v >= 0.001 ? `${+(100 * v).toPrecision(3)}%` : `1 in ${fmt(1 / v)}`);
+        print(`${m.name}, ${rollsText(total)}`, `${pad('Tier', 14)}${pad('Rolls', 10)}${pad('You', 12)}Expected`,
+          ...ROLL_TIERS.filter(t => state.tiers[m.id][t.id] || (shares[t.id] || 0) >= 1e-9)
+            .map(t => `${pad(t.name, 14)}${pad(fmt(state.tiers[m.id][t.id] || 0), 10)}${pad(pc((state.tiers[m.id][t.id] || 0) / total), 12)}${pc(shares[t.id] || 0)}`), '');
+        break;
+      }
+      case 'log': {
+        const n = Math.max(1, Math.min(200, +arg || 10));
+        print(...(state.log.length ? state.log.slice(0, n).map(x => rollLine(entryFor(x))) : ['No rolls yet.']), '');
+        break;
+      }
+      case 'best': case 'hof': {
+        const m = modeArg() || MODE_BY_ID[state.mode];
+        print(`Hall of fame, ${m.name}`, ...(state.hof[m.id].length ? state.hof[m.id].map((e, i) => `${pad(i + 1 + '.', 4)}${rollLine(e)}`) : ['empty']), '');
+        break;
+      }
+      case 'inv': case 'inventory': {
+        const have = ITEMS.filter(i => state.inv[i.id] > 0);
+        print(`Coins: ${fmt(state.coins)}`, ...(have.length ? have.map(i => `${pad(i.id, 12)}${pad('×' + fmt(state.inv[i.id]), 10)}${i.name}`) : ['No items.']),
+          `Active: ${effectsText().join(', ') || 'nothing'}`, '');
+        break;
+      }
+      case 'use': case 'fuse': {
+        const it = arg && findItem(arg);
+        if (!it) { print(`No item called ${arg || '(nothing)'}. INV lists yours.`); break; }
+        const before = state.inv[it.id] || 0;
+        $('invMsg').textContent = '';
+        if (w === 'use') useItem(it.id); else fuseItem(it.id);
+        if ((state.inv[it.id] || 0) !== before) print(w === 'use' ? `Used ${it.name}. Active: ${effectsText().join(', ')}` : `Fused into ${ITEM_BY_ID[it.next[0]].name}.`);
+        else if (w === 'use') print($('invMsg').textContent || `You have no ${it.name}.`);
+        else print(it.next ? `Fusing needs ${it.next[1]} ${it.name}; you have ${before}.` : `${it.name} is the top of its line.`);
+        break;
+      }
+      case 'spin': {
+        const n = a === 'all' ? state.coins : Math.floor(+arg || 1);
+        if (n < 1 || state.coins < n || slotBusy) { print(slotBusy ? 'The slot is still spinning.' : `You have ${fmt(state.coins)} coins.`); break; }
+        spinSlot(n).then(() => print(...[...$('slotResult').children].map(li => li.textContent), `${fmt(state.coins)} coins left.`, ''));
+        break;
+      }
+      case 'odds': case 'slot':
+        print(`${pad('Prize', 32)}${pad('Chance', 10)}Pity`, ...SLOT_PRIZES.map(([id, qty, units]) => `${pad(ITEM_BY_ID[id].name + (qty > 1 ? ` ×${qty}` : ''), 32)}${pad(pctText(units), 10)}${id in SLOT_PITY ? `${fmt(state.pity[id] || 0)} / ${fmt(SLOT_PITY[id])}` : ''}`), '');
+        break;
+      case 'quests': case 'quest': {
+        const qs = todaysQuests();
+        if (rest[0] && rest[0].toLowerCase() === 'claim') {
+          const i = (+rest[1] || 1) - 1;
+          if (!qs.list[i]) { print('QUESTS CLAIM 1, 2 or 3.'); break; }
+          const q = qs.list[i];
+          print(claimQuest(i) ? `Claimed: ${QUEST_BY_ID[q.id].text}.` : q.claimed ? 'Already claimed.' : 'That quest is not done yet.');
+          break;
+        }
+        print(...qs.list.map((q, i) => {
+          const d = QUEST_BY_ID[q.id];
+          return `${i + 1}. ${pad(d.text, 40)}${pad(`${fmt(q.have)} / ${fmt(d.goal)}`, 18)}${q.claimed ? 'claimed' : q.have >= d.goal ? `ready: QUESTS CLAIM ${i + 1}` : `${d.coins} coins and ${ITEM_BY_ID[d.item].name}`}`;
+        }), '');
+        break;
+      }
+      case 'book': {
+        if (rest[0] && rest[0].toLowerCase() === 'claim') {
+          const p = BOOK.find(x => x.cat.toLowerCase() === (rest[1] || '').toLowerCase());
+          if (!p) { print(`Pages: ${BOOK.map(x => x.cat).join(', ')}`); break; }
+          print(claimPage(p) ? `Claimed the ${p.cat} page: ${rewardText(p)}.` : state.book[p.cat] ? 'Already claimed.' : 'That page is not complete yet.');
+          break;
+        }
+        print(...BOOK.map(p => `${pad(p.cat, 11)}${pad(`${pageHave(p.cat)} / ${pageBadges(p.cat).length}`, 10)}${pad(rewardText(p), 28)}${state.book[p.cat] ? 'claimed' : pageHave(p.cat) === pageBadges(p.cat).length ? `ready: BOOK CLAIM ${p.cat}` : ''}`), '');
+        break;
+      }
+      case 'badges': case 'collection': {
+        if (!a) {
+          print(...CATEGORIES.map(c => { const l = allBadges().filter(b => b.cat === c); return `${pad(c, 11)}${l.filter(b => state.counts[b.id]).length} / ${l.length}`; }), 'BADGES word lists the badges matching a word.', '');
+          break;
+        }
+        if (a === 'blueprint' && unlockSkin('blueprint', 'Secret found')) print('You found the plans.');
+        const l = allBadges().filter(b => `${b.name} ${b.desc} ${b.cat}`.toLowerCase().includes(a));
+        print(...(l.length ? l.map(b => `${state.counts[b.id] ? '[x]' : '[ ]'} ${pad(b.name, 26)}${pad(RARITIES[b.rarity].name, 14)}${odds(b.p)}`) : ['Nothing matches.']), '');
+        break;
+      }
+      case 'ach': case 'achievements':
+        print(...ACHIEVEMENTS.map(x => `${state.ach[x.id] ? '[x]' : '[ ]'} ${pad(x.name, 28)}${x.desc}`), '');
+        break;
+      case 'prestige': {
+        const need = prestigeNeed(), since = prestigeSince();
+        if (a !== 'yes') {
+          print(`Prestige ${state.prestige || 0}, drops and coins ×${prestigeBonus()}.`, `${fmt(Math.min(since, need))} of ${fmt(need)} rolls since the last one.`,
+            since >= need ? 'PRESTIGE YES prestiges. Coins, items and active effects are cleared.' : 'Prestige clears coins, items and active effects.', '');
+          break;
+        }
+        if (since < need) { print('Not yet.'); break; }
+        doPrestige();
+        print(`Prestige ${state.prestige}. Drops and coins ×${prestigeBonus()}.`);
+        break;
+      }
+      case 'skins': print(...SKINS.filter(s => ownsSkin(s.id)).map(s => `${state.settings.theme === s.id ? '*' : ' '} ${pad(s.id, 10)}${s.name}`), ''); break;
+      case 'skin':
+        if (a && ownsSkin(a)) { wearSkin(a); print(`Now wearing ${SKIN_BY_ID[a].name}.`, ''); } else print('The system cannot find the skin specified.', '');
+        break;
+      case 'buy':
+        if (a !== 'bundle') { print('BUY BUNDLE buys Gold, Ruby and Aurora.'); break; }
+        print(buyBundle() ? 'Bought the bundle: Gold, Ruby and Aurora.' : SKINS.filter(s => s.how === 'bundle').every(s => ownsSkin(s.id)) ? 'You already own it.' : `It costs ${BUNDLE_PRICE} coins; you have ${fmt(state.coins)}.`);
+        break;
+      case 'sound':
+        if (a === 'on' || a === 'off') { state.settings.sound = a === 'on'; paintSound(); save(); }
+        print(`Sound is ${state.settings.sound ? 'on' : 'off'}.`);
+        break;
+      default:
+        print(`${word} : The term '${word}' is not recognized as the name of a command.`, 'Type HELP for the list of commands.', '');
+    }
+  }
+  // An output sink: print(...lines) appends, print.clear() empties.
+  function sink(pre, scroller) {
+    const print = (...lines) => {
+      pre.append(lines.join('\n') + '\n');
+      while (pre.childNodes.length > 400) pre.firstChild.remove();
+      scroller.scrollTop = 1e9;
+    };
+    print.clear = () => { pre.textContent = ''; };
+    return print;
+  }
+  const termPrint = sink($('termOut'), $('termOut'));
+  termPrint.exit = () => { $('terminal').hidden = true; $('termToggle').setAttribute('aria-expanded', 'false'); };
+  $('termToggle').addEventListener('click', () => {
+    const open = $('terminal').hidden;
+    $('terminal').hidden = !open;
+    $('termToggle').setAttribute('aria-expanded', String(open));
+    if (open) {
+      if (!$('termOut').textContent) termPrint('RNGdle 10 command line', 'Type HELP for a list of commands.', '');
+      $('termInput').focus();
+    }
+  });
+  function wireInput(form, input, print) {
+    const history = [];
+    let at = 0;
+    form.addEventListener('submit', ev => {
+      ev.preventDefault();
+      const line = input.value;
+      print(PROMPT + line);
+      if (line.trim()) { history.push(line); at = history.length; }
+      input.value = '';
+      shell(line, print);
+    });
+    input.addEventListener('keydown', ev => {
+      if (ev.key === 'ArrowUp' && at > 0) { input.value = history[--at]; ev.preventDefault(); }
+      if (ev.key === 'ArrowDown') { at = Math.min(history.length, at + 1); input.value = history[at] || ''; ev.preventDefault(); }
+    });
+  }
+  wireInput($('termForm'), $('termInput'), termPrint);
+
+  // The Console skin: the page becomes one command line. Notices print as text, and Epic or rarer
+  // rolls print as they happen during Auto and Endless.
+  const conPrint = sink($('conOut'), $('console'));
+  wireInput($('conForm'), $('conInput'), conPrint);
+  function consoleOn() { return state.settings.theme === 'console'; }
+  let conLineAt = 0;
+  function consoleRoll(entry) {
+    if (!auto || T(entry.tier) < T('epic')) return;
+    const now = performance.now();
+    if (now - conLineAt < 50) return; // at most 20 lines a second
+    conLineAt = now;
+    conPrint(rollLine(entry));
+  }
+  function paintConsole() {
+    $('console').hidden = !consoleOn();
+    if (!consoleOn()) return;
+    if (!$('conOut').textContent) conPrint('RNGdle 10 Console', `Save file: ${slotName(slots.active)}. Type HELP for the commands, GUI for the clickable look.`, '');
+    setTimeout(() => $('conInput').focus(), 0);
+  }
+  $('console').addEventListener('click', () => { if (!getSelection().toString()) $('conInput').focus(); });
+
+  // Badge book: a page is complete once every badge of its category at 1 in 1,000,000 or likelier
+  // is collected. Five pages give a legendary skin; the rest give items.
+  const BOOK = [
+    { cat: 'Size', item: 'luck1k', k: 3 },
+    { cat: 'Math', skin: 'graph' },
+    { cat: 'Sequences', skin: 'spiral' },
+    { cat: 'Digits', skin: 'odometer' },
+    { cat: 'Memes', skin: 'vapor' },
+    { cat: 'Combos', skin: 'spectrum' },
+    { cat: 'Powers', item: 'goose', k: 2 },
+    { cat: 'Modulo', item: 'luck10k', k: 1 },
+    { cat: 'Target', item: 'prism', k: 3 },
+    { cat: 'Radar', item: 'overclock2', k: 3 },
+  ];
+  const BOOK_P = 1e-6;
+  const pageBadges = cat => collectable().filter(b => b.cat === cat && b.p >= BOOK_P);
+  const pageHave = cat => pageBadges(cat).filter(b => state.counts[b.id]).length;
+  const rewardText = p => (p.skin ? `${SKIN_BY_ID[p.skin].name} skin` : `${ITEM_BY_ID[p.item].name}${p.k > 1 ? ` ×${p.k}` : ''}`);
+  function renderBook() {
+    $('book').innerHTML = BOOK.map(p => {
+      const all = pageBadges(p.cat).length, have = pageHave(p.cat), done = have === all, claimed = state.book[p.cat];
+      const action = claimed ? '<span class="muted">Claimed</span>'
+        : `<button class="btn" type="button" data-page="${p.cat}" ${done ? '' : 'disabled'}>Claim</button>`;
+      return `<li${p.skin ? ' class="legend"' : ''}><div><b>${esc(p.cat)}</b> <span class="muted num">${have} / ${all}</span><br>`
+        + `<span class="muted">Reward: ${esc(rewardText(p))}</span><div class="progress"><i style="width:${(100 * have / all).toFixed(1)}%"></i></div></div>${action}</li>`;
+    }).join('');
+    const pages = BOOK.filter(p => state.book[p.cat]).length;
+    $('bookCount').textContent = `${pages} of ${BOOK.length} pages claimed`;
+  }
+  $('book').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-page]');
+    if (!b) return;
+    claimPage(BOOK.find(x => x.cat === b.dataset.page));
+  });
+  function claimPage(p) {
+    if (state.book[p.cat] || pageHave(p.cat) < pageBadges(p.cat).length) return false;
+    state.book[p.cat] = Date.now();
+    if (p.skin) unlockSkin(p.skin, `${p.cat} page complete`);
+    else grant(p.item, `${p.cat} page complete`, p.k);
+    save();
+    if (!$('tab-collection').hidden) renderBook();
+    return true;
+  }
+
+  // Daily quests: three a day per save file, picked from the date and the save file so they are
+  // the same all day. Each pays coins and an item; finishing all three pays a bonus.
+  const QUESTS = [
+    { id: 'roll500', text: 'Roll 500 times', goal: 500, on: 'roll', coins: 5, item: 'luck10' },
+    { id: 'roll2k', text: 'Roll 2,000 times', goal: 2000, on: 'roll', coins: 15, item: 'lens' },
+    { id: 'roll10k', text: 'Roll 10,000 times', goal: 1e4, on: 'roll', coins: 40, item: 'overclock' },
+    { id: 'rare10', text: 'Roll Rare or rarer 10 times', goal: 10, on: 'tier', tier: 'rare', coins: 8, item: 'luck10' },
+    { id: 'epic3', text: 'Roll Epic or rarer 3 times', goal: 3, on: 'tier', tier: 'epic', coins: 10, item: 'luck100' },
+    { id: 'legend', text: 'Roll Legendary or rarer', goal: 1, on: 'tier', tier: 'legendary', coins: 15, item: 'horn' },
+    { id: 'mythic', text: 'Roll Mythic or rarer', goal: 1, on: 'tier', tier: 'mythic', coins: 40, item: 'luck1k' },
+    { id: 'fresh', text: 'Collect a badge you did not have', goal: 1, on: 'fresh', coins: 10, item: 'lens' },
+    { id: 'mult', text: 'Land a Rare or rarer multiplier', goal: 1, on: 'mult', coins: 8, item: 'prism' },
+    { id: 'spin10', text: 'Spin the coin slot 10 times', goal: 10, on: 'spin', coins: 5, item: 'horn' },
+    { id: 'coins5', text: 'Find 5 coins', goal: 5, on: 'coin', coins: 5, item: 'luck100' },
+    ...MODES.map(m => ({ id: `mode-${m.id}`, text: `Roll 300 times in ${m.name} mode`, goal: 300, on: 'mode', mode: m.id, coins: 8, item: 'luck100' })),
+  ];
+  const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
+  const QUEST_BONUS = 'luck1k';
+  function todaysQuests() {
+    const day = dayKey();
+    if (state.quests.day !== day) {
+      let h = 2166136261; // FNV-1a of the date and save file, so the pick is fixed for the day
+      for (const c of day + slots.active) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
+      const pool = QUESTS.map(q => q.id), pick = [];
+      while (pick.length < 3) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; pick.push(pool.splice(h % pool.length, 1)[0]); }
+      state.quests = { day, list: pick.map(id => ({ id, have: 0, claimed: false })), bonus: false };
+    }
+    return state.quests;
+  }
+  function questEvent(on, amount = 1, test = () => true) {
+    for (const q of todaysQuests().list) {
+      const def = QUEST_BY_ID[q.id];
+      if (def.on !== on || q.have >= def.goal || !test(def)) continue;
+      q.have = Math.min(def.goal, q.have + amount);
+      if (q.have >= def.goal) toast(`Quest done: <b>${esc(def.text)}</b>. Claim it in Trophies${consoleOn() ? ' or with QUESTS CLAIM' : ''}.`, 'rare');
+      if (!$('tab-trophies').hidden && (q.have >= def.goal || !auto)) renderQuests();
+    }
+  }
+  function renderQuests() {
+    const qs = todaysQuests();
+    $('quests').innerHTML = qs.list.map((q, i) => {
+      const def = QUEST_BY_ID[q.id], done = q.have >= def.goal;
+      const action = q.claimed ? '<span class="muted">Claimed</span>'
+        : `<button class="btn" type="button" data-quest="${i}" ${done ? '' : 'disabled'}>Claim</button>`;
+      return `<li><div><b>${esc(def.text)}</b> <span class="muted num">${fmt(q.have)} / ${fmt(def.goal)}</span><br>`
+        + `<span class="muted">Reward: ${def.coins} coins and ${esc(ITEM_BY_ID[def.item].name)}</span>`
+        + `<div class="progress"><i style="width:${(100 * q.have / def.goal).toFixed(1)}%"></i></div></div>${action}</li>`;
+    }).join('') + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[QUEST_BONUS].name)}${qs.bonus ? ' (paid)' : ''}. New quests every day at midnight.</li>`;
+  }
+  $('quests').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-quest]');
+    if (!b) return;
+    claimQuest(+b.dataset.quest);
+  });
+  function claimQuest(i) {
+    const qs = todaysQuests(), q = qs.list[i], def = QUEST_BY_ID[q.id];
+    if (q.claimed || q.have < def.goal) return false;
+    q.claimed = true;
+    state.coins += def.coins;
+    grant(def.item, `Quest reward, plus ${def.coins} coins`);
+    if (!qs.bonus && qs.list.every(x => x.claimed)) { qs.bonus = true; grant(QUEST_BONUS, 'All quests done'); }
+    save();
+    if (!$('tab-trophies').hidden) renderQuests();
+    return true;
+  }
+
+  // Prestige: once enough rolls have passed since the last one, trade in coins, items and active
+  // effects for a permanent bonus: every drop and coin chance is multiplied by 1 + 0.5 per prestige.
+  const PRESTIGE_STEP = 1e5;
+  function prestigeBonus() { return 1 + 0.5 * (state.prestige || 0); }
+  const prestigeNeed = () => PRESTIGE_STEP * ((state.prestige || 0) + 1);
+  const prestigeSince = () => state.total - (state.prestigeAt || 0);
+  function renderPrestige() {
+    const P = state.prestige || 0, since = prestigeSince(), need = prestigeNeed();
+    $('prestigeText').textContent = P
+      ? `Prestige ${P}: drops and coins come ${prestigeBonus()} times as often.`
+      : 'No prestige yet. Each one makes drops and coins come half again as often, for good.';
+    $('prestigeProgress').textContent = `${fmt(Math.min(since, need))} of ${fmt(need)} rolls since the last prestige`;
+    $('prestigeBar').style.width = `${Math.min(100, 100 * since / need).toFixed(1)}%`;
+    $('prestigeBtn').disabled = since < need;
+    $('prestigeBtn').textContent = `Prestige to ${P + 1} (×${1 + 0.5 * (P + 1)} drops)`;
+    paintPrestigeMark();
+  }
+  function paintPrestigeMark() {
+    const P = state.prestige || 0;
+    $('prestigeMark').hidden = !P;
+    $('prestigeMark').textContent = `P${P}`;
+    $('prestigeMark').setAttribute('aria-label', `Prestige ${P}`);
+  }
+  $('prestigeBtn').addEventListener('click', () => {
+    if (prestigeSince() < prestigeNeed()) return;
+    if (confirm('Prestige? Your coins, every item and every active effect are cleared. Rolls, badges, skins, achievements and the hall of fame stay.')) doPrestige();
+  });
+  function doPrestige() {
+    setAuto(null);
+    state.prestige = (state.prestige || 0) + 1;
+    state.prestigeAt = state.total;
+    Object.assign(state, { coins: 0, inv: {}, effects: {} });
+    toast(`Prestige ${state.prestige}: drops and coins ×${prestigeBonus()}`, 'mythic');
+    writeSave();
+    renderPrestige();
+    paintStatus();
+  }
+
   // Start
   if (state.lastGift !== dayKey()) { // one free charm a day, per save file
     state.lastGift = dayKey();
     setTimeout(() => { grant('luck10', 'Daily gift'); save(); }, 600);
   }
+  for (const k of Object.keys(state.daily).sort().slice(0, -60)) delete state.daily[k]; // keep two months of daily counts
   applySettings();
+  paintPrestigeMark();
+  $('chartMode').value = state.mode;
   paintSound();
   paintMult(MULT_BY_ID.unity);
   setMode(state.mode);

@@ -1,82 +1,167 @@
-/* Tokens: see DESIGN.md for the reasons behind each choice. */
+/* Tokens: see DESIGN.md for the reasons behind each choice. A skin is one set of these tokens
+   (data-theme); light skins also set data-tone="light", which swaps in the light rarity scale. */
 :root,
 :root[data-theme="midnight"] {
   color-scheme: dark;
-  --bg: #0c0c10;
-  --surface: #15151b;
-  --surface-2: #1d1d25;
-  --line: #2c2c37;
-  --ink: #f1efe9;
-  --muted: #a7a5ae;
-  --faint: #8c8a94;
-  --cell: #060608;
-  --cell-ink: #f6f1e3;
-  --cell-lead: #75737d;
-  --accent: #d6a84a;
-  --accent-ink: #19130a;
-  --focus: #f1efe9;
-  --r-trash: #b09f8c;
-  --r-common: #b8b7bf;
-  --r-uncommon: #5fd38a;
-  --r-rare: #78acff;
-  --r-epic: #c6a0ff;
-  --r-legendary: #ff9f45;
-  --r-anomaly: #ff7272;
-  --r-mythic: #ffd447;
-  --r-divine: #6ee7de;
-  --r-cosmic: #ff7ad1;
-  --r-transcendent: #ffffff;
-  --r-ethereal: #cbb8ff;
-  --r-celestial: #ffe6a0;
-  --r-eternal: #ffb0c4;
+  --bg: #0c0c10; --surface: #15151b; --surface-2: #1d1d25; --line: #2c2c37;
+  --ink: #f1efe9; --muted: #a7a5ae; --faint: #8c8a94;
+  --cell: #060608; --cell-ink: #f6f1e3; --cell-lead: #75737d;
+  --accent: #d6a84a; --accent-ink: #19130a; --focus: #f1efe9;
 }
-:root[data-theme="felt"] {
-  color-scheme: dark;
-  --bg: #0a1511;
-  --surface: #11201a;
-  --surface-2: #172a21;
-  --line: #26392f;
-  --ink: #eef3ec;
-  --muted: #a9bbaf;
-  --faint: #8ba193;
-  --cell: #040a07;
-  --cell-lead: #6f8576;
+/* Rarity scale for dark skins: brown-grey to gold, then aqua, pink, white and the pale top tiers. */
+:root {
+  --r-trash: #b09f8c; --r-common: #b8b7bf; --r-uncommon: #5fd38a; --r-rare: #78acff; --r-epic: #c6a0ff;
+  --r-legendary: #ff9f45; --r-anomaly: #ff7272; --r-mythic: #ffd447; --r-divine: #6ee7de; --r-cosmic: #ff7ad1;
+  --r-transcendent: #ffffff; --r-ethereal: #cbb8ff; --r-celestial: #ffe6a0; --r-eternal: #ffb0c4;
+  --r-infinite: #a5f3c0; --r-omega: #ffb38a; --r-absolute: #e4e4ea; --r-primordial: #ffcf6e; --r-unfathomable: #ff6b9e;
 }
-:root[data-theme="daylight"] {
+/* The same scale, darkened to read on light skins. */
+:root[data-tone="light"] {
   color-scheme: light;
-  --bg: #f3f1ec;
-  --surface: #ffffff;
-  --surface-2: #faf8f4;
-  --line: #d9d5cb;
-  --ink: #1b1a17;
-  --muted: #55524b;
-  --faint: #66635b;
-  --cell: #18171b;
-  --cell-lead: #8a8792;
-  --accent: #c9963a;
-  --focus: #1b1a17;
-  --r-trash: #77654f;
-  --r-common: #5c5b63;
-  --r-uncommon: #17793f;
-  --r-rare: #1d5bc0;
-  --r-epic: #7637c2;
-  --r-legendary: #a14a00;
-  --r-anomaly: #bf2530;
-  --r-mythic: #8d6200;
-  --r-divine: #0b6e66;
-  --r-cosmic: #a8166f;
-  --r-transcendent: #1b1a17;
-  --r-ethereal: #5a3fa8;
-  --r-celestial: #6e5300;
-  --r-eternal: #a3204a;
+  --r-trash: #77654f; --r-common: #5c5b63; --r-uncommon: #17793f; --r-rare: #1d5bc0; --r-epic: #7637c2;
+  --r-legendary: #a14a00; --r-anomaly: #bf2530; --r-mythic: #8d6200; --r-divine: #0b6e66; --r-cosmic: #a8166f;
+  --r-transcendent: #1b1a17; --r-ethereal: #5a3fa8; --r-celestial: #6e5300; --r-eternal: #a3204a;
+  --r-infinite: #0f6b3a; --r-omega: #9a3b0e; --r-absolute: #3d3d45; --r-primordial: #7a4f00; --r-unfathomable: #9e1446;
+}
+/* The reels stay dark on light skins too, so inside the cabinet the dark scale applies. */
+:root[data-tone="light"] .cabinet {
+  --r-trash: #b09f8c; --r-common: #b8b7bf; --r-uncommon: #5fd38a; --r-rare: #78acff; --r-epic: #c6a0ff;
+  --r-legendary: #ff9f45; --r-anomaly: #ff7272; --r-mythic: #ffd447; --r-divine: #6ee7de; --r-cosmic: #ff7ad1;
+  --r-transcendent: #ffffff; --r-ethereal: #cbb8ff; --r-celestial: #ffe6a0; --r-eternal: #ffb0c4;
+  --r-infinite: #a5f3c0; --r-omega: #ffb38a; --r-absolute: #e4e4ea; --r-primordial: #ffcf6e; --r-unfathomable: #ff6b9e;
 }
 
-/* The reels stay dark in every theme, so inside the cabinet rarity colours come from the dark set. */
-:root[data-theme="daylight"] .cabinet {
-  --r-trash: #b09f8c; --r-common: #b8b7bf; --r-uncommon: #5fd38a; --r-rare: #78acff; --r-epic: #c6a0ff;
-  --r-legendary: #ff9f45; --r-anomaly: #ff7272; --r-mythic: #ffd447; --r-divine: #6ee7de; --r-cosmic: #ff7ad1; --r-transcendent: #ffffff;
-  --r-ethereal: #cbb8ff; --r-celestial: #ffe6a0; --r-eternal: #ffb0c4;
+/* Free skins */
+:root[data-theme="felt"] {
+  --bg: #0a1511; --surface: #11201a; --surface-2: #172a21; --line: #26392f;
+  --ink: #eef3ec; --muted: #a9bbaf; --faint: #8ba193; --cell: #040a07; --cell-lead: #6f8576;
 }
+:root[data-theme="daylight"] {
+  --bg: #f3f1ec; --surface: #ffffff; --surface-2: #faf8f4; --line: #d9d5cb;
+  --ink: #1b1a17; --muted: #55524b; --faint: #66635b; --cell: #18171b; --cell-lead: #8a8792;
+  --accent: #a8761c; --focus: #1b1a17;
+}
+
+/* Secret skins */
+:root[data-theme="neon"] {
+  --bg: #0a0614; --surface: #140b24; --surface-2: #1c1030; --line: #33204f;
+  --ink: #f5eaff; --muted: #c3b0dd; --faint: #a58fc2; --cell: #05020a; --cell-ink: #ff6fe0; --cell-lead: #7a5299;
+  --accent: #2ef2ff; --accent-ink: #04121a; --focus: #2ef2ff;
+}
+:root[data-theme="lcd"] {
+  --bg: #0b1a0e; --surface: #102414; --surface-2: #15301a; --line: #234a2b;
+  --ink: #c8f7c5; --muted: #8fcf8a; --faint: #79b874; --cell: #0d2a12; --cell-ink: #7dff6a; --cell-lead: #3d7c41;
+  --accent: #7dff6a; --accent-ink: #08200b; --focus: #7dff6a;
+}
+/* Blueprint and Graph Paper draw a ruled grid on purpose: it is the identity of those two skins. */
+:root[data-theme="blueprint"] {
+  --bg: #0b2545; --surface: #0f2f57; --surface-2: #11325c; --line: #2d5487;
+  --ink: #eaf2ff; --muted: #b7cbe6; --faint: #9db3d4; --cell: #071a33; --cell-ink: #ffffff; --cell-lead: #6584ad;
+  --accent: #ffd166; --accent-ink: #1b1500; --focus: #ffd166;
+}
+:root[data-theme="blueprint"] body {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Bundle skins (500 coins) */
+:root[data-theme="gold"] {
+  --bg: #120d02; --surface: #1d1504; --surface-2: #261c06; --line: #4a3a12;
+  --ink: #fff6dc; --muted: #d9c79b; --faint: #bdaa7c; --cell: #0b0800; --cell-ink: #ffd66b; --cell-lead: #7a6530;
+  --accent: #ffd447; --accent-ink: #1a1200; --focus: #ffd447;
+}
+:root[data-theme="ruby"] {
+  --bg: #16050a; --surface: #220810; --surface-2: #2c0b15; --line: #521628;
+  --ink: #ffe9ee; --muted: #e3b3c0; --faint: #c999a6; --cell: #0d0306; --cell-ink: #ff9bb2; --cell-lead: #9a5262;
+  --accent: #ff4d6d; --accent-ink: #1a0208; --focus: #ff8fa6;
+}
+:root[data-theme="aurora"] {
+  --bg: #04131a; --surface: #082029; --surface-2: #0b2a35; --line: #164556;
+  --ink: #e6fffb; --muted: #a6d9d2; --faint: #8ac2ba; --cell: #020b0f; --cell-ink: #7dfbd8; --cell-lead: #377a74;
+  --accent: #7dfbd8; --accent-ink: #03201a; --focus: #7dfbd8;
+}
+
+/* Legendary skins, from badge book pages */
+:root[data-theme="graph"] {
+  --bg: #f7f6f0; --surface: #ffffff; --surface-2: #f2f1ea; --line: #d6d3c4;
+  --ink: #1c2733; --muted: #4d5866; --faint: #5c6775; --cell: #1c2733; --cell-ink: #f7f6f0; --cell-lead: #8592a0;
+  --accent: #c0392b; --accent-ink: #ffffff; --focus: #1c2733;
+}
+:root[data-theme="graph"] body {
+  background-image: linear-gradient(rgba(28, 39, 51, 0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(28, 39, 51, 0.07) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+:root[data-theme="spiral"] {
+  --bg: #101418; --surface: #171d23; --surface-2: #1e262e; --line: #2f3b47;
+  --ink: #f3efe6; --muted: #c9c1ad; --faint: #ada590; --cell: #0a0d10; --cell-ink: #f2c14e; --cell-lead: #66707a;
+  --accent: #f2c14e; --accent-ink: #1a1300; --focus: #f2c14e;
+}
+:root[data-theme="odometer"] {
+  --bg: #1b1813; --surface: #24201a; --surface-2: #2d2820; --line: #4a4234;
+  --ink: #f1e8d6; --muted: #c8bba1; --faint: #ad9f84; --cell: #0e0d0b; --cell-ink: #f6f0e2; --cell-lead: #75695a;
+  --accent: #c8963e; --accent-ink: #1a1206; --focus: #f1e8d6;
+}
+:root[data-theme="vapor"] {
+  --bg: #1a1033; --surface: #241646; --surface-2: #2d1c57; --line: #48307f;
+  --ink: #fff0fb; --muted: #e0bde0; --faint: #c7a3c8; --cell: #120a24; --cell-ink: #ff9be0; --cell-lead: #7a5aa0;
+  --accent: #ff71ce; --accent-ink: #22001a; --focus: #ff9be0;
+}
+:root[data-theme="spectrum"] {
+  --bg: #f4f4f8; --surface: #ffffff; --surface-2: #f7f7fb; --line: #d8d8e3;
+  --ink: #17171f; --muted: #4f4f60; --faint: #5e5e70; --cell: #17171f; --cell-ink: #ffffff; --cell-lead: #8a8a9a;
+  --accent: #3b5bdb; --accent-ink: #ffffff; --focus: #17171f;
+}
+
+/* Terminal and Console: unlocked from the hidden command line in Settings. They look like a console
+   window: one monospace font, plain text on black, no boxes, lines, bars, shadows or effects. Buttons
+   read as [Label], the selected one inverted. Console goes further and replaces the page with a
+   command line (see .console below). */
+:root:is([data-theme="terminal"], [data-theme="console"]) {
+  --bg: #0c0c0c; --surface: #0c0c0c; --surface-2: #0c0c0c; --line: #0c0c0c;
+  --ink: #cccccc; --muted: #a8a8a8; --faint: #8f8f8f; --cell: #0c0c0c; --cell-ink: #cccccc; --cell-lead: #767676;
+  --accent: #cccccc; --accent-ink: #0c0c0c; --focus: #ffffff;
+}
+:root[data-theme="terminal"] body, :root[data-theme="terminal"] button, :root[data-theme="terminal"] select,
+:root[data-theme="terminal"] input, :root[data-theme="terminal"] table {
+  font-family: "Cascadia Mono", Consolas, "Lucida Console", ui-monospace, monospace;
+}
+:root[data-theme="terminal"] *, :root[data-theme="terminal"] *::before, :root[data-theme="terminal"] *::after {
+  border-color: transparent !important; border-radius: 0 !important; box-shadow: none !important; text-shadow: none !important;
+  background-image: none !important; font-weight: 400 !important; letter-spacing: 0 !important;
+}
+:root[data-theme="terminal"] :is(.cabinet, .board, .card, .stat, .items li, .coins-panel, .seg, .mult, .effects li, .ach li,
+  .chart, .result, .slots li, .skin, .reel, .mini-cell, .toast, .tabs button, .chart-tip, .facts, .opts) { background: transparent; }
+:root[data-theme="terminal"] :is(.card, .items li, .toast)::before { display: none; }
+:root[data-theme="terminal"] :is(#fx, #flash, .progress, .pity-bar, .swatch, .chart .grid) { display: none; }
+:root[data-theme="terminal"] :is(.roll, .btn, .seg button, .tabs button, .icon-btn) { background: transparent; color: var(--ink); min-width: 0; padding: 0 6px; }
+:root[data-theme="terminal"] :is(.roll, .btn, .seg button, .tabs button)::before { content: "["; }
+:root[data-theme="terminal"] :is(.roll, .btn, .seg button, .tabs button)::after { content: "]"; }
+:root[data-theme="terminal"] :is(.btn[aria-pressed="true"], .seg button[aria-pressed="true"], .tabs button[aria-selected="true"], .skin.on) { background: var(--ink); color: var(--bg); }
+:root[data-theme="terminal"] :is(input, select) { background: #1e1e1e; color: var(--ink); }
+:root[data-theme="terminal"] .reel { width: auto; min-width: 0.7em; }
+:root[data-theme="terminal"] .mini-cell { width: auto; }
+:root[data-theme="terminal"] dialog { background: var(--bg); outline: 1px solid #767676; }
+:root[data-theme="terminal"] .chart :is(.bar, .you) { fill: var(--ink); stroke: none; }
+:root[data-theme="terminal"] .chart .expected { stroke: var(--muted); }
+:root[data-theme="terminal"] .chart .legend .k-you { background: var(--ink); }
+:root[data-theme="terminal"] .chart .legend .k-exp { border: 2px solid var(--muted) !important; }
+:root[data-theme="terminal"] *:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
+:root[data-theme="terminal"] .mark::before { content: "PS C:\\RNGdle10> "; }
+:root[data-theme="terminal"] .mark::after {
+  content: ""; display: inline-block; width: 0.6em; height: 1.1em; margin-left: 4px; vertical-align: text-bottom;
+  background: var(--ink); animation: cursor-blink 1.06s steps(1) infinite; /* the blinking console cursor */
+}
+@keyframes cursor-blink { 50% { opacity: 0; } }
+
+/* The Console skin: the whole page is one command line. */
+.console { position: fixed; inset: 0; z-index: 40; overflow-y: auto; padding: 12px 16px 40vh; background: #0c0c0c; color: #cccccc; font: 15px/1.35 "Cascadia Mono", Consolas, "Lucida Console", ui-monospace, monospace; cursor: text; }
+.console pre { margin: 0; white-space: pre-wrap; word-break: break-word; font: inherit; }
+.con-line { display: flex; align-items: center; min-height: 44px; }
+.con-line label { white-space: pre; }
+.con-line input { flex: 1; min-width: 0; min-height: 44px; padding: 0; background: transparent; border: 0; outline: none; color: #cccccc; font: inherit; caret-color: #cccccc; caret-shape: block; }
+:root[data-theme="console"] .console { display: block; }
+:root[data-theme="console"] :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root[data-theme="console"] body { overflow: hidden; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -359,11 +444,73 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 .pity-bar i { display: block; height: 100%; background: var(--ink); }
 .item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .items li.none { opacity: 0.62; }
+.book li, .quests li { --rc: var(--line); align-items: flex-start; }
+.book li.legend { --rc: var(--r-legendary); }
+.book li > div, .quests li > div { flex: 1; min-width: 0; }
+.book .progress, .quests .progress, .prestige .progress { margin: 8px 0 0; height: 6px; }
+.quests li.muted { display: block; padding-left: 12px; }
+.quests li.muted::before { width: 0; }
+.prestige .progress { margin-bottom: 12px; }
+.prestige-mark { font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 6px; border: 1px solid var(--accent); color: var(--accent); }
 .items li.none::before { background: var(--line); }
 .effects { list-style: none; margin: 0 0 22px; padding: 0; display: grid; gap: 6px; }
 .effects li { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); font-weight: 600; }
 .effects li.muted { font-weight: 400; }
 .muted { color: var(--muted); }
+.skins { list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.skin-group { grid-column: 1 / -1; margin-top: 6px; font-size: 13px; color: var(--muted); }
+.skin { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 52px; padding: 6px 10px; text-align: left; font: inherit; font-size: 14px; color: var(--ink); background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; }
+.skin.on { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.skin:disabled { cursor: default; }
+.skin:disabled b { color: var(--muted); }
+.skin .muted { font-size: 12px; }
+/* Each swatch shows a skin's background and accent, so its colours are written out here. */
+.swatch { flex: none; width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--line); }
+.skin:disabled .swatch { opacity: 0.35; }
+[data-swatch="midnight"] { background: linear-gradient(135deg, #0c0c10 55%, #d6a84a 55%); }
+[data-swatch="felt"] { background: linear-gradient(135deg, #0a1511 55%, #d6a84a 55%); }
+[data-swatch="daylight"] { background: linear-gradient(135deg, #f3f1ec 55%, #a8761c 55%); }
+[data-swatch="neon"] { background: linear-gradient(135deg, #0a0614 55%, #2ef2ff 55%); }
+[data-swatch="lcd"] { background: linear-gradient(135deg, #0b1a0e 55%, #7dff6a 55%); }
+[data-swatch="blueprint"] { background: linear-gradient(135deg, #0b2545 55%, #ffd166 55%); }
+[data-swatch="terminal"], [data-swatch="console"] { background: linear-gradient(135deg, #0c0c0c 55%, #cccccc 55%); }
+[data-swatch="gold"] { background: linear-gradient(135deg, #120d02 55%, #ffd447 55%); }
+[data-swatch="ruby"] { background: linear-gradient(135deg, #16050a 55%, #ff4d6d 55%); }
+[data-swatch="aurora"] { background: linear-gradient(135deg, #04131a 55%, #7dfbd8 55%); }
+[data-swatch="graph"] { background: linear-gradient(135deg, #f7f6f0 55%, #c0392b 55%); }
+[data-swatch="spiral"] { background: linear-gradient(135deg, #101418 55%, #f2c14e 55%); }
+[data-swatch="odometer"] { background: linear-gradient(135deg, #1b1813 55%, #c8963e 55%); }
+[data-swatch="vapor"] { background: linear-gradient(135deg, #1a1033 55%, #ff71ce 55%); }
+[data-swatch="spectrum"] { background: linear-gradient(135deg, #f4f4f8 55%, #3b5bdb 55%); }
+#buyBundle { margin-bottom: 4px; }
+/* The hidden command line: always a console, whatever the skin. */
+.terminal { margin-top: 14px; padding: 10px 12px; background: #0c0c0c; color: #cccccc; border-radius: 6px; font: 14px/1.4 "Cascadia Mono", Consolas, "Lucida Console", ui-monospace, monospace; }
+.terminal pre { margin: 0; max-height: 200px; overflow: auto; white-space: pre-wrap; font: inherit; }
+.term-line { display: flex; align-items: center; min-height: 44px; }
+.term-line label { white-space: pre; }
+.term-line input { flex: 1; min-width: 0; min-height: 44px; padding: 0 0 0 2px; background: transparent; border: 0; color: #cccccc; font: inherit; caret-color: #cccccc; outline: none; }
+.terminal:focus-within { box-shadow: 0 0 0 2px #cccccc; }
+.term-toggle { margin-right: auto; min-width: 44px; min-height: 44px; padding: 0; background: transparent; border: 0; color: var(--faint); font: 13px ui-monospace, monospace; cursor: pointer; opacity: 0.6; }
+.term-toggle:hover, .term-toggle:focus-visible { opacity: 1; color: var(--ink); }
+/* Stats charts */
+.charts { margin-bottom: 18px; }
+.chart { margin: 0; padding: 12px 14px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; position: relative; }
+.chart figcaption { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; justify-content: space-between; font-size: 14px; margin-bottom: 8px; }
+.chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart text { fill: var(--muted); font-size: 11px; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart { --chart-a: #c77d1a; --chart-b: #3f7fd6; } /* checked with the dataviz palette validator on both surfaces */
+:root[data-tone="light"] .chart { --chart-a: #c26a10; --chart-b: #2f6fd0; }
+.chart .bar { fill: var(--chart-a); }
+.chart .hit { fill: transparent; cursor: default; }
+.chart .hit:hover + .bar, .chart .row:hover .you { stroke: var(--ink); stroke-width: 2; }
+.chart .you { fill: var(--chart-a); stroke: var(--surface); stroke-width: 2; }
+.chart .expected { fill: none; stroke: var(--chart-b); stroke-width: 2; }
+.chart .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.chart .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+.chart .legend .k-you { background: var(--chart-a); }
+.chart .legend .k-exp { border: 2px solid var(--chart-b); width: 6px; height: 6px; }
+.chart-tip { position: absolute; pointer-events: none; padding: 6px 8px; font-size: 12px; background: var(--surface-2); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; white-space: nowrap; z-index: 2; }
 .slots { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 6px; }
 .slots li { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
 .slots li.playing { border-color: var(--ink); }
@@ -394,4 +541,4 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
-:root[data-effects="off"] *, :root[data-effects="off"] *::before { animation: none !important; transition: none !important; }
+:root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }

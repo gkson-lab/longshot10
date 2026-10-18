@@ -595,12 +595,16 @@
     ];
     const MODE_BY_ID = Object.fromEntries(MODES.map(m => [m.id, m]));
 
-    // One ladder for badges, multipliers and whole rolls: each step is ten times rarer (1 in N).
+    // One ladder for badges, multipliers and whole rolls, by 1 in N. Each tier starts where `from`
+    // says; the lower tiers sit close together so named tiers come up often, and five tiers past
+    // Eternal reach the multiplier-driven giants.
     const RARITIES = [
-      ['common', 'Common'], ['uncommon', 'Uncommon'], ['rare', 'Rare'], ['epic', 'Epic'], ['legendary', 'Legendary'],
-      ['anomaly', 'Anomaly'], ['mythic', 'Mythic'], ['divine', 'Divine'], ['cosmic', 'Cosmic'], ['transcendent', 'Transcendent'],
-      ['ethereal', 'Ethereal'], ['celestial', 'Celestial'], ['eternal', 'Eternal'],
-    ].map(([id, name], i, all) => ({ id, name, min: i === all.length - 1 ? 0 : 10 ** -(i + 1), from: 10 ** i }));
+      ['common', 'Common', 1], ['uncommon', 'Uncommon', 5], ['rare', 'Rare', 25], ['epic', 'Epic', 100],
+      ['legendary', 'Legendary', 500], ['anomaly', 'Anomaly', 2500], ['mythic', 'Mythic', 1e4], ['divine', 'Divine', 5e4],
+      ['cosmic', 'Cosmic', 2.5e5], ['transcendent', 'Transcendent', 1e6], ['ethereal', 'Ethereal', 5e6],
+      ['celestial', 'Celestial', 2.5e7], ['eternal', 'Eternal', 1e8], ['infinite', 'Infinite', 1e9], ['omega', 'Omega', 1e11],
+      ['absolute', 'Absolute', 1e13], ['primordial', 'Primordial', 1e15], ['unfathomable', 'Unfathomable', 1e20],
+    ].map(([id, name, from], i, all) => ({ id, name, from, min: i === all.length - 1 ? 0 : 1 / all[i + 1][2] }));
     const rarityOf = p => RARITIES.findIndex(r => p >= r.min);
 
     const MULTIPLIERS = MULTIPLIER_DEFS.map(([id, name, symbol, v]) => {

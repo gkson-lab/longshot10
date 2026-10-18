@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="styles.css">
 <script>
   // Apply the saved theme before first paint so the page never flashes the wrong colours.
-  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { document.documentElement.dataset.theme = s.settings.theme; document.documentElement.dataset.effects = s.settings.effects; } } catch (e) {}
+  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { document.documentElement.dataset.theme = s.settings.theme; document.documentElement.dataset.tone = ['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'; document.documentElement.dataset.effects = s.settings.effects; } } catch (e) {}
 </script>
 </head>
 <body>
@@ -20,9 +20,14 @@
 <div id="flash" aria-hidden="true"></div>
 <div id="toasts" role="status" aria-live="polite"></div>
 
+<div class="console" id="console" hidden>
+  <pre id="conOut" aria-live="polite"></pre>
+  <form id="conForm" class="con-line"><label for="conInput">PS C:\RNGdle10&gt;&nbsp;</label><input id="conInput" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command"></form>
+</div>
+
 <div class="wrap">
   <header class="top">
-    <h1 class="mark">RNGdle <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span></h1>
+    <h1 class="mark">RNGdle <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span><span class="prestige-mark num" id="prestigeMark" hidden></span></h1>
     <div class="top-actions">
       <button class="icon-btn" id="soundBtn" type="button"></button>
       <button class="icon-btn" id="settingsBtn" type="button" aria-label="Settings">
@@ -76,6 +81,12 @@
                 <button type="button" data-speed="2" aria-pressed="false">2×</button>
                 <button type="button" data-speed="3" aria-pressed="false">Turbo</button>
               </div>
+              <label class="field">Turbo rate <select id="turboRate">
+                <option value="90">90 a second</option>
+                <option value="250">250 a second</option>
+                <option value="500">500 a second</option>
+                <option value="1000">1,000 a second</option>
+              </select></label>
               <label class="field">Auto stops at <select id="stopAt"></select></label>
               <label class="field">Hunt <select id="hunt"></select></label>
             </div>
@@ -150,6 +161,9 @@
     </section>
 
     <section id="tab-collection" role="tabpanel" aria-labelledby="tab-btn-collection" hidden>
+      <div class="section-head"><h2>Badge book</h2><span id="bookCount"></span></div>
+      <p class="muted">A page is complete when you have every badge of its category that comes up at least 1 in 1,000,000. Five pages unlock a legendary skin.</p>
+      <ul class="items book" id="book"></ul>
       <div class="section-head"><h2>Collection</h2><span id="collCount"></span></div>
       <div class="progress"><i id="collBar"></i></div>
       <form class="check" id="checkForm">
@@ -172,6 +186,16 @@
     <section id="tab-trophies" role="tabpanel" aria-labelledby="tab-btn-trophies" hidden>
       <div class="two-col">
         <div>
+          <div class="section-head"><h2>Daily quests</h2></div>
+          <ul class="items quests" id="quests"></ul>
+          <div class="section-head"><h2>Prestige</h2></div>
+          <div class="coins-panel prestige">
+            <p id="prestigeText"></p>
+            <p class="muted num" id="prestigeProgress"></p>
+            <div class="progress"><i id="prestigeBar"></i></div>
+            <p class="muted">Prestige clears your coins, items and active effects. Rolls, badges, skins, achievements and the hall of fame stay.</p>
+            <button class="btn" type="button" id="prestigeBtn">Prestige</button>
+          </div>
           <div class="section-head"><h2>Achievements</h2><span id="achCount"></span></div>
           <ul class="ach" id="achList"></ul>
         </div>
@@ -187,6 +211,16 @@
 
     <section id="tab-log" role="tabpanel" aria-labelledby="tab-btn-log" hidden>
       <div class="stats" id="stats"></div>
+      <div class="two-col charts">
+        <figure class="chart">
+          <figcaption><b>Rolls per day</b> <span class="muted">last 14 days</span></figcaption>
+          <div id="dailyChart"></div>
+        </figure>
+        <figure class="chart">
+          <figcaption><b>Tiers, you against expected</b> <label class="muted">Mode <select id="chartMode" aria-label="Mode for the tier chart"></select></label></figcaption>
+          <div id="tierChart"></div>
+        </figure>
+      </div>
       <div class="two-col">
         <div>
           <div class="section-head"><h2>Luck</h2><span>your tiers against the exact odds</span></div>
@@ -201,7 +235,7 @@
     </section>
   </main>
 
-  <p class="foot">RNGdle 10 · v2.8.3 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">RNGdle 10 · <span id="version">v3.0</span> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -220,12 +254,9 @@
 <dialog id="settingsDialog" aria-labelledby="setTitle">
   <div class="dlg">
     <h2 id="setTitle">Settings</h2>
-    <h3>Theme</h3>
-    <div class="choices" id="themeChoices">
-      <label><input type="radio" name="theme" value="midnight"> Midnight</label>
-      <label><input type="radio" name="theme" value="felt"> Felt</label>
-      <label><input type="radio" name="theme" value="daylight"> Daylight</label>
-    </div>
+    <h3>Skin</h3>
+    <ul class="skins" id="skinList"></ul>
+    <button class="btn" id="buyBundle" type="button"></button>
     <h3>Effects</h3>
     <div class="choices" id="effectChoices">
       <label><input type="radio" name="effects" value="full"> Full</label>
@@ -247,7 +278,11 @@
     </div>
     <p class="muted">Share saves with other players on GitHub: export a save, then <a href="https://github.com/gkson-lab/rngexp10/discussions/new?category=show-and-tell" target="_blank" rel="noopener">post it in Show and tell</a>, or <a href="https://github.com/gkson-lab/rngexp10/discussions/categories/show-and-tell" target="_blank" rel="noopener">browse saves others have shared</a>. Posting needs a free GitHub account; downloading does not.</p>
     <p class="muted" id="dataMsg" role="status"></p>
-    <div class="dlg-actions"><button class="btn" type="button" data-close>Done</button></div>
+    <div class="terminal" id="terminal" hidden>
+      <pre id="termOut" aria-live="polite"></pre>
+      <form id="termForm" class="term-line"><label for="termInput">PS C:\RNGdle10&gt;&nbsp;</label><input id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
+    </div>
+    <div class="dlg-actions"><button class="term-toggle" type="button" id="termToggle" aria-expanded="false" aria-controls="terminal" aria-label="Command line">&gt;_</button><button class="btn" type="button" data-close>Done</button></div>
   </div>
 </dialog>
 

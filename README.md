@@ -4,7 +4,7 @@ A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), w
 
 Each roll is a number from 0 to 9,999,999,999, checked against 142 badges: primes, palindromes, straights, sequences like Fibonacci and Catalan, meme numbers, and combos such as palindromic and twin primes. A badge is worth EP equal to its odds, so a 1-in-143 badge adds 143 EP. A second reel lands on one of 100 math multipliers, from ×∛2 to ×⁵2, or on ×1. A roll with no badges still counts as 1 EP, so its multiplier matters.
 
-Every roll shows its odds as 1/N: the chance that a random roll of the same mode does at least as well, measured against two million sampled rolls. An ordinary roll is 1/2. The tier comes straight from N on one ladder shared with badges and multipliers, each step ten times rarer: Common, Uncommon (1/10), Rare (1/100), Epic, Legendary, Anomaly, Mythic, Divine, Cosmic, Transcendent, Ethereal, Celestial and Eternal (1/1,000,000,000,000), plus Trash for the bottom 1%.
+Every roll shows its odds as 1/N: the chance that a random roll of the same mode does at least as well, measured against two million sampled rolls. An ordinary roll is 1/2. The tier comes straight from N on one ladder shared with badges and multipliers: Common, Uncommon (1/5), Rare (1/25), Epic (1/100), Legendary (1/500), Anomaly (1/2,500), Mythic (1/10,000), Divine (1/50,000), Cosmic (1/250,000), Transcendent (1/1,000,000), Ethereal (1/5,000,000), Celestial (1/25,000,000), Eternal (1/100,000,000), Infinite (1/10⁹), Omega (1/10¹¹), Absolute (1/10¹³), Primordial (1/10¹⁵) and Unfathomable (1/10²⁰), plus Trash for the bottom 1%.
 
 ## Modes
 
@@ -14,18 +14,26 @@ Every roll shows its odds as 1/N: the chance that a random roll of the same mode
 - Target: a target number is rolled; the closer you land, the bigger the bonus.
 - Prime radar: shows the nearest prime, with badges for landing beside one or far from all of them.
 
-Auto rolls until a tier you choose, or until a badge or multiplier you are hunting turns up. Endless never stops on its own; on Turbo it rolls about 90 times a second and shows the rarest roll of each screen frame. While either runs, the best rolls of the session and of all time stay beside the reels.
+Auto rolls until a tier you choose, or until a badge or multiplier you are hunting turns up. Endless never stops on its own; on Turbo it rolls 90, 250, 500 or 1,000 times a second (set under Auto settings) and shows the rarest roll of each screen frame. While either runs, the best rolls of the session and of all time stay beside the reels.
 
 ## Other things it does
 
 - Collection of badges and multipliers with search and filters; select any of them for the exact count or chance and how often you have landed it against the expectation
-- 39 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- 46 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
 - A luck table comparing your tiers with how often each tier really comes up
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Midnight, Felt and Daylight themes, an effects setting, and offline install from the hosted copy
+- Sixteen skins (see below), an effects setting, and offline install from the hosted copy
+- Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three
+- Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige
+- A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
+- Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
 - Up to ten save files in the browser, each with its own progress; export one to move or share it, and importing always adds a new save file instead of replacing yours
 - Space rolls, A toggles Auto, E toggles Endless
+
+## Skins
+
+Skins are picked in Settings and belong to the save file. Midnight, Felt and Daylight are free. Neon, LCD, Blueprint, Terminal and Console are hidden somewhere in the game; Settings gives a hint for each. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
 
 ## Inventory
 
@@ -36,11 +44,11 @@ Each save file has an inventory of items you can use from the Inventory tab:
 - Multiplier Lens and Prism Lens: for 30 rolls the multiplier reel spins 2 or 10 times and keeps the biggest multiplier.
 - Overclock and Overclock II: Turbo rolls 2 or 4 times as fast for 3 minutes.
 
-Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up (ten Charms of a Million make a Charm of Ten Million). The Charm of Two, Charm of Five, Magnet and Treasure Map are retired: they no longer drop, but any you own still work and fuse upwards. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
+Items drop from plain rolls of 1/100 or rarer (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up (ten Charms of a Million make a Charm of Ten Million). The Charm of Two, Charm of Five, Magnet and Treasure Map are retired: they no longer drop, but any you own still work and fuse upwards. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
 
 ## Coin slot
 
-Every Rare or rarer plain roll has a 1 in 3 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin: spin once, 5, 10 or 20 at a time, or spend every coin at once with Spin all. Every spin wins something, from a fixed table shown next to the slot with chances in whole parts of a billion: a Charm of Ten 40% of the time, every other item in the game from there up, a 0.15% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 133,333 and a Charm of Ten Million at 1 in 1,333,333.
+Every plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin: spin once, 5, 10 or 20 at a time, or spend every coin at once with Spin all. Every spin wins something, from a fixed table shown next to the slot with chances in whole parts of a billion: a Charm of Ten 40% of the time, every other item in the game from there up, a 0.15% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 133,333 and a Charm of Ten Million at 1 in 1,333,333.
 
 Six prizes have a hard pity: go 2,000 spins without a Golden Goose, 3,000 without a Charm of Ten Thousand, 7,000 without a Diamond Goose, 20,000 without a Charm of a Hundred Thousand, 250,000 without a Charm of a Million or 2,500,000 without a Charm of Ten Million, and the next spin pays it out for sure. The panel shows your progress towards each.
 
@@ -62,6 +70,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v3.0 (skins): sixteen skins, including secret ones, a 500-coin bundle, a hidden command line in Settings, a text-only Terminal skin, a Console skin that plays the whole game by typed commands, and five legendary skins from the new badge book; Endless on Turbo up to 1,000 rolls a second; easier tiers (Uncommon is now 1 in 5, Rare 1 in 25) and five new ones past Eternal, up to Unfathomable at 1 in 10²⁰; daily quests; prestige; charts in the Log. Item and coin drops are tied to a roll's 1/N rather than its tier, so they come as often as before.
 - v2.8.3: slot rebalance. The Charm of Ten drops from 60% to 40% and every other prize is 1.5× as likely; all six pities are lower.
 - v2.8.2: spin 5, 10 or 20 at a time, or all your coins at once; big batches show totals per prize.
 - v2.8.1: the screen no longer jitters during Endless on Turbo; every slot spin now wins something (the old 30% no-prize share goes to the Charm of Ten); coins drop 1 in 3 instead of 1 in 4.
