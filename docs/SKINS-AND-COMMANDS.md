@@ -44,7 +44,7 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `LUCK [mode]` | Your tiers against the expected shares |
 | `LOG [n]`, `BEST [mode]` | Recent rolls, hall of fame |
 | `INV` | Inventory and active effects |
-| `USE item` | Use an item, e.g. `USE luck100` or `USE goose` |
+| `USE item`, `USE item ALL` | Use one of an item, or all of it, e.g. `USE goose ALL` |
 | `FUSE item`, `FUSE item ALL`, `FUSE ALL` | Fuse once, as often as you can, or everything |
 | `SPIN [n or ALL]`, `ODDS` | Spin the coin slot, see its prize table |
 | `QUESTS`, `QUESTS CLAIM n` | Daily quests |

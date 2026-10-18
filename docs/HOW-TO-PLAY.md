@@ -60,7 +60,7 @@ Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use it
 - **Lenses** spin the multiplier reel 2 or 10 times and keep the biggest.
 - **Overclocks** make Turbo 2 or 4 times as fast for 3 minutes.
 
-Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
+Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
 
 ## Coins and the slot machine
 

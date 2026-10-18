@@ -139,7 +139,8 @@ p('Drop boosters (Horn of Plenty ×25, Golden Goose ×100, Diamond Goose ×1,000
 
 p('## Coin slot', '', `One coin per spin. Every spin wins exactly one prize from this table, in parts of ${fmt(SLOT_UNITS)}.`, '');
 table(['Prize', 'Chance', 'Odds', 'Hard pity'], SLOT_PRIZES.map(([id, q, u]) => [`${NAME[id]}${q > 1 ? ` ×${q}` : ''}`, pct(u / SLOT_UNITS), oneIn(u / SLOT_UNITS), id in SLOT_PITY ? `${fmt(SLOT_PITY[id])} spins` : '']));
-p('Hard pity: go that many spins without the prize and the next spin pays it for sure. Winning one naturally resets its count. If two are due at once, the rarer one is paid first and the other on the next spin.', '');
+p('Hard pity: go that many spins without the prize and the next spin pays it for sure. Winning one naturally resets its count. If two are due at once, the rarer one is paid first and the other on the next spin.', '',
+  'Up to 100,000 spins at once are played one by one. Bigger batches are counted instead, so even a billion spins take well under a second: each pity prize is its own run of wins (each gap is the shorter of the natural wait for the prize and its pity count), and every other spin is shared among the rest of the table with binomial draws. The totals match spins played one by one.', '');
 
 p('## Items', '');
 table(['Item', 'What it does', 'Fuses into'], ITEMS.filter(i => !i.retired).map(i => [i.name, i.desc, i.next ? `${i.next[1]} → 1 ${NAME[i.next[0]]}` : '']));

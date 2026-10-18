@@ -744,23 +744,25 @@
   const overclockLeft = () => Math.max(0, (state.effects.overclock || 0) - Date.now());
   const overclock2Left = () => Math.max(0, (state.effects.overclock2 || 0) - Date.now());
   const turboSpeedup = () => (overclock2Left() ? 4 : overclockLeft() ? 2 : 1);
-  function useItem(id) {
+  // Use `times` of an item at once (Infinity: all of them). Their rolls or minutes add up.
+  function useItem(id, times = 1) {
     const it = ITEM_BY_ID[id], fx = state.effects;
     if (!(state.inv[id] > 0)) return;
+    const k = Math.min(times, state.inv[id]);
     if (it.kind === 'luck' || it.kind === 'drop') {
       const slot = it.kind, power = it.kind === 'luck' ? it.luck : it.drop, key = it.kind === 'luck' ? 'L' : 'D';
       const word = it.kind === 'luck' ? 'Luck' : 'Drops';
       const cur = fx[slot] && fx[slot].left > 0 ? fx[slot] : null;
       if (cur && cur[key] > power) { $('invMsg').textContent = `${word} ×${fmt(cur[key])} is still active, so ${it.name} would do nothing yet.`; return; }
       if (cur && cur[key] < power && !confirm(`${word} ×${fmt(cur[key])} has ${rollsText(cur.left)} left. Replace it with ×${fmt(power)}?`)) return;
-      fx[slot] = cur && cur[key] === power ? { [key]: power, left: cur.left + it.rolls } : { [key]: power, left: it.rolls };
+      fx[slot] = cur && cur[key] === power ? { [key]: power, left: cur.left + k * it.rolls } : { [key]: power, left: k * it.rolls };
     }
-    if (it.kind === 'lens') fx[it.id] = (fx[it.id] || 0) + it.rolls;
-    if (it.kind === 'overclock') fx[it.id] = Math.max(Date.now(), fx[it.id] || 0) + it.minutes * 60000;
-    state.inv[id]--;
-    state.used = (state.used || 0) + 1;
+    if (it.kind === 'lens') fx[it.id] = (fx[it.id] || 0) + k * it.rolls;
+    if (it.kind === 'overclock') fx[it.id] = Math.max(Date.now(), fx[it.id] || 0) + k * it.minutes * 60000;
+    state.inv[id] -= k;
+    state.used = (state.used || 0) + k;
     checkAchievements();
-    $('invMsg').textContent = `Used ${it.name}.`;
+    $('invMsg').textContent = k > 1 ? `Used ${fmt(k)} ${it.name}.` : `Used ${it.name}.`;
     save();
     renderInventory();
     paintStatus();
@@ -805,7 +807,12 @@
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
     if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
     if ((state.effects.lens || 0) > 0) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
-    const clock = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+    const clock = ms => {
+      const m = Math.floor(ms / 60000), h = Math.floor(m / 60), d = Math.floor(h / 24);
+      if (d >= 1) return `${fmt(d)} ${d === 1 ? 'day' : 'days'} ${h % 24} h`;
+      if (h >= 1) return `${h} h ${m % 60} min`;
+      return `${m}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+    };
     if (overclock2Left()) out.push(`Overclock II, ${clock(overclock2Left())} left`);
     if (overclockLeft()) out.push(`Overclock, ${clock(overclockLeft())} left`);
     return out;
@@ -824,7 +831,8 @@
       const fuse = it.next ? `<button class="btn" type="button" data-fuse="${it.id}" ${can ? '' : 'disabled'} aria-label="Fuse ${it.next[1]} ${esc(it.name)} into one ${esc(ITEM_BY_ID[it.next[0]].name)}">Fuse ${it.next[1]} → 1</button>`
         + `<button class="btn" type="button" data-fuse-all="${it.id}" ${can > 1 ? '' : 'disabled'} aria-label="Fuse every ${esc(it.name)} you can">Fuse all${can > 1 ? ` (${fmt(can)})` : ''}</button>` : '';
       return `<li class="item${k ? '' : ' none'}" style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">×${fmt(k)}</span><br><span class="muted">${esc(it.desc)}${it.next ? ` Fuse ${it.next[1]} into a ${esc(ITEM_BY_ID[it.next[0]].name)}.` : ''}</span></div>`
-        + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></div></li>`;
+        + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button>`
+        + `<button class="btn" type="button" data-use-all="${it.id}" ${k > 1 ? '' : 'disabled'} aria-label="Use every ${esc(it.name)}">Use all${k > 1 ? ` (${fmt(k)})` : ''}</button></div></li>`;
     }).join('');
     const last = DROPS.length - 1;
     const rowHead = (n, all) => `<td style="color:${tierVar(tierOfN(n))};font-weight:700">1/${fmt(n)}${all ? ' or rarer' : ''}</td>`;
@@ -843,45 +851,92 @@
   const SLOT_FACES = [...new Set(SLOT_PRIZES.filter(p => p[0]).map(p => p[3]))];
   const slotFace = () => SLOT_FACES[randInt(SLOT_FACES.length)];
   let slotBusy = false;
+  // Big batches: up to SPIN_EXACT spins are played one by one. Past that, prizes are counted
+  // without playing each spin, so a billion spins take milliseconds. Each pity prize is its own
+  // run of wins, each gap the shorter of a natural wait (geometric at the prize's chance) and its
+  // pity count; every other spin draws from the rest of the table, counted with binomial draws.
+  const SPIN_EXACT = 1e5;
+  const rbuf = new Uint32Array(4096);
+  let rpos = rbuf.length;
+  const rand01 = () => { if (rpos === rbuf.length) { crypto.getRandomValues(rbuf); rpos = 0; } return (rbuf[rpos++] + 0.5) / 4294967296; };
+  const gauss = () => Math.sqrt(-2 * Math.log(rand01())) * Math.cos(2 * Math.PI * rand01());
+  const geometric = p => Math.floor(Math.log(rand01()) / Math.log1p(-p)) + 1; // trials until the first success
+  function binomial(n, p) {
+    if (n <= 0 || p <= 0) return 0;
+    if (p >= 1) return n;
+    if (n * p < 1000) { let k = 0; for (let at = geometric(p); at <= n; at += geometric(p)) k++; return k; }
+    return Math.min(n, Math.max(0, Math.round(n * p + Math.sqrt(n * p * (1 - p)) * gauss())));
+  }
+  function spinBatch(n) {
+    const totals = new Map(), add = (id, q) => totals.set(id, (totals.get(id) || 0) + q);
+    let pityWins = 0, used = 0;
+    for (const id of Object.keys(SLOT_PITY)) {
+      const rows = SLOT_PRIZES.filter(r => r[0] === id), parts = rows.reduce((t, r) => t + r[2], 0), p = parts / SLOT_UNITS, cap = SLOT_PITY[id];
+      let at = 0, since = state.pity[id] || 0;
+      for (;;) {
+        const wait = geometric(p), pity = cap - since; // spins until the next natural win, and until pity pays
+        const step = Math.min(wait, pity);
+        if (at + step > n) { since += n - at; break; }
+        at += step;
+        since = 0;
+        used++;
+        if (wait < pity) { let u = rand01() * parts; const row = rows.find(r => (u -= r[2]) < 0) || rows[0]; add(id, row[1]); }
+        else { add(id, rows[0][1]); pityWins++; }
+      }
+      state.pity[id] = since;
+    }
+    let left = n - used, mass = SLOT_PRIZES.filter(r => !(r[0] in SLOT_PITY)).reduce((t, r) => t + r[2], 0);
+    for (const [id, qty, parts] of SLOT_PRIZES) {
+      if (id in SLOT_PITY) continue;
+      const k = mass === parts ? left : binomial(left, parts / mass);
+      if (k) add(id, k * qty);
+      left -= k;
+      mass -= parts;
+    }
+    return { totals, pityWins };
+  }
   async function spinSlot(n) {
     if (n === 'all') n = state.coins;
     if (slotBusy || n < 1 || state.coins < n) return;
     slotBusy = true;
     state.coins -= n;
     state.spins += n;
-    const results = Array.from({ length: n }, spinOnce);
+    let results = null, totals, pityWins;
+    if (n <= SPIN_EXACT) {
+      results = Array.from({ length: n }, spinOnce);
+      totals = new Map();
+      for (const [id, qty] of results) totals.set(id, (totals.get(id) || 0) + qty);
+      pityWins = results.filter(p => p.pity).length;
+    } else ({ totals, pityWins } = spinBatch(n));
     questEvent('spin', n);
-    for (const [id, qty] of results) if (id) state.inv[id] = (state.inv[id] || 0) + qty;
+    for (const [id, qty] of totals) state.inv[id] = (state.inv[id] || 0) + qty;
     checkAchievements();
     save();
     renderSlot();
     // Show the best prize of the batch on the reels as three matching symbols.
-    const best = results.reduce((a, b) => (b[2] < a[2] ? b : a));
+    const best = SLOT_PRIZES.filter(r => totals.has(r[0])).reduce((a, b) => (b[2] < a[2] ? b : a));
     const faces = [best[3], best[3], best[3]];
     const color = tierVar(RARITIES[ITEM_BY_ID[best[0]].rarity].id);
     if (effects() === 'off') slotReels.forEach((r, i) => setReel(r, faces[i], false));
     else await Promise.all(slotReels.map((r, i) => spinReel(r, faces[i], 500 + i * 220, 14 + i * 4, false, slotFace, () => tick(i))));
     slotReels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', ITEM_BY_ID[best[0]].rarity >= 5); });
-    const won = results;
     const prizeText = p => `${ITEM_BY_ID[p[0]].name}${p[1] > 1 ? ` ×${p[1]}` : ''}${p.pity ? ' (pity)' : ''}`;
     const colored = (id, text) => `<b style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)}">${esc(text)}</b>`;
     if (n <= 5) {
       $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: ${colored(p[0], prizeText(p))}</li>`).join('') : '')
-        + `<li><b>Won ${won.map(prizeText).map(esc).join(', ')}</b></li>`;
+        + `<li><b>Won ${results.map(prizeText).map(esc).join(', ')}</b></li>`;
     } else { // bigger batches: totals per item, rarest first
-      const totals = new Map(), pityWins = results.filter(p => p.pity).length;
-      for (const [id, qty] of results) totals.set(id, (totals.get(id) || 0) + qty);
       const rows = [...totals].sort((a, b) => ITEM_BY_ID[b[0]].rarity - ITEM_BY_ID[a[0]].rarity);
       $('slotResult').innerHTML = `<li><b>${fmt(n)} spins won:</b></li>`
         + `<li>${rows.map(([id, k]) => colored(id, `${ITEM_BY_ID[id].name} ×${fmt(k)}`)).join(', ')}</li>`
-        + (pityWins ? `<li class="muted">${pityWins} of them paid out by pity</li>` : '');
+        + (pityWins ? `<li class="muted">${fmt(pityWins)} of them paid out by pity</li>` : '');
     }
-    const jackpot = won.filter(p => ITEM_BY_ID[p[0]].rarity >= 5).sort((a, b) => ITEM_BY_ID[b[0]].rarity - ITEM_BY_ID[a[0]].rarity)[0];
-    if (jackpot) {
-      toast(`Jackpot: <b>${esc(prizeText(jackpot))}</b>`, RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id);
-      if (effects() === 'full') burst(cssVar(`--r-${RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id}`), 200, 14);
+    const top = [...totals.keys()].filter(id => ITEM_BY_ID[id].rarity >= 5).sort((a, b) => ITEM_BY_ID[b].rarity - ITEM_BY_ID[a].rarity)[0];
+    if (top) {
+      toast(`Jackpot: <b>${esc(ITEM_BY_ID[top].name)}${totals.get(top) > 1 ? ` ×${fmt(totals.get(top))}` : ''}</b>`, RARITIES[ITEM_BY_ID[top].rarity].id);
+      if (effects() === 'full') burst(cssVar(`--r-${RARITIES[ITEM_BY_ID[top].rarity].id}`), 200, 14);
       fanfare(8);
-    } else fanfare(Math.min(6, 2 + won.length));
+    } else fanfare(Math.min(6, 2 + n));
     slotBusy = false;
     renderSlot();
     if (!$('tab-inventory').hidden) renderInventory();
@@ -1811,8 +1866,9 @@
   });
 
   $('invList').addEventListener('click', ev => {
-    const use = ev.target.closest('[data-use]'), fuse = ev.target.closest('[data-fuse]'), all = ev.target.closest('[data-fuse-all]');
+    const use = ev.target.closest('[data-use]'), fuse = ev.target.closest('[data-fuse]'), all = ev.target.closest('[data-fuse-all]'), useAll = ev.target.closest('[data-use-all]');
     if (use) useItem(use.dataset.use);
+    if (useAll) useItem(useAll.dataset.useAll, Infinity);
     if (fuse) fuseItem(fuse.dataset.fuse);
     if (all) fuseItem(all.dataset.fuseAll, Infinity);
   });
@@ -1933,7 +1989,7 @@
     'LOG [n]                Your last n rolls (default 10).',
     'BEST [mode]            Hall of fame.',
     'INV                    Inventory and active effects.',
-    'USE item               Use an item, e.g. USE luck100 or USE goose.',
+    'USE item [ALL]         Use an item, or all of it, e.g. USE luck100 or USE goose ALL.',
     'FUSE item [ALL]        Fuse an item into the next one up, once or as often as you can.',
     'FUSE ALL               Fuse everything as far up as it goes.',
     'SPIN [n|ALL]           Spin the coin slot.',
@@ -2077,12 +2133,13 @@
           print(k ? `Fused ${fmt(k)} times into ${ITEM_BY_ID[it.next[0]].name}.` : 'Nothing to fuse there.', '');
           break;
         }
-        const it = arg && findItem(arg);
+        const many = w === 'use' && / all$/.test(a);
+        const it = arg && findItem(many ? a.replace(/ all$/, '') : arg);
         if (!it) { print(`No item called ${arg || '(nothing)'}. INV lists yours.`); break; }
         const before = state.inv[it.id] || 0;
         $('invMsg').textContent = '';
-        if (w === 'use') useItem(it.id); else fuseItem(it.id);
-        if ((state.inv[it.id] || 0) !== before) print(w === 'use' ? `Used ${it.name}. Active: ${effectsText().join(', ')}` : `Fused into ${ITEM_BY_ID[it.next[0]].name}.`);
+        if (w === 'use') useItem(it.id, many ? Infinity : 1); else fuseItem(it.id);
+        if ((state.inv[it.id] || 0) !== before) print(w === 'use' ? `Used ${fmt(before - (state.inv[it.id] || 0))} ${it.name}. Active: ${effectsText().join(', ')}` : `Fused into ${ITEM_BY_ID[it.next[0]].name}.`);
         else if (w === 'use') print($('invMsg').textContent || `You have no ${it.name}.`);
         else print(it.next ? `Fusing needs ${it.next[1]} ${it.name}; you have ${before}.` : `${it.name} is the top of its line.`);
         break;

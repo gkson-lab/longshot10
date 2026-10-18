@@ -603,11 +603,11 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 1% | 1 in 10.0 | 1 in 101 | 1 in 1,093 | 1 in 8,696 |
-| Hardcore | No multiplier reel: only your badges count. Charms and lenses are paused. | ×2 | 1.47% | 1 in 16 | 1 in 320 | 1 in 3,252 | 1 in 400,000 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.43% | 1 in 704 | 1 in 22,222 | 1 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 22,222 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
-| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.2% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1.03% | 1 in 10 | 1 in 100 | 1 in 928 | 1 in 9,756 |
+| Hardcore | No multiplier reel: only your badges count. Charms and lenses are paused. | ×2 | 1.51% | 1 in 16 | 1 in 345 | 1 in 3,077 | 1 in 400,000 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.48% | 1 in 741 | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels
 
@@ -673,6 +673,8 @@ One coin per spin. Every spin wins exactly one prize from this table, in parts o
 | Charm of Ten Million | 0.000075% | 1 in 1,333,333 | 2,500,000 spins |
 
 Hard pity: go that many spins without the prize and the next spin pays it for sure. Winning one naturally resets its count. If two are due at once, the rarer one is paid first and the other on the next spin.
+
+Up to 100,000 spins at once are played one by one. Bigger batches are counted instead, so even a billion spins take well under a second: each pity prize is its own run of wins (each gap is the shorter of the natural wait for the prize and its pity count), and every other spin is shared among the rest of the table with binomial draws. The totals match spins played one by one.
 
 ## Items
 
