@@ -62,6 +62,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v2.8.3: slot rebalance. The Charm of Ten drops from 60% to 40% and every other prize is 1.5× as likely; all six pities are lower.
 - v2.8.2: spin 5, 10 or 20 at a time, or all your coins at once; big batches show totals per prize.
 - v2.8.1: the screen no longer jitters during Endless on Turbo; every slot spin now wins something (the old 30% no-prize share goes to the Charm of Ten); coins drop 1 in 3 instead of 1 in 4.
 - v2.8 (slot overhaul): every item is now a slot prize, up to the Charm of Ten Million; ×10 is the new baseline and the Charm of Two, Charm of Five, Magnet and Treasure Map are retired; new Charm of Ten Million, Prism Lens, Overclock II and Diamond Goose; hard pity on the six rarest prizes; a coins-and-odds panel next to the slot.
