@@ -642,12 +642,11 @@
     ['transcendent', [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
   ];
   // The coin slot: each spin costs one coin and pays out from this table. Chances are whole parts
-  // of a billion and add up to exactly one billion. [item or null, quantity, parts, reel symbol]
-  const COIN_CHANCE = 0.25;
+  // of a billion and add up to exactly one billion. [item, quantity, parts, reel symbol]
+  const COIN_CHANCE = 1 / 3;
   const SLOT_UNITS = 1e9;
-  const SLOT_PRIZES = [
-    [null, 0, 300000000, ''],
-    ['luck10', 1, 300000000, '×10'],
+  const SLOT_PRIZES = [ // every spin wins something
+    ['luck10', 1, 600000000, '×10'],
     ['luck10', 3, 100000000, '×10'],
     ['lens', 1, 80000000, 'Lens'],
     ['overclock', 1, 60000000, 'OC'],
@@ -702,7 +701,7 @@
     const fx = state.effects, D = fx.drop && fx.drop.left > 0 ? fx.drop.D : 1;
     if (D > 1) fx.drop.left--;
     const i = T(tierId);
-    if (i >= T('rare')) { // a 1 in 4 chance of a coin for the slot machine, boosted like any other drop
+    if (i >= T('rare')) { // a 1 in 3 chance of a coin for the slot machine, boosted like any other drop
       const c = COIN_CHANCE * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
       if (k) {
         state.coins += k;
@@ -767,7 +766,7 @@
         + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></div></li>`;
     }).join('');
     const last = DROPS.length - 1;
-    $('dropTable').innerHTML = `<tr><td style="color:${tierVar('rare')};font-weight:700">Rare or rarer</td><td>A coin for the slot machine, ${COIN_CHANCE * 100}%</td></tr>` + DROPS.map(([tier, items], r) => `<tr><td style="color:${tierVar(tier)};font-weight:700">${ROLL_TIERS[T(tier)].name}${r === last ? ' or rarer' : ''}</td><td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('');
+    $('dropTable').innerHTML = `<tr><td style="color:${tierVar('rare')};font-weight:700">Rare or rarer</td><td>A coin for the slot machine, 1 in ${Math.round(1 / COIN_CHANCE)}</td></tr>` + DROPS.map(([tier, items], r) => `<tr><td style="color:${tierVar(tier)};font-weight:700">${ROLL_TIERS[T(tier)].name}${r === last ? ' or rarer' : ''}</td><td>${items.map(([id, c]) => `${esc(ITEM_BY_ID[id].name)} ${+(c * 100).toFixed(1)}%`).join(', ')}</td></tr>`).join('');
   }
   // The slot uses the same reels as the game: three matching symbols name the prize.
   const slotReels = [0, 1, 2].map(() => {
@@ -790,25 +789,23 @@
     checkAchievements();
     save();
     renderSlot();
-    // Show the best prize of the batch on the reels: matching symbols for a prize, a mismatch for none.
+    // Show the best prize of the batch on the reels as three matching symbols.
     const best = results.reduce((a, b) => (b[2] < a[2] ? b : a));
-    let faces;
-    if (best[0]) faces = [best[3], best[3], best[3]];
-    else { do faces = [slotFace(), slotFace(), slotFace()]; while (faces[0] === faces[1] && faces[1] === faces[2]); }
-    const color = best[0] ? tierVar(RARITIES[ITEM_BY_ID[best[0]].rarity].id) : '';
+    const faces = [best[3], best[3], best[3]];
+    const color = tierVar(RARITIES[ITEM_BY_ID[best[0]].rarity].id);
     if (effects() === 'off') slotReels.forEach((r, i) => setReel(r, faces[i], false));
     else await Promise.all(slotReels.map((r, i) => spinReel(r, faces[i], 500 + i * 220, 14 + i * 4, false, slotFace, () => tick(i))));
-    slotReels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', !!best[0] && ITEM_BY_ID[best[0]].rarity >= 5); });
-    const won = results.filter(p => p[0]);
+    slotReels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', ITEM_BY_ID[best[0]].rarity >= 5); });
+    const won = results;
     const prizeText = p => `${ITEM_BY_ID[p[0]].name}${p[1] > 1 ? ` ×${p[1]}` : ''}${p.pity ? ' (pity)' : ''}`;
-    $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: ${p[0] ? `<b style="color:${tierVar(RARITIES[ITEM_BY_ID[p[0]].rarity].id)}">${esc(prizeText(p))}</b>` : 'no prize'}</li>`).join('') : '')
-      + `<li><b>${won.length ? `Won ${won.map(prizeText).map(esc).join(', ')}` : 'No prize this time'}</b></li>`;
+    $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: <b style="color:${tierVar(RARITIES[ITEM_BY_ID[p[0]].rarity].id)}">${esc(prizeText(p))}</b></li>`).join('') : '')
+      + `<li><b>Won ${won.map(prizeText).map(esc).join(', ')}</b></li>`;
     const jackpot = won.filter(p => ITEM_BY_ID[p[0]].rarity >= 5).sort((a, b) => ITEM_BY_ID[b[0]].rarity - ITEM_BY_ID[a[0]].rarity)[0];
     if (jackpot) {
       toast(`Jackpot: <b>${esc(prizeText(jackpot))}</b>`, RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id);
       if (effects() === 'full') burst(cssVar(`--r-${RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id}`), 200, 14);
       fanfare(8);
-    } else if (won.length) fanfare(Math.min(6, 2 + won.length));
+    } else fanfare(Math.min(6, 2 + won.length));
     slotBusy = false;
     renderSlot();
     if (!$('tab-inventory').hidden) renderInventory();
@@ -821,14 +818,14 @@
     document.querySelectorAll('[data-spin]').forEach(b => { b.disabled = slotBusy || state.coins < +b.dataset.spin; });
     const seen = new Set();
     $('slotOdds').innerHTML = SLOT_PRIZES.map(([id, qty, units]) => {
-      const name = id ? `<span style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)};font-weight:700">${esc(ITEM_BY_ID[id].name)}</span>${qty > 1 ? ` ×${qty}` : ''}` : 'No prize';
+      const name = `<span style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)};font-weight:700">${esc(ITEM_BY_ID[id].name)}</span>${qty > 1 ? ` ×${qty}` : ''}`;
       let pity = '';
       if (id in SLOT_PITY && !seen.has(id)) {
         seen.add(id);
         const so = state.pity[id] || 0, cap = SLOT_PITY[id];
         pity = `<span class="pity"><span class="pity-bar"><i style="width:${(100 * so / cap).toFixed(2)}%"></i></span><span class="num">${fmt(so)} / ${fmt(cap)}</span></span>`;
       }
-      return `<tr><td>${name}</td><td class="num">${pctText(units)}</td><td class="num">1 in ${fmt(SLOT_UNITS / units)}</td><td>${pity}</td></tr>`;
+      return `<tr><td>${name}</td><td class="num">${pctText(units)}</td><td class="num">${odds(units / SLOT_UNITS)}</td><td>${pity}</td></tr>`;
     }).join('');
   }
   $('slotButtons').addEventListener('click', ev => { const b = ev.target.closest('[data-spin]'); if (b) spinSlot(+b.dataset.spin); });
@@ -943,9 +940,19 @@
     checkAchievements(rec);
     return { x, rec, found };
   }
+  // In Turbo the result changes many times a second and its height with it (more or fewer badges),
+  // which made everything below it jump. While auto-rolling, the result area may grow but never
+  // shrink, so it settles at its tallest and holds still; it relaxes when rolling stops.
+  let heldHeight = 0;
+  function holdResultHeight() {
+    const el = $('result'), h = el.offsetHeight;
+    if (h > heldHeight) { heldHeight = h; el.style.minHeight = h + 'px'; }
+  }
+  function releaseResultHeight() { heldHeight = 0; $('result').style.minHeight = ''; }
   function drawRoll({ x, rec }, sp, boardsChanged) {
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
     showResult(x, { animate: true, speed: sp, fresh: rec.fresh, pre: rec });
+    if (auto && sp === 3) holdResultHeight();
     celebrate(rec.tier.id, sp);
     renderBoards(boardsChanged);
     paintStatus();
@@ -1033,6 +1040,7 @@
   function setAuto(kind) {
     if (kind !== auto) { run.start = performance.now(); run.rolls = 0; }
     auto = kind;
+    if (!kind) releaseResultHeight();
     if (!kind && saveTimer) writeSave();
     $('autoBtn').setAttribute('aria-pressed', String(kind === 'auto'));
     $('endlessBtn').setAttribute('aria-pressed', String(kind === 'endless'));

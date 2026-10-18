@@ -191,7 +191,7 @@ a { color: inherit; }
 .reel.hit .strip div { color: var(--tc); text-shadow: 0 0 18px var(--tc); }
 /* The multiplier window sits under the digits, in the same reel language. */
 .mult {
-  display: flex; align-items: center; gap: 10px; margin: 14px auto 0; width: fit-content; max-width: 100%;
+  display: flex; align-items: center; gap: 10px; margin: 14px auto 0; width: min(100%, 440px);
   padding: 6px 14px 6px 10px; border-radius: 8px; background: var(--surface-2); border: 1px solid var(--line);
 }
 .mult-x { color: var(--muted); font-weight: 700; font-size: 18px; }
@@ -199,9 +199,11 @@ a { color: inherit; }
 .reel.mult-reel .strip div { font-size: 20px; color: var(--rc); white-space: nowrap; }
 .mult.unity .reel.mult-reel .strip div { color: var(--cell-lead); }
 .mult-text { display: flex; flex-direction: column; min-width: 0; }
+/* Fixed sizes with ellipsis, so a long name or factorization never changes the layout mid-run. */
+.mult-name, .mult-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mult-name { font-weight: 700; font-size: 14px; }
 .mult-meta { color: var(--muted); font-size: 13px; }
-.facts { text-align: center; margin: 12px 0 0; min-height: 22px; color: var(--muted); font-size: 14px; }
+.facts { text-align: center; margin: 12px 0 0; height: 22px; color: var(--muted); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .facts .value { color: var(--ink); }
 
 /* Controls */

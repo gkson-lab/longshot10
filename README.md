@@ -40,7 +40,7 @@ Items drop from Rare and rarer plain rolls (the chances are listed in the game),
 
 ## Coin slot
 
-Every Rare or rarer plain roll has a 1 in 4 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin, up to five spins at a time. Each spin pays out from a fixed table shown next to the slot, with chances in whole parts of a billion: no prize 30% of the time, every item in the game from the Charm of Ten up, a 0.1% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 200,000 and a Charm of Ten Million at 1 in 2,000,000.
+Every Rare or rarer plain roll has a 1 in 3 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin, up to five spins at a time. Every spin wins something, from a fixed table shown next to the slot with chances in whole parts of a billion: a Charm of Ten 60% of the time, every other item in the game from there up, a 0.1% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 200,000 and a Charm of Ten Million at 1 in 2,000,000.
 
 Six prizes have a hard pity: go 5,000 spins without a Golden Goose, 10,000 without a Charm of Ten Thousand, 25,000 without a Diamond Goose, 50,000 without a Charm of a Hundred Thousand, 500,000 without a Charm of a Million or 5,000,000 without a Charm of Ten Million, and the next spin pays it out for sure. The panel shows your progress towards each.
 
@@ -62,6 +62,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v2.8.1: the screen no longer jitters during Endless on Turbo; every slot spin now wins something (the old 30% no-prize share goes to the Charm of Ten); coins drop 1 in 3 instead of 1 in 4.
 - v2.8 (slot overhaul): every item is now a slot prize, up to the Charm of Ten Million; ×10 is the new baseline and the Charm of Two, Charm of Five, Magnet and Treasure Map are retired; new Charm of Ten Million, Prism Lens, Overclock II and Diamond Goose; hard pity on the six rarest prizes; a coins-and-odds panel next to the slot.
 - v2.7 (major update): coins drop from Rare or rarer rolls and buy spins on a coin slot machine, one to five at a time, with item prizes and a Golden Goose jackpot.
 - v2.6.1: the offline copy no longer mixes files from two releases when it updates in the first minutes after a deploy.
