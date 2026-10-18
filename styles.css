@@ -146,7 +146,7 @@
 :root[data-theme="terminal"] .chart .legend .k-you { background: var(--ink); }
 :root[data-theme="terminal"] .chart .legend .k-exp { border: 2px solid var(--muted) !important; }
 :root[data-theme="terminal"] *:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
-:root[data-theme="terminal"] .mark::before { content: "PS C:\\RNGdle10> "; }
+:root[data-theme="terminal"] .mark::before { content: "PS C:\\LongShot10> "; }
 :root[data-theme="terminal"] .mark::after {
   content: ""; display: inline-block; width: 0.6em; height: 1.1em; margin-left: 4px; vertical-align: text-bottom;
   background: var(--ink); animation: cursor-blink 1.06s steps(1) infinite; /* the blinking console cursor */
@@ -432,7 +432,7 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 .slot-buttons .roll { min-height: 44px; padding: 0 28px; font-size: 16px; }
 .slot-result { list-style: none; margin: 12px 0 0; padding: 0; text-align: center; font-size: 14px; }
 .slot-result li { padding: 2px 0; }
-.coins-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 22px; }
+.coins-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 22px; overflow-x: auto; }
 .coins-panel .muted { font-size: 13px; margin: 6px 0 10px; }
 .coins-in-hand { display: flex; align-items: baseline; gap: 8px; }
 .coins-in-hand .num { font-size: 34px; font-weight: 800; color: var(--accent); }
@@ -483,6 +483,7 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-swatch="vapor"] { background: linear-gradient(135deg, #1a1033 55%, #ff71ce 55%); }
 [data-swatch="spectrum"] { background: linear-gradient(135deg, #f4f4f8 55%, #3b5bdb 55%); }
 #buyBundle { margin-bottom: 4px; }
+#fuseEverything { margin-bottom: 10px; }
 /* The hidden command line: always a console, whatever the skin. */
 .terminal { margin-top: 14px; padding: 10px 12px; background: #0c0c0c; color: #cccccc; border-radius: 6px; font: 14px/1.4 "Cascadia Mono", Consolas, "Lucida Console", ui-monospace, monospace; }
 .terminal pre { margin: 0; max-height: 200px; overflow: auto; white-space: pre-wrap; font: inherit; }
@@ -542,3 +543,77 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 :root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }
+
+/* Full-screen skins: each replaces the page with its own way to play, in its own fixed colours. */
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"]) body { overflow: hidden; }
+:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc { display: flex; }
+.chat, .handheld, .calc { position: fixed; inset: 0; z-index: 40; }
+
+/* Chat: a messaging app with Tenny. */
+.chat { flex-direction: column; background: #eef1f5; color: #1b1f24; font: 15px/1.4 system-ui, sans-serif; }
+.chat-head { display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: #ffffff; border-bottom: 1px solid #d3d9e1; }
+.chat-avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: #1b1f24; color: #f6d27a; font: 800 15px ui-monospace, monospace; }
+.chat-status { font-size: 13px; color: #4d5866; }
+.chat-leave { margin-left: auto; min-height: 44px; padding: 0 14px; border: 1px solid #c8d0da; border-radius: 8px; background: #ffffff; color: #1b1f24; font: inherit; cursor: pointer; }
+.chat-log { flex: 1; overflow-y: auto; list-style: none; margin: 0; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.bubble { max-width: min(560px, 85%); padding: 8px 12px; border-radius: 16px; white-space: pre-wrap; word-break: break-word; animation: bubble-in .18s ease-out; }
+.bubble.bot { align-self: flex-start; background: #ffffff; border: 1px solid #d3d9e1; border-bottom-left-radius: 4px; }
+.bubble.mono { font: 13px/1.4 ui-monospace, Consolas, monospace; }
+.bubble.me { align-self: flex-end; background: #2b6cb0; color: #ffffff; border-bottom-right-radius: 4px; }
+.bubble.note { align-self: center; max-width: 90%; padding: 2px 8px; font-size: 13px; color: #4d5866; text-align: center; }
+@keyframes bubble-in { from { opacity: 0; transform: translateY(6px); } }
+.chat-chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 16px 0; }
+.chat-chips button { flex: none; min-height: 44px; padding: 0 14px; border: 1px solid #c8d0da; border-radius: 22px; background: #ffffff; color: #1b1f24; font: inherit; font-size: 14px; cursor: pointer; }
+.chat-chips button:hover { border-color: #2b6cb0; }
+.chat-form { display: flex; gap: 8px; padding: 8px 16px 16px; }
+.chat-form input { flex: 1; min-width: 0; min-height: 44px; padding: 0 16px; border: 1px solid #c8d0da; border-radius: 22px; background: #ffffff; color: #1b1f24; font: inherit; }
+.chat-form button { min-height: 44px; padding: 0 18px; border: 0; border-radius: 22px; background: #2b6cb0; color: #ffffff; font: inherit; font-weight: 700; cursor: pointer; }
+.chat :focus-visible { outline: 2px solid #1b1f24; outline-offset: 2px; }
+
+/* Handheld: a pocket console. Four shades of green on the screen, like an old monochrome LCD. */
+.handheld { justify-content: center; align-items: flex-start; overflow-y: auto; padding: 16px; background: #23232b; }
+.hh-body { width: min(360px, 100%); padding: 20px 20px 24px; border-radius: 14px 14px 56px 14px; background: #c9c4bd; color: #22236b; box-shadow: inset -4px -6px 0 rgba(0, 0, 0, 0.15); }
+.hh-bezel { position: relative; padding: 18px 18px 18px 30px; border-radius: 10px 10px 30px 10px; background: #4a4a55; }
+.hh-led { position: absolute; left: 11px; top: 50%; width: 9px; height: 9px; border-radius: 50%; background: #d8002c; }
+.hh-screen { margin: 0; min-height: 15.5em; padding: 8px; background: #9bbc0f; color: #0f380f; font: 700 13px/1.25 ui-monospace, Consolas, monospace; white-space: pre; overflow: hidden; }
+.hh-brand { margin: 8px 0 18px; font: italic 800 15px system-ui, sans-serif; letter-spacing: 0.04em; }
+.hh-controls { display: flex; justify-content: space-between; align-items: center; }
+.hh-dpad { display: grid; grid-template: 44px 44px 44px / 44px 44px 44px; }
+.hh-dpad button { border: 0; background: #2b2b2b; color: #c9c4bd; font-size: 14px; cursor: pointer; }
+.hh-dpad .up { grid-area: 1 / 2; border-radius: 6px 6px 0 0; }
+.hh-dpad .left { grid-area: 2 / 1; border-radius: 6px 0 0 6px; }
+.hh-dpad .right { grid-area: 2 / 3; border-radius: 0 6px 6px 0; }
+.hh-dpad .down { grid-area: 3 / 2; border-radius: 0 0 6px 6px; }
+.hh-dpad::after { content: ""; grid-area: 2 / 2; background: #2b2b2b; }
+.hh-ab { display: flex; gap: 14px; transform: rotate(-20deg); }
+.hh-ab button { width: 52px; height: 52px; border: 0; border-radius: 50%; background: #8b1e46; color: #ffffff; font: 800 18px system-ui, sans-serif; cursor: pointer; }
+.hh-ab .a { margin-top: -18px; }
+.hh-small { display: flex; justify-content: center; gap: 16px; margin-top: 18px; }
+.hh-small button { min-height: 44px; padding: 0 12px; border: 0; border-radius: 22px; background: #55555f; color: #ffffff; font: 700 11px system-ui, sans-serif; letter-spacing: 0.05em; cursor: pointer; }
+.hh-help { margin: 14px 0 6px; font: 12px/1.4 system-ui, sans-serif; color: #2e2e3a; text-align: center; }
+.hh-off { display: block; margin: 0 auto; min-height: 44px; padding: 0 14px; border: 0; background: transparent; color: #22236b; font: 700 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; }
+.handheld button:active { transform: translateY(1px); filter: brightness(0.9); }
+.handheld :focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+
+/* Calculator: ten digits on the display, exactly one roll. */
+.calc { justify-content: center; align-items: flex-start; overflow-y: auto; padding: 16px; background: #15171b; }
+.calc-body { width: min(340px, 100%); padding: 18px; border-radius: 18px; background: #2a2d33; color: #e8e8e8; box-shadow: inset 0 -5px 0 rgba(0, 0, 0, 0.3); }
+.calc-brand { margin: 0 0 12px; font: 800 14px system-ui, sans-serif; letter-spacing: 0.06em; }
+.calc-brand span { font-weight: 400; font-size: 11px; color: #b9bcc3; }
+.calc-lcd { padding: 8px 12px; border-radius: 6px; background: #c8d4bc; color: #1b261b; font-family: ui-monospace, Consolas, monospace; box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.35); }
+.calc-flags { min-height: 16px; font-size: 11px; font-weight: 700; }
+.calc-main { font-size: clamp(30px, 10vw, 40px); font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+.calc-sub { min-height: 18px; font-size: 13px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+.calc-keys button { min-height: 52px; border: 0; border-radius: 10px; background: #4a4f57; color: #ffffff; font: 600 20px system-ui, sans-serif; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3); cursor: pointer; }
+.calc-keys .fn { min-height: 44px; background: #3a3d44; font-size: 13px; }
+.calc-keys .op, .calc-keys .eq { background: #e08a1e; color: #1a1000; }
+.calc-keys .clear { background: #b3261e; }
+.calc-keys button:active { transform: translateY(2px); box-shadow: none; }
+.calc-help { margin: 14px 0 6px; font: 12px/1.4 system-ui, sans-serif; color: #c6c8ce; }
+.calc-off { display: block; margin-left: auto; min-height: 44px; padding: 0 16px; border: 0; border-radius: 10px; background: #3a3d44; color: #ffffff; font: 700 13px system-ui, sans-serif; cursor: pointer; }
+.calc :focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+[data-swatch="chat"] { background: linear-gradient(135deg, #eef1f5 55%, #2b6cb0 55%); }
+[data-swatch="handheld"] { background: linear-gradient(135deg, #c9c4bd 55%, #9bbc0f 55%); }
+[data-swatch="calc"] { background: linear-gradient(135deg, #2a2d33 55%, #e08a1e 55%); }

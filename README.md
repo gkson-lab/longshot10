@@ -1,8 +1,8 @@
-# RNGdle 10
+# Long Shot 10
 
-A random-number badge game in the spirit of [RNGdle](https://www.rngdle.com/), with ten digits and unlimited rolls. Play it at https://gkson-lab.github.io/rngexp10/ or open `index.html` locally. Everything runs and is saved in your browser.
+A ten-digit luck game, formerly RNGdle 10, in the spirit of [RNGdle](https://www.rngdle.com/), with unlimited rolls. Play it at https://gkson-lab.github.io/rngexp10/ or open `index.html` locally. Everything runs and is saved in your browser.
 
-Each roll is a number from 0 to 9,999,999,999, checked against 142 badges: primes, palindromes, straights, sequences like Fibonacci and Catalan, meme numbers, and combos such as palindromic and twin primes. A badge is worth EP equal to its odds, so a 1-in-143 badge adds 143 EP. A second reel lands on one of 100 math multipliers, from ×∛2 to ×⁵2, or on ×1. A roll with no badges still counts as 1 EP, so its multiplier matters.
+Each roll is a number from 0 to 9,999,999,999, checked against 308 badges (plus 41 mode badges and 5 daily ones): primes, palindromes, straights, sequences like Fibonacci and Catalan, meme numbers, and combos such as palindromic and twin primes. A badge is worth EP equal to its odds, so a 1-in-143 badge adds 143 EP. A second reel lands on one of 100 math multipliers, from ×∛2 to ×⁵2, or on ×1. A roll with no badges still counts as 1 EP, so its multiplier matters.
 
 Every roll shows its odds as 1/N: the chance that a random roll of the same mode does at least as well, measured against two million sampled rolls. An ordinary roll is 1/2. The tier comes straight from N on one ladder shared with badges and multipliers: Common, Uncommon (1/5), Rare (1/25), Epic (1/100), Legendary (1/500), Anomaly (1/2,500), Mythic (1/10,000), Divine (1/50,000), Cosmic (1/250,000), Transcendent (1/1,000,000), Ethereal (1/5,000,000), Celestial (1/25,000,000), Eternal (1/100,000,000), Infinite (1/10⁹), Omega (1/10¹¹), Absolute (1/10¹³), Primordial (1/10¹⁵) and Unfathomable (1/10²⁰), plus Trash for the bottom 1%.
 
@@ -19,11 +19,11 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 ## Other things it does
 
 - Collection of badges and multipliers with search and filters; select any of them for the exact count or chance and how often you have landed it against the expectation
-- 46 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- 94 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
 - A luck table comparing your tiers with how often each tier really comes up
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Sixteen skins (see below), an effects setting, and offline install from the hosted copy
+- Nineteen skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three
 - Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
@@ -33,7 +33,7 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 
 ## Skins
 
-Skins are picked in Settings and belong to the save file. Midnight, Felt and Daylight are free. Neon, LCD, Blueprint, Terminal and Console are hidden somewhere in the game; Settings gives a hint for each. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
+Skins are picked in Settings and belong to the save file. Midnight, Felt and Daylight are free. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld and Calculator replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, and a calculator whose ten-digit display holds exactly one roll. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
 
 ## Inventory
 
@@ -44,7 +44,7 @@ Each save file has an inventory of items you can use from the Inventory tab:
 - Multiplier Lens and Prism Lens: for 30 rolls the multiplier reel spins 2 or 10 times and keeps the biggest multiplier.
 - Overclock and Overclock II: Turbo rolls 2 or 4 times as fast for 3 minutes.
 
-Items drop from plain rolls of 1/100 or rarer (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up (ten Charms of a Million make a Charm of Ten Million). The Charm of Two, Charm of Five, Magnet and Treasure Map are retired: they no longer drop, but any you own still work and fuse upwards. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
+Items drop from plain rolls of 1/100 or rarer (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up (ten Charms of a Million make a Charm of Ten Million). Fuse all fuses every set of one item at once, and Fuse everything pushes every item as far up its line as it goes. The Charm of Two, Charm of Five, Magnet and Treasure Map are retired: they no longer drop, but any you own still work and fuse upwards. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
 
 ## Coin slot
 
@@ -66,10 +66,16 @@ npm run check   # brute-force every badge at small sizes, every mode badge, the 
 npm run icons   # redraw icon.svg and the PNG app icons
 ```
 
-Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
+## Documents
+
+- [How to play](docs/HOW-TO-PLAY.md): how a roll is scored, the modes, items, coins, quests, prestige and saves
+- [Every chance in the game](docs/ODDS.md): exact odds of every tier, badge, multiplier, drop, slot prize and reward, generated from the game by `npm run docs`
+- [Skins and commands](docs/SKINS-AND-COMMANDS.md): where every skin is hidden, every command, and the controls of the Chat, Handheld and Calculator skins
+- [Design](DESIGN.md): design decisions and their reasons
 
 ## Changelog
 
+- v3.1: renamed Long Shot 10; badges doubled to 308 (plus 41 mode and 5 daily badges), all still counted exactly; achievements doubled to 94; Fuse all and Fuse everything; three new full-screen skins to play with: Chat, Handheld and Calculator; how-to-play, odds and skins documents.
 - v3.0 (skins): sixteen skins, including secret ones, a 500-coin bundle, a hidden command line in Settings, a text-only Terminal skin, a Console skin that plays the whole game by typed commands, and five legendary skins from the new badge book; Endless on Turbo up to 1,000 rolls a second; easier tiers (Uncommon is now 1 in 5, Rare 1 in 25) and five new ones past Eternal, up to Unfathomable at 1 in 10²⁰; daily quests; prestige; charts in the Log. Item and coin drops are tied to a roll's 1/N rather than its tier, so they come as often as before.
 - v2.8.3: slot rebalance. The Charm of Ten drops from 60% to 40% and every other prize is 1.5× as likely; all six pities are lower.
 - v2.8.2: spin 5, 10 or 20 at a time, or all your coins at once; big batches show totals per prize.

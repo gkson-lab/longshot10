@@ -89,8 +89,8 @@ if (isMainThread) {
     }
     const within = (lo, hi) => { let t = 0; for (let k = lo; k <= hi && k < dist.length; k++) t += dist[k]; return t; };
     Object.assign(counts, {
-      radarNext: dist[1], radarNear: dist[2] + dist[3],
-      radar20: within(20, 399), radar50: within(50, 399), radar100: within(100, 399),
+      radarNext: dist[1], radarNear: dist[2] + dist[3], radarOn: dist[0], radarFive: dist[4] + dist[5],
+      radar10: within(10, 399), radar20: within(20, 399), radar30: within(30, 399), radar50: within(50, 399), radar100: within(100, 399),
     });
     const totalN = within(0, 399);
     log(`radar: every number accounted for: ${totalN === SPACE}, farthest from a prime: ${dist.findLastIndex(x => x > 0)}`);

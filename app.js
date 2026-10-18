@@ -342,7 +342,7 @@
   }
 
   function toast(html, colorId) {
-    if (consoleOn()) { conPrint(plain(html)); return; }
+    if (fullSkin()) { fullNotice(plain(html)); return; }
     if (auto && speed === 3 && $('toasts').children.length >= 4) return; // Turbo can earn badges faster than anyone can read
     const el = document.createElement('div');
     el.className = 'toast';
@@ -525,7 +525,7 @@
     const { x, r, pct, tier } = shown;
     const squares = ['⬜', '🟩', '🟦', '🟪', '🟧', '🟥', '🟨', '⬛', '⬛', '⬛', '⬛', '⬛', '⬛']; // one per badge by rarity, as in Wordle shares; Divine and up share black
     return [
-      `RNGdle 10 · ${MODE_BY_ID[x.mode].name}`,
+      `Long Shot 10 · ${MODE_BY_ID[x.mode].name}`,
       label(x) + (r.mult.id !== 'unity' ? ` × ${r.mult.symbol}` : ''),
       `${tier.name} · ${oneText(shown.odds)} · ${formula(x, r)} = ${bigText(r.log)}`,
       r.badges.map(b => squares[b.rarity]).join('') || 'no badges',
@@ -551,7 +551,7 @@
     const sans = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
     const mono = 'ui-monospace, Cascadia Mono, SF Mono, Menlo, Consolas, monospace';
     g.fillStyle = v('--bg'); g.fillRect(0, 0, W, H);
-    g.fillStyle = v('--ink'); g.font = `800 34px ${sans}`; g.fillText('RNGdle 10', 60, 80);
+    g.fillStyle = v('--ink'); g.font = `800 34px ${sans}`; g.fillText('Long Shot 10', 60, 80);
     g.fillStyle = v('--muted'); g.font = `500 22px ${sans}`; g.fillText(`${MODE_BY_ID[x.mode].name} mode`, 60, 114);
     const s = String(x.n).padStart(G.DIGITS, '0'), lead = leadCount(x.n);
     const cw = 76, ch = 112, gap = 8, gg = 22;
@@ -579,7 +579,7 @@
     c.toBlob(blob => {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `rngdle10-${x.mode}-${x.n}.png`;
+      a.download = `longshot10-${x.mode}-${x.n}.png`;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 2000);
     });
@@ -698,7 +698,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -747,6 +747,8 @@
     if (it.kind === 'lens') fx[it.id] = (fx[it.id] || 0) + it.rolls;
     if (it.kind === 'overclock') fx[it.id] = Math.max(Date.now(), fx[it.id] || 0) + it.minutes * 60000;
     state.inv[id]--;
+    state.used = (state.used || 0) + 1;
+    checkAchievements();
     $('invMsg').textContent = `Used ${it.name}.`;
     save();
     renderInventory();
@@ -768,10 +770,13 @@
     $('effects').innerHTML = fx.length ? fx.map(t => `<li>${esc(t)}</li>`).join('') : '<li class="muted">Nothing active. Use an item below.</li>';
     const total = ITEMS.reduce((t, i) => t + (state.inv[i.id] || 0), 0);
     $('invCount').textContent = `${fmt(total)} ${total === 1 ? 'item' : 'items'}`;
+    $('fuseEverything').disabled = !ITEMS.some(it => it.next && (state.inv[it.id] || 0) >= it.next[1]);
     $('invList').innerHTML = ITEMS.filter(it => !it.retired || state.inv[it.id] > 0).map(it => {
       const k = state.inv[it.id] || 0;
       if (it.retired && !it.desc.includes('Retired')) it.desc += ' Retired: it no longer drops or comes from the slot, but it still works and fuses upwards.';
-      const fuse = it.next ? `<button class="btn" type="button" data-fuse="${it.id}" ${k >= it.next[1] ? '' : 'disabled'} aria-label="Fuse ${it.next[1]} ${esc(it.name)} into one ${esc(ITEM_BY_ID[it.next[0]].name)}">Fuse ${it.next[1]} → 1</button>` : '';
+      const can = it.next ? Math.floor(k / it.next[1]) : 0;
+      const fuse = it.next ? `<button class="btn" type="button" data-fuse="${it.id}" ${can ? '' : 'disabled'} aria-label="Fuse ${it.next[1]} ${esc(it.name)} into one ${esc(ITEM_BY_ID[it.next[0]].name)}">Fuse ${it.next[1]} → 1</button>`
+        + `<button class="btn" type="button" data-fuse-all="${it.id}" ${can > 1 ? '' : 'disabled'} aria-label="Fuse every ${esc(it.name)} you can">Fuse all${can > 1 ? ` (${fmt(can)})` : ''}</button>` : '';
       return `<li class="item${k ? '' : ' none'}" style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">×${fmt(k)}</span><br><span class="muted">${esc(it.desc)}${it.next ? ` Fuse ${it.next[1]} into a ${esc(ITEM_BY_ID[it.next[0]].name)}.` : ''}</span></div>`
         + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></div></li>`;
     }).join('');
@@ -859,14 +864,49 @@
     if (b) spinSlot(b.dataset.spin === 'all' ? 'all' : +b.dataset.spin);
   });
 
-  function fuseItem(id) {
+  // Fuse `times` sets of an item into the next one up (Infinity: as many as you have).
+  function fuseItem(id, times = 1) {
     const it = ITEM_BY_ID[id];
-    if (!it.next || (state.inv[id] || 0) < it.next[1]) return;
-    state.inv[id] -= it.next[1];
-    grant(it.next[0], `Fused ${it.next[1]} ${it.name}`);
+    if (!it.next) return 0;
+    const k = Math.min(times, Math.floor((state.inv[id] || 0) / it.next[1]));
+    if (!k) return 0;
+    state.inv[id] -= k * it.next[1];
+    state.fused = (state.fused || 0) + k;
+    grant(it.next[0], `Fused ${fmt(k * it.next[1])} ${it.name}`, k);
+    checkAchievements();
     save();
     renderInventory();
+    return k;
   }
+  // Fuse everything: every item fuses as far up its line as it can go, bottom first, so the
+  // results of one fuse can feed the next.
+  function fuseEverything() {
+    const before = { ...state.inv };
+    let fused = 0;
+    for (let again = true; again;) {
+      again = false;
+      for (const it of ITEMS) {
+        if (!it.next) continue;
+        const k = Math.floor((state.inv[it.id] || 0) / it.next[1]);
+        if (!k) continue;
+        state.inv[it.id] -= k * it.next[1];
+        state.inv[it.next[0]] = (state.inv[it.next[0]] || 0) + k;
+        fused += k;
+        again = true;
+      }
+    }
+    if (!fused) return '';
+    state.fused = (state.fused || 0) + fused;
+    const gained = ITEMS.filter(it => (state.inv[it.id] || 0) > (before[it.id] || 0)).map(it => `${it.name} ×${fmt(state.inv[it.id] - (before[it.id] || 0))}`);
+    const text = `Fused everything: ${fmt(fused)} ${fused === 1 ? 'fuse' : 'fuses'}, gaining ${gained.join(', ')}.`;
+    if (!fullSkin()) toast(esc(text), 'legendary');
+    $('invMsg').textContent = text;
+    checkAchievements();
+    save();
+    renderInventory();
+    return text;
+  }
+  $('fuseEverything').addEventListener('click', fuseEverything);
 
   // Luck: keep the best of L independent rolls. Up to INLINE_LUCK that runs right here; beyond it
   // the work is shared out to worker threads (a million rolls takes a few seconds), with progress.
@@ -972,7 +1012,7 @@
     if (rec.fresh.size) questEvent('fresh');
     if (rec.r.mult.id !== 'unity' && rec.r.mult.rarity >= 2) questEvent('mult');
     checkAchievements(rec);
-    if (consoleOn()) consoleRoll(rec.entry);
+    if (fullSkin()) fullRoll(rec.entry);
     return { x, rec, found };
   }
   // In Turbo the result changes many times a second and its height with it (more or fewer badges),
@@ -1125,7 +1165,7 @@
   }
 
   document.addEventListener('keydown', ev => {
-    if (ev.ctrlKey || ev.metaKey || ev.altKey || $('tab-roll').hidden || document.querySelector('dialog[open]')) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || $('tab-roll').hidden || document.querySelector('dialog[open]') || fullSkin()) return;
     const t = ev.target.closest ? ev.target : document.body;
     if (t.closest('input, select, textarea')) return;
     if (ev.code === 'Space') {
@@ -1223,6 +1263,7 @@
   $('checkForm').addEventListener('submit', ev => {
     ev.preventDefault();
     const raw = $('checkInput').value.replace(/[\s,_]/g, '');
+    if (raw === '07734' && unlockSkin('calc', 'hELLO')) { wearSkin('calc'); return; }
     const m = raw.match(/^(\d{1,10})(?:\^(\d{1,2}))?$/);
     if (!m) {
       $('checkInput').setCustomValidity('Enter a whole number from 0 to 9,999,999,999, optionally with ^ and an exponent, like 1729^3');
@@ -1281,6 +1322,51 @@
     { id: 'owl', name: 'Night owl', desc: 'Roll between 2 and 4 a.m.', test: rec => rec && [2, 3].includes(new Date(rec.entry.t).getHours()) },
     { id: 'slot', name: 'Pull the lever', desc: 'Spin the coin slot', test: () => state.spins >= 1 },
     { id: 'slot100', name: 'Slot regular', desc: 'Spin the coin slot 100 times', test: () => state.spins >= 100 },
+    // v3.1
+    { id: 'r500k', name: 'Half a million', desc: 'Roll 500,000 times', test: () => state.total >= 5e5 },
+    { id: 'r1m', name: 'Millionaire', desc: 'Roll 1,000,000 times', test: () => state.total >= 1e6 },
+    { id: 'r10m', name: 'Ten million strong', desc: 'Roll 10,000,000 times', test: () => state.total >= 1e7 },
+    { id: 'busyDay', name: 'Busy day', desc: 'Roll 10,000 times in one day', test: () => (state.daily[dayKey()] || 0) >= 1e4 },
+    { id: 'week', name: 'Regular', desc: 'Roll on 7 different days', test: () => Object.keys(state.daily).length >= 7 },
+    { id: 'month', name: 'Devoted', desc: 'Roll on 30 different days', test: () => Object.keys(state.daily).length >= 30 },
+    { id: 'c150', name: 'Hoarder', desc: 'Collect 150 different badges', test: () => collected() >= 150 },
+    { id: 'c200', name: 'Museum', desc: 'Collect 200 different badges', test: () => collected() >= 200 },
+    { id: 'c250', name: 'Encyclopedia', desc: 'Collect 250 different badges', test: () => collected() >= 250 },
+    { id: 'c300', name: 'Grand library', desc: 'Collect 300 different badges', test: () => collected() >= 300 },
+    { id: 'm75', name: 'Three quarters', desc: 'Land 75 different multipliers', test: () => multsFound() >= 75 },
+    { id: 'm100', name: 'Full table', desc: 'Land all 100 multipliers', test: () => multsFound() >= 100 },
+    ...MODES.map(m => ({ id: `fan-${m.id}`, name: `${m.name} fan`, desc: `Roll 1,000 times in ${m.name} mode`, test: () => state.totals[m.id] >= 1000 })),
+    { id: 'purse', name: 'Coin purse', desc: 'Hold 100 coins at once', test: () => state.coins >= 100 },
+    { id: 'chest', name: 'Treasure chest', desc: 'Hold 1,000 coins at once', test: () => state.coins >= 1000 },
+    { id: 'slot1k', name: 'One-armed bandit', desc: 'Spin the coin slot 1,000 times', test: () => state.spins >= 1000 },
+    { id: 'slot10k', name: 'Casino floor', desc: 'Spin the coin slot 10,000 times', test: () => state.spins >= 1e4 },
+    { id: 'fuse1', name: 'Fusion', desc: 'Fuse items once', test: () => (state.fused || 0) >= 1 },
+    { id: 'fuse100', name: 'Forge master', desc: 'Fuse items 100 times', test: () => (state.fused || 0) >= 100 },
+    { id: 'use10', name: 'Item user', desc: 'Use 10 items', test: () => (state.used || 0) >= 10 },
+    { id: 'use100', name: 'Power user', desc: 'Use 100 items', test: () => (state.used || 0) >= 100 },
+    { id: 'goose', name: 'Golden egg', desc: 'Own a Golden Goose', test: () => state.inv.goose > 0 },
+    { id: 'diamond', name: 'Diamond hands', desc: 'Own a Diamond Goose', test: () => state.inv.goose2 > 0 },
+    { id: 'tenmil', name: 'Ten million in hand', desc: 'Own a Charm of Ten Million', test: () => state.inv.luck10m > 0 },
+    { id: 'quest1', name: 'Quest taker', desc: 'Claim a daily quest', test: () => (state.questsDone || 0) >= 1 },
+    { id: 'quest25', name: 'Quest master', desc: 'Claim 25 daily quests', test: () => (state.questsDone || 0) >= 25 },
+    { id: 'questDay', name: 'Full day', desc: 'Finish all three quests of a day', test: () => !!(state.quests && state.quests.bonus) },
+    { id: 'p1', name: 'Reborn', desc: 'Prestige once', test: () => (state.prestige || 0) >= 1 },
+    { id: 'p3', name: 'Phoenix', desc: 'Reach prestige 3', test: () => (state.prestige || 0) >= 3 },
+    { id: 'p5', name: 'Ascended', desc: 'Reach prestige 5', test: () => (state.prestige || 0) >= 5 },
+    { id: 'page1', name: 'First page', desc: 'Claim a badge book page', test: () => Object.keys(state.book).length >= 1 },
+    { id: 'page5', name: 'Bookworm', desc: 'Claim 5 badge book pages', test: () => Object.keys(state.book).length >= 5 },
+    { id: 'pageAll', name: 'Complete works', desc: 'Claim every badge book page', test: () => Object.keys(state.book).length >= BOOK.length },
+    { id: 'skin1', name: 'New look', desc: 'Own a skin that is not free', test: () => state.skins.length >= 1 },
+    { id: 'skin8', name: 'Wardrobe', desc: 'Own 8 skins', test: () => SKINS.filter(x => ownsSkin(x.id)).length >= 8 },
+    { id: 'skinAll', name: 'Fashion icon', desc: 'Own every skin', test: () => SKINS.every(x => ownsSkin(x.id)) },
+    { id: 'secrets', name: 'Secret agent', desc: 'Find every secret skin', test: () => SKINS.filter(x => x.how === 'secret').every(x => ownsSkin(x.id)) },
+    { id: 'bundle', name: 'Big spender', desc: 'Buy the skin bundle', test: () => SKINS.filter(x => x.how === 'bundle').every(x => ownsSkin(x.id)) },
+    { id: 'hacker', name: 'Hacker', desc: 'Enter the secret code', test: () => ownsSkin('terminal') },
+    { id: 'cmd100', name: 'Command line hero', desc: 'Type 100 commands', test: () => (state.cmds || 0) >= 100 },
+    { id: 'luck1k', name: 'Loaded dice', desc: 'Roll with luck ×1,000 or more', test: rec => rec && rec.entry.b >= 1000 },
+    { id: 'prismRoll', name: 'Through the prism', desc: 'Roll with the Prism Lens', test: rec => rec && rec.entry.lens === 10 },
+    { id: 'trash100', name: 'Trash collector', desc: 'Roll Trash 100 times', test: () => MODE_IDS.reduce((t, m) => t + (state.tiers[m].trash || 0), 0) >= 100 },
+    { id: 'pile12', name: 'Badge avalanche', desc: 'Earn 12 or more badges on one roll', test: rec => rec && rec.r.badges.length >= 12 },
   ];
   function checkAchievements(rec) {
     for (const a of ACHIEVEMENTS) {
@@ -1492,7 +1578,7 @@
     if (!ownsSkin(s.theme)) s.theme = 'midnight'; // a skin this save file does not own, e.g. after switching saves
     document.documentElement.dataset.theme = s.theme;
     document.documentElement.dataset.tone = SKIN_BY_ID[s.theme].light ? 'light' : 'dark';
-    paintConsole();
+    paintFull();
     document.documentElement.dataset.effects = s.effects;
     document.querySelector('meta[name="theme-color"]').content = cssVar('--bg');
     for (const r of document.querySelectorAll('#settingsDialog input[name="effects"]')) r.checked = r.value === s.effects;
@@ -1537,7 +1623,7 @@
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   }
-  const fileName = name => `rngdle10-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'save'}.json`;
+  const fileName = name => `longshot10-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'save'}.json`;
   function renderSlots() {
     $('slotList').innerHTML = slots.list.map(s => {
       const data = s.id === slots.active ? state : readSlot(s.id);
@@ -1616,7 +1702,7 @@
     try { data = JSON.parse(await file.text()); } catch { /* reported below */ }
     const s = data && ['rngdle10', 'rngdle9'].includes(data.game) && data.state;
     if (!s || !Array.isArray(s.log) || typeof s.total !== 'number') {
-      $('dataMsg').textContent = 'That file is not an RNGdle save, so nothing was imported.';
+      $('dataMsg').textContent = 'That file is not a Long Shot 10 save, so nothing was imported.';
       return;
     }
     const st = Object.assign(blank(), s, { settings: { ...state.settings } });
@@ -1625,7 +1711,7 @@
     if (data.game === 'rngdle9') st.totals.classic = s.total;
     if (data.game === 'rngdle9' || !s.tiers || !s.hof) st.v = 3; // rebuild tiers and hall of fame from the log on first load
     st.log = s.log.filter(x => x && Number.isInteger(x.n) && x.n >= 0 && x.n < G.SPACE).slice(0, LOG_LIMIT);
-    const name = String(data.name || file.name.replace(/\.json$/i, '').replace(/^rngdle10-/, '') || 'Imported save').slice(0, 40);
+    const name = String(data.name || file.name.replace(/\.json$/i, '').replace(/^(rngdle10|longshot10)-/, '') || 'Imported save').slice(0, 40);
     if (addSlot(name, st)) {
       renderSlots();
       $('dataMsg').textContent = `Imported "${name}" (${rollsText(s.total)}) as a new save file. Press Play to use it.`;
@@ -1647,9 +1733,10 @@
   });
 
   $('invList').addEventListener('click', ev => {
-    const use = ev.target.closest('[data-use]'), fuse = ev.target.closest('[data-fuse]');
+    const use = ev.target.closest('[data-use]'), fuse = ev.target.closest('[data-fuse]'), all = ev.target.closest('[data-fuse-all]');
     if (use) useItem(use.dataset.use);
     if (fuse) fuseItem(fuse.dataset.fuse);
+    if (all) fuseItem(all.dataset.fuseAll, Infinity);
   });
 
   // Skins. Free ones are always owned; the rest are found in the page, bought as one bundle, or
@@ -1663,6 +1750,9 @@
     { id: 'blueprint', name: 'Blueprint', how: 'secret', hint: 'Search the collection for the plans.' },
     { id: 'terminal', name: 'Terminal', how: 'secret', hint: 'Settings has a command line somewhere.' },
     { id: 'console', name: 'Console', how: 'secret', hint: 'Comes with Terminal.' },
+    { id: 'chat', name: 'Chat', how: 'secret', hint: 'Say hello to a command line.' },
+    { id: 'handheld', name: 'Handheld', how: 'secret', hint: 'An old cheat code still works.' },
+    { id: 'calc', name: 'Calculator', how: 'secret', hint: 'Say hello the calculator way, in the number lookup.' },
     { id: 'gold', name: 'Gold', how: 'bundle' },
     { id: 'ruby', name: 'Ruby', how: 'bundle' },
     { id: 'aurora', name: 'Aurora', how: 'bundle' },
@@ -1679,12 +1769,14 @@
     if (ownsSkin(id)) return false;
     state.skins.push(id);
     toast(`${esc(why)}: <b>${esc(SKIN_BY_ID[id].name)}</b> skin unlocked`, 'legendary');
+    checkAchievements();
     save();
     if ($('settingsDialog').open) renderSkins();
     return true;
   }
   function wearSkin(id) {
     if (!ownsSkin(id)) return;
+    if (FULL_SKINS.includes(id) && !FULL_SKINS.includes(state.settings.theme)) state.settings.prevSkin = state.settings.theme;
     state.settings.theme = id;
     applySettings();
     save();
@@ -1713,6 +1805,7 @@
     state.coins -= BUNDLE_PRICE;
     for (const s of SKINS) if (s.how === 'bundle' && !ownsSkin(s.id)) state.skins.push(s.id);
     toast('Bundle bought: <b>Gold, Ruby and Aurora</b> skins unlocked', 'legendary');
+    checkAchievements();
     save();
     if ($('settingsDialog').open) renderSkins();
     return true;
@@ -1739,7 +1832,7 @@
   // The command line. The same shell runs in the hidden terminal in Settings and, full screen, in the
   // Console skin, where it is the whole game: every screen has a command.
   const TERMINAL_CODE = 'M@D3W1THL0V3';
-  const PROMPT = 'PS C:\\RNGdle10> ';
+  const PROMPT = 'PS C:\\LongShot10> ';
   const plain = html => { const d = document.createElement('div'); d.innerHTML = html; return d.textContent; };
   const pad = (s, n) => String(s).padEnd(n);
   const findItem = q => {
@@ -1761,7 +1854,8 @@
     'BEST [mode]            Hall of fame.',
     'INV                    Inventory and active effects.',
     'USE item               Use an item, e.g. USE luck100 or USE goose.',
-    'FUSE item              Fuse several of an item into the next one up.',
+    'FUSE item [ALL]        Fuse an item into the next one up, once or as often as you can.',
+    'FUSE ALL               Fuse everything as far up as it goes.',
     'SPIN [n|ALL]           Spin the coin slot.',
     'ODDS                   The slot prize table and your pity.',
     'QUESTS [CLAIM n]       Today\'s quests, or claim one.',
@@ -1771,7 +1865,7 @@
     'PRESTIGE [YES]         Prestige progress, or prestige.',
     'SKINS, SKIN id         Your skins, or wear one.  BUY BUNDLE buys three.',
     'SOUND ON|OFF           Sound.',
-    'VER, CLS, GUI          Version, clear the screen, back to the clickable Terminal look.',
+    'VER, CLS, GUI          Version, clear the screen, back to the clickable look.',
   ];
   function shell(line, print) {
     const cmd = line.trim();
@@ -1788,10 +1882,13 @@
     const modeArg = () => (a ? MODES.find(m => m.id === a || m.name.toLowerCase().startsWith(a)) : MODE_BY_ID[state.mode]);
     switch (w) {
       case 'help': case '?': print(...SHELL_HELP, ''); break;
-      case 'ver': print('', `RNGdle 10 [Version ${$('version').textContent.slice(1)}]`, ''); break;
+      case 'ver': print('', `Long Shot 10 [Version ${$('version').textContent.slice(1)}]`, ''); break;
       case 'cls': case 'clear': print.clear(); break;
       case 'exit': if (print.exit) print.exit(); else print('Type GUI to leave the Console skin.'); break;
-      case 'gui': wearSkin('terminal'); break;
+      case 'gui': leaveFull(); break;
+      case 'hello': case 'hi': case 'hey':
+        print(unlockSkin('chat', 'Someone said hello') ? 'Hello! You unlocked the Chat skin. SKIN chat to talk to Tenny.' : 'Hello again!', '');
+        break;
       case 'roll': {
         if (!ready[state.mode]) { print('The odds are still loading. Try again in a moment.'); break; }
         if (auto) setAuto(null);
@@ -1876,6 +1973,13 @@
         break;
       }
       case 'use': case 'fuse': {
+        if (w === 'fuse' && (a === 'all' || a === 'everything')) { print(fuseEverything() || 'Nothing has enough to fuse.', ''); break; }
+        if (w === 'fuse' && / all$/.test(a)) {
+          const it = findItem(a.replace(/ all$/, ''));
+          const k = it ? fuseItem(it.id, Infinity) : 0;
+          print(k ? `Fused ${fmt(k)} times into ${ITEM_BY_ID[it.next[0]].name}.` : 'Nothing to fuse there.', '');
+          break;
+        }
         const it = arg && findItem(arg);
         if (!it) { print(`No item called ${arg || '(nothing)'}. INV lists yours.`); break; }
         const before = state.inv[it.id] || 0;
@@ -1978,7 +2082,7 @@
     $('terminal').hidden = !open;
     $('termToggle').setAttribute('aria-expanded', String(open));
     if (open) {
-      if (!$('termOut').textContent) termPrint('RNGdle 10 command line', 'Type HELP for a list of commands.', '');
+      if (!$('termOut').textContent) termPrint('Long Shot 10 command line', 'Type HELP for a list of commands.', '');
       $('termInput').focus();
     }
   });
@@ -1989,9 +2093,11 @@
       ev.preventDefault();
       const line = input.value;
       print(PROMPT + line);
-      if (line.trim()) { history.push(line); at = history.length; }
+      if (line.trim()) { history.push(line); at = history.length; state.cmds = (state.cmds || 0) + 1; }
       input.value = '';
       shell(line, print);
+      checkAchievements();
+      save();
     });
     input.addEventListener('keydown', ev => {
       if (ev.key === 'ArrowUp' && at > 0) { input.value = history[--at]; ev.preventDefault(); }
@@ -2016,10 +2122,242 @@
   function paintConsole() {
     $('console').hidden = !consoleOn();
     if (!consoleOn()) return;
-    if (!$('conOut').textContent) conPrint('RNGdle 10 Console', `Save file: ${slotName(slots.active)}. Type HELP for the commands, GUI for the clickable look.`, '');
+    if (!$('conOut').textContent) conPrint('Long Shot 10 Console', `Save file: ${slotName(slots.active)}. Type HELP for the commands, GUI for the clickable look.`, '');
     setTimeout(() => $('conInput').focus(), 0);
   }
   $('console').addEventListener('click', () => { if (!getSelection().toString()) $('conInput').focus(); });
+
+  // Full-screen skins: Console, Chat, Handheld and Calculator each replace the page with their own
+  // way to play. They all drive the same game through the same functions; Leave returns to the skin
+  // worn before.
+  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc'];
+  const fullSkin = () => (FULL_SKINS.includes(state.settings.theme) ? state.settings.theme : null);
+  function leaveFull() {
+    const back = state.settings.prevSkin;
+    wearSkin(back && ownsSkin(back) && !FULL_SKINS.includes(back) ? back : 'midnight');
+  }
+  // Every full-screen skin hears about each roll shown and each notice.
+  function fullRoll(entry, manual) {
+    const f = fullSkin();
+    if (f === 'console') consoleRoll(entry);
+    if (f === 'chat') chatRoll(entry, manual);
+    if (f === 'handheld') { hh.last = entry; hhPaintSoon(); }
+    if (f === 'calc') { calc.last = entry; calcPaintSoon(); }
+  }
+  function fullNotice(text) {
+    const f = fullSkin();
+    if (f === 'console') conPrint(text);
+    if (f === 'chat') addBubble('note', text);
+    if (f === 'handheld') { hh.note = text; hh.noteAt = performance.now(); hhPaintSoon(); }
+    if (f === 'calc') { calc.note = text; calc.noteAt = performance.now(); calcPaintSoon(); }
+  }
+  function paintFull() {
+    const f = fullSkin();
+    paintConsole();
+    $('chat').hidden = f !== 'chat';
+    $('handheld').hidden = f !== 'handheld';
+    $('calc').hidden = f !== 'calc';
+    if (f === 'chat') {
+      if (!$('chatLog').children.length) {
+        addBubble('bot', `Hi, I'm Tenny. I roll the numbers around here.`);
+        addBubble('bot', `Tap a button below or just tell me what to do: "roll 100", "endless", "stats", "use luck100"… Say "help" for everything I understand.`);
+      }
+      setTimeout(() => $('chatInput').focus(), 0);
+    }
+    if (f === 'handheld') hhPaint();
+    if (f === 'calc') calcPaint();
+  }
+  for (const b of document.querySelectorAll('[data-leave]')) b.addEventListener('click', leaveFull);
+
+  // Chat: the game as a conversation with Tenny, a chatty bot.
+  const REACT = [
+    ['trash', ['Oof. That one goes in the bin.', 'Bottom 1%. Impressive, in a way.']],
+    ['common', ['A perfectly ordinary number.', 'Nothing special, but it is yours.', 'Plain and simple.']],
+    ['uncommon', ['Ooh, a little better than usual.', 'Not bad!']],
+    ['rare', ['Rare! Nice one.', 'Now we are talking.']],
+    ['epic', ['EPIC! I felt that one.', 'Big roll!']],
+    ['legendary', ['LEGENDARY. Screenshot that.', 'I need a moment.']],
+    ['anomaly', ['That is not supposed to happen. Anomaly!', 'My circuits are tingling.']],
+  ];
+  const reactTo = tier => {
+    const i = T(tier);
+    const list = i > T('anomaly') ? [`${ROLL_TIERS[i].name}?! I am telling everyone about this.`, `A ${ROLL_TIERS[i].name} roll. Words fail me.`] : REACT.find(r => r[0] === tier)[1];
+    return list[Math.floor(Math.random() * list.length)];
+  };
+  function addBubble(who, text) {
+    const li = document.createElement('li');
+    li.className = `bubble ${who}`;
+    li.textContent = text;
+    $('chatLog').appendChild(li);
+    while ($('chatLog').children.length > 200) $('chatLog').firstChild.remove();
+    $('chatLog').scrollTop = 1e9;
+  }
+  const chatPrint = (...lines) => { const t = lines.join('\n').replace(/\n+$/, ''); if (t.trim()) addBubble('bot mono', t); };
+  chatPrint.clear = () => $('chatLog').replaceChildren();
+  chatPrint.exit = leaveFull;
+  let chatAt = 0;
+  function chatRoll(entry, manual) {
+    if (manual) return;
+    if (!auto || T(entry.tier) < T('legendary')) return;
+    const now = performance.now();
+    if (now - chatAt < 400) return;
+    chatAt = now;
+    addBubble('bot', `${label(entry)}: ${ROLL_TIERS[T(entry.tier)].name}, ${oneText(entry)}. ${reactTo(entry.tier)}`);
+  }
+  function chatSay(line) {
+    const t = line.trim();
+    if (!t) return;
+    addBubble('me', t);
+    state.cmds = (state.cmds || 0) + 1;
+    const low = t.toLowerCase().replace(/[!.?]+$/, '');
+    if (/^(hi|hello|hey|yo|sup)\b/.test(low)) { addBubble('bot', 'Hey! Want me to roll something?'); return; }
+    if (/^(thanks|thank you|ty|thx)\b/.test(low)) { addBubble('bot', 'Any time. Rolling is what I live for.'); return; }
+    if (/^(bye|leave|exit|quit)\b/.test(low)) { addBubble('bot', 'See you around!'); setTimeout(leaveFull, 500); return; }
+    const before = state.total;
+    shell(t.replace(/^(please |can you |could you )/i, '').replace(/^(roll it|again)$/i, 'roll'), chatPrint);
+    if (/^roll\b/i.test(t) && state.total > before && state.log[0]) {
+      const best = state.log.slice(0, Math.min(200, state.total - before)).map(entryFor).sort((a, b) => b.oneInLog - a.oneInLog)[0];
+      if (best) addBubble('bot', reactTo(best.tier));
+    }
+    checkAchievements();
+    save();
+  }
+  $('chatForm').addEventListener('submit', ev => { ev.preventDefault(); const v = $('chatInput').value; $('chatInput').value = ''; chatSay(v); });
+  $('chatChips').addEventListener('click', ev => { const b = ev.target.closest('[data-say]'); if (b) chatSay(b.dataset.say); });
+
+  // Handheld: a pocket console with a four-shade screen, a D-pad and A and B buttons.
+  const hh = { menu: 'main', cur: 0, top: 0, last: null, note: '', noteAt: 0, lines: null };
+  const HH_MAIN = ['Roll', 'Roll x10', 'Auto', 'Endless', 'Items', 'Slot', 'Stats', 'Quests', 'Mode', 'Power off'];
+  let hhFrame = 0;
+  const hhPaintSoon = () => { if (!hhFrame) hhFrame = requestAnimationFrame(() => { hhFrame = 0; hhPaint(); }); };
+  function hhCapture(cmd) { const out = []; const p = (...l) => out.push(...l); p.clear = () => {}; shell(cmd, p); return out.filter(l => l !== ''); }
+  function hhItems() {
+    if (hh.menu === 'main') return HH_MAIN.map(x => (x === 'Endless' && auto === 'endless') || (x === 'Auto' && auto === 'auto') ? 'Stop' : x);
+    if (hh.menu === 'items') { const l = ITEMS.filter(i => state.inv[i.id] > 0).map(i => `${i.name} x${fmt(state.inv[i.id])}`); return l.length ? l : ['(no items)']; }
+    if (hh.menu === 'slot') return ['Spin x1', 'Spin x10', 'Spin all'];
+    if (hh.menu === 'mode') return MODES.map(m => (m.id === state.mode ? '* ' : '  ') + m.name);
+    return hh.lines || [];
+  }
+  function hhPaint() {
+    if (fullSkin() !== 'handheld') return;
+    const e = hh.last || (state.log[0] && entryFor(state.log[0]));
+    const head = e ? `${label(e)}\n${ROLL_TIERS[T(e.tier)].name.toUpperCase()}  ${oneText(e)}` : 'PRESS A TO ROLL\n';
+    const items = hhItems(), rows = 6;
+    hh.cur = Math.max(0, Math.min(hh.cur, items.length - 1));
+    if (hh.cur < hh.top) hh.top = hh.cur;
+    if (hh.cur >= hh.top + rows) hh.top = hh.cur - rows + 1;
+    const pick = !['stats', 'quests'].includes(hh.menu);
+    const body = items.slice(hh.top, hh.top + rows).map((t, i) => `${pick && hh.top + i === hh.cur ? '>' : ' '} ${t}`).join('\n');
+    const note = performance.now() - hh.noteAt < 3000 ? hh.note : `${MODE_BY_ID[state.mode].name.toUpperCase()}  ${fmt(state.coins)}c${auto ? '  ' + auto.toUpperCase() : ''}`;
+    $('hhScreen').textContent = `${head}\n${'-'.repeat(22)}\n${body}\n${'\n'.repeat(Math.max(0, rows - Math.min(rows, items.length)))}${'-'.repeat(22)}\n${note.slice(0, 44)}`;
+  }
+  function hhPress(btn) {
+    if (fullSkin() !== 'handheld') return;
+    const items = hhItems();
+    tone(btn === 'a' ? 660 : btn === 'b' ? 440 : 520, 0.05, { type: 'square', gain: 0.02 });
+    if (btn === 'up') hh.cur = hh.menu === 'stats' || hh.menu === 'quests' ? (hh.top = Math.max(0, hh.top - 1)) : hh.cur - 1;
+    if (btn === 'down') hh.cur = hh.menu === 'stats' || hh.menu === 'quests' ? (hh.top = Math.min(Math.max(0, items.length - 6), hh.top + 1)) : hh.cur + 1;
+    if (btn === 'b' && hh.menu !== 'main') { hh.menu = 'main'; hh.cur = 0; hh.top = 0; }
+    if (btn === 'start') shell(auto ? 'stop' : 'endless', () => {});
+    if (btn === 'select') { const i = MODE_IDS.indexOf(state.mode); setMode(MODE_IDS[(i + 1) % MODE_IDS.length]); }
+    if (btn === 'a') {
+      const pick = items[hh.cur] || '';
+      const go = (menu, lines) => { hh.menu = menu; hh.cur = 0; hh.top = 0; hh.lines = lines || null; };
+      if (hh.menu === 'main') {
+        if (pick === 'Roll') shell('roll', () => {});
+        if (pick === 'Roll x10') shell('roll 10', () => {});
+        if (pick === 'Auto') shell('auto', () => {});
+        if (pick === 'Endless') shell('endless', () => {});
+        if (pick === 'Stop') shell('stop', () => {});
+        if (pick === 'Items') go('items');
+        if (pick === 'Slot') go('slot');
+        if (pick === 'Stats') go('stats', hhCapture('stats').map(l => l.replace(/\s{2,}/g, ' ').slice(0, 22)));
+        if (pick === 'Quests') go('quests', todaysQuests().list.flatMap((q, i) => { const d = QUEST_BY_ID[q.id]; return [`${i + 1} ${d.text}`.slice(0, 22), `  ${fmt(q.have)}/${fmt(d.goal)}${q.claimed ? ' done' : q.have >= d.goal ? ' CLAIMED' : ''}`]; }));
+        if (pick === 'Quests') todaysQuests().list.forEach((q, i) => { if (!q.claimed && q.have >= QUEST_BY_ID[q.id].goal) claimQuest(i); });
+        if (pick === 'Mode') go('mode');
+        if (pick === 'Power off') { leaveFull(); return; }
+      } else if (hh.menu === 'items') {
+        const it = ITEMS.filter(i => state.inv[i.id] > 0)[hh.cur];
+        if (it) { useItem(it.id); hh.note = `USED ${it.name.toUpperCase()}`; hh.noteAt = performance.now(); }
+      } else if (hh.menu === 'slot') {
+        const n = [1, 10, 'all'][hh.cur];
+        if (state.coins > 0) spinSlot(n === 'all' ? 'all' : Math.min(n, state.coins)).then(() => { hh.note = [...$('slotResult').children].map(li => li.textContent).join(' ').toUpperCase(); hh.noteAt = performance.now(); hhPaint(); });
+        else { hh.note = 'NO COINS'; hh.noteAt = performance.now(); }
+      } else if (hh.menu === 'mode') setMode(MODE_IDS[hh.cur]);
+    }
+    if (btn === 'right' && hh.menu === 'items') {
+      const it = ITEMS.filter(i => state.inv[i.id] > 0)[hh.cur];
+      if (it && fuseItem(it.id, Infinity)) { hh.note = `FUSED ${it.name.toUpperCase()}`; hh.noteAt = performance.now(); }
+    }
+    hhPaint();
+  }
+  $('handheld').addEventListener('click', ev => { const b = ev.target.closest('[data-hh]'); if (b) hhPress(b.dataset.hh); });
+  const HH_KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', z: 'a', Z: 'a', Enter: 'a', x: 'b', X: 'b', Backspace: 'b', Escape: 'b', ' ': 'start', Shift: 'select' };
+
+  // Calculator: type how many rolls, press = to roll them. The display holds ten digits, exactly
+  // one roll.
+  const calc = { entry: '', last: null, note: '', noteAt: 0, memo: false };
+  let calcFrame = 0;
+  const calcPaintSoon = () => { if (!calcFrame) calcFrame = requestAnimationFrame(() => { calcFrame = 0; calcPaint(); }); };
+  function calcPaint() {
+    if (fullSkin() !== 'calc') return;
+    const e = calc.memo ? MODE_IDS.map(m => state.hof[m][0]).filter(Boolean).sort((a, b) => b.log - a.log)[0] : calc.last || (state.log[0] && entryFor(state.log[0]));
+    $('calcMain').textContent = calc.entry ? `×${calc.entry}` : e ? String(e.n) + (e.e > 1 ? sup(e.e) : '') : '0';
+    const sub = performance.now() - calc.noteAt < 3000 ? calc.note
+      : e ? `${calc.memo ? 'MR  ' : ''}${ROLL_TIERS[T(e.tier)].name}  ${oneText(e)}` : 'Type a count, then =';
+    $('calcSub').textContent = sub;
+    $('calcFlags').textContent = [MODE_BY_ID[state.mode].name.toUpperCase(), auto ? auto.toUpperCase() : '', luckActive() > 1 ? `L×${fmt(luckActive())}` : '', `${fmt(state.coins)}c`].filter(Boolean).join('  ');
+  }
+  const calcSay = text => { calc.note = text; calc.noteAt = performance.now(); };
+  function calcKey(k) {
+    if (fullSkin() !== 'calc') return;
+    tone(700 + '0123456789'.indexOf(k) * 30, 0.03, { type: 'sine', gain: 0.03 });
+    calc.memo = false;
+    if (/^\d$/.test(k)) { if (calc.entry.length < 5) calc.entry = (calc.entry + k).replace(/^0+/, ''); }
+    else if (k === 'C') { if (auto) shell('stop', () => {}); calc.entry = ''; calcSay('Cleared'); }
+    else if (k === '=') {
+      const n = Math.max(1, Math.min(1e4, +calc.entry || 1));
+      calc.entry = '';
+      const out = hhCapture(`roll ${n}`);
+      calcSay(n > 1 ? `Best of ${fmt(n)} rolls` : out[0] ? out[0].split(/\s{2,}/)[1] || '' : '');
+      if (!out.length) calcSay('Odds still loading');
+    } else if (k === '+') { shell(auto === 'endless' ? 'stop' : 'endless', () => {}); calcSay(auto ? 'Endless on, C stops' : 'Stopped'); }
+    else if (k === '−') { shell('stop', () => {}); calcSay('Stopped'); }
+    else if (k === '×') {
+      const it = [...ITEMS].filter(i => i.kind === 'luck' && state.inv[i.id] > 0).sort((a, b) => b.luck - a.luck)[0];
+      if (it) { useItem(it.id); calcSay(`Luck ×${fmt(it.luck)} on`); } else calcSay('No luck charms');
+    } else if (k === '÷') calcSay(fuseEverything() ? 'Fused everything' : 'Nothing to fuse');
+    else if (k === 'MR') { calc.memo = true; }
+    else if (k === 'M+') { const t = state.log[0]; if (t && !state.favs.some(f => f.n === t.n && f.t === t.t)) { state.favs.push(t); save(); calcSay('Starred'); } }
+    else if (k === 'MODE') { const i = MODE_IDS.indexOf(state.mode); setMode(MODE_IDS[(i + 1) % MODE_IDS.length]); calcSay(MODE_BY_ID[state.mode].name); }
+    else if (k === 'SPIN') {
+      const n = Math.max(1, Math.min(state.coins, +calc.entry || 1));
+      calc.entry = '';
+      if (!state.coins) calcSay('No coins');
+      else spinSlot(n).then(() => { calcSay([...$('slotResult').children].map(li => li.textContent).join(' ')); calcPaint(); });
+    } else if (k === 'OFF') { leaveFull(); return; }
+    checkAchievements();
+    calcPaint();
+  }
+  $('calc').addEventListener('click', ev => { const b = ev.target.closest('[data-key]'); if (b) calcKey(b.dataset.key); });
+  const CALC_KEYS = { Enter: '=', '=': '=', '+': '+', '-': '−', '*': '×', x: '×', '/': '÷', Escape: 'C', Delete: 'C', c: 'C', m: 'MODE', s: 'SPIN' };
+
+  // Keys for the handheld and calculator, and the Konami code that unlocks the handheld.
+  const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  let konami = 0;
+  document.addEventListener('keydown', ev => {
+    const k = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+    konami = k === KONAMI[konami] ? konami + 1 : k === KONAMI[0] ? 1 : 0;
+    if (konami === KONAMI.length) { konami = 0; if (unlockSkin('handheld', 'Cheat code')) wearSkin('handheld'); }
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || document.querySelector('dialog[open]')) return;
+    const f = fullSkin();
+    if (f === 'handheld' && HH_KEYS[ev.key]) { ev.preventDefault(); hhPress(HH_KEYS[ev.key]); }
+    if (f === 'calc') {
+      if (ev.key === 'Backspace') { calc.entry = calc.entry.slice(0, -1); calcPaint(); ev.preventDefault(); return; }
+      const key = /^\d$/.test(ev.key) ? ev.key : CALC_KEYS[ev.key];
+      if (key) { ev.preventDefault(); calcKey(key); }
+    }
+  });
 
   // Badge book: a page is complete once every badge of its category at 1 in 1,000,000 or likelier
   // is collected. Five pages give a legendary skin; the rest give items.
@@ -2060,6 +2398,7 @@
     state.book[p.cat] = Date.now();
     if (p.skin) unlockSkin(p.skin, `${p.cat} page complete`);
     else grant(p.item, `${p.cat} page complete`, p.k);
+    checkAchievements();
     save();
     if (!$('tab-collection').hidden) renderBook();
     return true;
@@ -2123,9 +2462,11 @@
     const qs = todaysQuests(), q = qs.list[i], def = QUEST_BY_ID[q.id];
     if (q.claimed || q.have < def.goal) return false;
     q.claimed = true;
+    state.questsDone = (state.questsDone || 0) + 1;
     state.coins += def.coins;
     grant(def.item, `Quest reward, plus ${def.coins} coins`);
     if (!qs.bonus && qs.list.every(x => x.claimed)) { qs.bonus = true; grant(QUEST_BONUS, 'All quests done'); }
+    checkAchievements();
     save();
     if (!$('tab-trophies').hidden) renderQuests();
     return true;
@@ -2164,6 +2505,7 @@
     state.prestigeAt = state.total;
     Object.assign(state, { coins: 0, inv: {}, effects: {} });
     toast(`Prestige ${state.prestige}: drops and coins ×${prestigeBonus()}`, 'mythic');
+    checkAchievements();
     writeSave();
     renderPrestige();
     paintStatus();

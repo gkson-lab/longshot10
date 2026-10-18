@@ -5,6 +5,7 @@
   "scripts": {
     "data": "node tools/build-data.js",
     "icons": "node tools/icons.js",
-    "check": "node tools/check.js"
+    "check": "node tools/check.js",
+    "docs": "node tools/docs.js"
   }
 }

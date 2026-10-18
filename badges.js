@@ -101,6 +101,14 @@
     { id: 'leetPrime', name: 'Leet Prime', desc: 'A prime containing 1337', cond: (n, s) => s.includes('1337') },
     { id: 'uniqPrime', name: 'Pristine Prime', desc: 'A prime with no repeated digit', cond: (n, s) => distinct(s) === s.length },
     { id: 'happyPrime', name: 'Happy Prime', desc: 'A prime that is also a happy number', cond: n => isHappy(n) },
+    { id: 'safePrime', name: 'Safe Prime', desc: 'A prime p where (p - 1) / 2 is prime too', cond: n => n > 4 && P.isPrime((n - 1) / 2) },
+    { id: 'tripletPrime', name: 'Prime Triplet', desc: 'Starts three primes within 6, like 5, 7, 11 or 7, 11, 13', cond: n => P.isPrime(n + 6) && (P.isPrime(n + 2) || P.isPrime(n + 4)) },
+    { id: 'lonerPrime', name: 'Loner Prime', desc: 'A prime with no other prime within 6', cond: n => [2, 4, 6].every(k => !P.isPrime(n - k) && !P.isPrime(n + k)) },
+    { id: 'zeroFreePrime', name: 'Zero-Free Prime', desc: 'A prime without a single 0', cond: (n, s) => !s.includes('0') },
+    { id: 'oddPrime', name: 'Odd-Digit Prime', desc: 'A prime made only of odd digits', cond: (n, s) => /^[13579]+$/.test(s) },
+    { id: 'sortedPrime', name: 'Sorted Prime', desc: 'A prime whose digits never go down', cond: (n, s) => [...s].every((c, i) => i === 0 || c >= s[i - 1]) },
+    { id: 'bookendPrime', name: 'Bookend Prime', desc: 'A prime of two or more digits that starts and ends with the same digit', cond: (n, s) => s.length > 1 && s[0] === s[s.length - 1] },
+    { id: 'answerPrime', name: 'The Answer Prime', desc: 'A prime containing 42', cond: (n, s) => s.includes('42') },
   ];
 
   // Exponent mode: P(e = k) = 2^-k for k < E_MAX, and the tail 2^-(E_MAX-1) lands on E_MAX.
@@ -209,6 +217,40 @@
       const next = [row[row.length - 1]];
       for (const x of row) next.push(next[next.length - 1] + x);
       row = next;
+    }
+
+    function recur3(a, b, c, f) {
+      const out = new Set();
+      for (; a < SPACE; [a, b, c] = [b, c, f(a, b, c)]) out.add(a);
+      return out;
+    }
+    const POW5 = seq(k => 5 ** k), POW6 = seq(k => 6 ** k), POW7 = seq(k => 7 ** k);
+    const FIFTH = seq(k => k ** 5), SIXTH = seq(k => k ** 6);
+    const PRONIC = seq(k => k * (k + 1));
+    const OCT = seq(k => k * (3 * k - 2));
+    const HEPT = seq(k => (k * (5 * k - 3)) / 2);
+    const CSQ = seq(k => 2 * k * (k + 1) + 1);
+    const CHEX = seq(k => 3 * k * (k + 1) + 1);
+    const SQPYR = seq(k => (k * (k + 1) * (2 * k + 1)) / 6);
+    const PENTATOPE = seq(k => (k * (k + 1) * (k + 2) * (k + 3)) / 24);
+    const CATERER = seq(k => (k * (k + 1)) / 2 + 1);
+    const MERSENNE = seq(k => 2 ** (k + 1) - 1);
+    const FERMAT = seq(k => (k > 5 ? SPACE : 2 ** (2 ** k) + 1));
+    const REPUNIT = seq(k => (10 ** (k + 1) - 1) / 9);
+    const DFACT = seq(k => { let f = 1; for (let i = k + 1; i > 1; i -= 2) f *= i; return f; });
+    const TRIB = recur3(0, 0, 1, (a, b, c) => a + b + c);
+    const PADOVAN = recur3(1, 1, 1, (a, b) => a + b);
+    const PERRIN = recur3(3, 0, 2, (a, b) => a + b);
+    const JACOB = recur(0, 1, (a, b) => b + 2 * a);
+    const PELL_LUCAS = recur(2, 2, (a, b) => 2 * b + a);
+    const LEONARDO = recur(1, 1, (a, b) => a + b + 1);
+    const SYLVESTER = new Set();
+    for (let v = 2; v < SPACE; v = v * v - v + 1) SYLVESTER.add(v);
+    const MOTZKIN = new Set();
+    for (let m = [1, 1]; m[m.length - 1] < SPACE || m.length < 3;) {
+      for (const v of m) if (v < SPACE) MOTZKIN.add(v);
+      const k = m.length; // M(k) = ((2k+1)M(k-1) + 3(k-1)M(k-2)) / (k+2)
+      m.push(((2 * k + 1) * m[k - 1] + 3 * (k - 1) * m[k - 2]) / (k + 2));
     }
 
     const SMALL_PRIMES = [];
@@ -354,6 +396,33 @@
     }, ([, , len]) => len >= 5);
     const checkerDfa = recDfa([-1, 0], ([par, len], d) => (len && d % 2 === par ? DEAD : [d % 2, len + 1]), ([, len]) => len === DIGITS);
     const doubleTripleDfa = recDfa([0, 0], ([r, t], d) => (d === 7 ? [(r + 1) % 3, Math.min(2, t + (r === 2))] : [0, t]), ([, t]) => t >= 2);
+    // Every digit of `need` appears somewhere.
+    const needDigitsDfa = need => {
+      const full = need.reduce((m, d) => m | (1 << d), 0);
+      return recDfa([0], ([m], d) => [m | ((full >> d) & 1 ? 1 << d : 0)], ([m]) => m === full);
+    };
+    // Full length with no two neighbours equal.
+    const restlessDfa = recDfa([-1, 0], ([last, len], d) => (d === last ? DEAD : [d, len + 1]), ([, len]) => len === DIGITS);
+    // Full length with as many odd digits as even ones.
+    const balancedDfa = recDfa([0, 0], ([len, odd], d) => [len + 1, odd + (d % 2)], ([len, odd]) => len === DIGITS && 2 * odd === DIGITS);
+    // Full-length numbers whose first half and second half have equal digit sums (even lengths only).
+    function luckyTicketCount() {
+      if (DIGITS % 2) return 0;
+      const h = DIGITS / 2, ways = lead => {
+        let dp = [1];
+        for (let i = 0; i < h; i++) {
+          const next = new Array(dp.length + 9).fill(0);
+          dp.forEach((c, s) => { for (let d = i === 0 && lead ? 1 : 0; d <= 9; d++) next[s + d] += c; });
+          dp = next;
+        }
+        return dp;
+      };
+      const a = ways(true), b = ways(false);
+      return a.reduce((t, c, s) => t + c * (b[s] || 0), 0);
+    }
+    const isLuckyTicket = s => s.length === DIGITS && DIGITS % 2 === 0
+      && digitSum(s.slice(0, DIGITS / 2)) === digitSum(s.slice(DIGITS / 2));
+    const isComplement = s => s.length === DIGITS && [...s].every((c, i) => +c + +s[DIGITS - 1 - i] === 9);
 
     // test(n, s, c): the base number, its decimal string, and { prime, date, e }.
     // Within a `group` only the rarest earned badge counts.
@@ -368,6 +437,174 @@
     const HEAVY = Math.round((DIGITS * 70) / 9), HEAVY_HAPPY = Math.round((DIGITS * 60) / 9), EMPTY = DIGITS - 4;
     let pandigital = 9;
     for (let i = 1; i < DIGITS; i++) pandigital *= 10 - i;
+
+    // The v3.1 badges: as many again as before, every one still counted exactly.
+    const PR100 = new Set([2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]);
+    const isSq = t => Number.isInteger(Math.sqrt(t));
+    const DIGIT_WORDS = ['Zeros', 'Ones', 'Twos', 'Threes', 'Fours', 'Fives', 'Sixes', 'Sevens', 'Eights', 'Nines'];
+    const DIGIT_NAMES = ['Zero Hoard', 'Ones Rally', "Two's Company", 'Third Time Lucky', 'Four Score', 'High Five', 'Six Pack', 'Lucky Streak', 'Eight Ball', 'Cloud Nine'];
+    const among = (id, cat, name, desc, list, test) => { const set = new Set(list); return { id, cat, name, desc, among: set, test: (n, s, c) => set.has(n) && test(n, s, c) }; };
+    const ULTRA = Math.round((DIGITS * 85) / 10);
+    const MORE_BADGES = [
+      // Size
+      { id: 'lowHalf', cat: 'Size', name: 'Lower Half', desc: `Below ${fmt(SPACE / 2)}`, group: 'half', count: SPACE / 2, test: n => n < SPACE / 2 },
+      { id: 'topTenth', cat: 'Size', name: 'Top Shelf', desc: `${fmt(SPACE - SPACE / 10)} or more`, group: 'top', count: SPACE / 10, test: n => n >= SPACE - SPACE / 10 },
+      { id: 'top100', cat: 'Size', name: 'Top Hundred', desc: `${fmt(SPACE - 100)} or more`, group: 'top', count: 100, test: n => n >= SPACE - 100 },
+      { id: 'maxed', cat: 'Size', name: 'Maxed Out', desc: `Exactly ${fmt(SPACE - 1)}, the biggest roll there is`, group: 'top', count: 1, test: n => n === SPACE - 1 },
+      { id: 'quarter', cat: 'Size', name: 'Quarter Mark', desc: `Within 500 of ${fmt(SPACE / 4)} or ${fmt((3 * SPACE) / 4)}`, count: 1998, test: n => Math.abs(n - SPACE / 4) < 500 || Math.abs(n - (3 * SPACE) / 4) < 500 },
+
+      // Math
+      ...[[17, 'Seventeen', 'A multiple of 17'], [19, 'Nineteen', 'A multiple of 19'], [23, 'Michael Jordan', 'A multiple of 23'],
+        [37, 'Thirty-Seven', 'A multiple of 37'], [99, 'Ninety-Nine', 'A multiple of 99'], [101, 'Hundred and One', 'A multiple of 101'],
+        [12, 'By the Dozen', 'A multiple of 12'], [360, 'Full Turn', 'A multiple of 360'], [365, 'Year Long', 'A multiple of 365'],
+        [1001, 'Scheherazade', 'A multiple of 1001'], [1024, 'Kibibyte', 'A multiple of 1024'], [1729, 'Taxicab Multiple', 'A multiple of 1729'],
+        [3600, 'Hour in Seconds', 'A multiple of 3,600'], [86400, 'Day in Seconds', 'A multiple of 86,400'], [65536, 'Sixty-Five K', 'A multiple of 65,536']]
+        .map(([m, name, desc]) => ({ id: 'div' + m, cat: 'Math', name, desc, count: multiples(m), test: n => n % m === 0 })),
+      { id: 'lcm18', cat: 'Math', name: 'Mega Divisible', desc: 'Divisible by every number from 1 to 18', group: 'lcm', count: multiples(12252240), test: n => n % 12252240 === 0 },
+      { id: 'lcm20', cat: 'Math', name: 'Giga Divisible', desc: 'Divisible by every number from 1 to 20', group: 'lcm', count: multiples(232792560), test: n => n % 232792560 === 0 },
+      { id: 'r1e8', cat: 'Math', name: 'Round Hundred Million', desc: 'Ends in 00000000', group: 'round', count: multiples(1e8), test: n => n % 1e8 === 0 },
+      { id: 'r1e9', cat: 'Math', name: 'Round Billion', desc: 'Ends in 000000000', group: 'round', count: multiples(1e9), test: n => n % 1e9 === 0 },
+      { id: 'end7', cat: 'Math', name: 'Lucky Ending', desc: 'Ends in 7', count: congruent(7, 10), test: n => n % 10 === 7 },
+      { id: 'end25', cat: 'Math', name: 'Quarter Past', desc: 'Ends in 25', count: congruent(25, 100), test: n => n % 100 === 25 },
+      { id: 'end69', cat: 'Math', name: 'Nice Finish', desc: 'Ends in 69', count: congruent(69, 100), test: n => n % 100 === 69 },
+      { id: 'end420', cat: 'Math', name: 'Blaze Finish', desc: 'Ends in 420', count: congruent(420, 1000), test: n => n % 1000 === 420 },
+      { id: 'end1234', cat: 'Math', name: 'Count to Four', desc: 'Ends in 1234', count: congruent(1234, 1e4), test: n => n % 1e4 === 1234 },
+      { id: 'pow5', cat: 'Math', name: 'Power of Five', desc: '1, 5, 25, 125…', set: POW5, test: has(POW5) },
+      { id: 'pow6', cat: 'Math', name: 'Power of Six', desc: '1, 6, 36, 216…', set: POW6, test: has(POW6) },
+      { id: 'pow7', cat: 'Math', name: 'Power of Seven', desc: '1, 7, 49, 343…', set: POW7, test: has(POW7) },
+      { id: 'fifth', cat: 'Math', name: 'Fifth Power', desc: 'Some whole number to the 5th', group: 'power', set: FIFTH, test: has(FIFTH) },
+      { id: 'sixth', cat: 'Math', name: 'Sixth Power', desc: 'Some whole number to the 6th', group: 'power', set: SIXTH, test: has(SIXTH) },
+      { id: 'mersenne', cat: 'Math', name: 'Mersenne Number', desc: 'One less than a power of two', set: MERSENNE, test: has(MERSENNE) },
+      { id: 'fermat', cat: 'Math', name: 'Fermat Number', desc: '3, 5, 17, 257, 65537…', set: FERMAT, test: has(FERMAT) },
+      { id: 'dfact', cat: 'Math', name: 'Double Factorial', desc: 'k!!, like 7 × 5 × 3 × 1', set: DFACT, test: has(DFACT) },
+
+      // Sequences
+      { id: 'trib', cat: 'Sequences', name: 'Tribonacci', desc: 'Each term the sum of the three before: 0, 0, 1, 1, 2, 4, 7, 13…', set: TRIB, test: has(TRIB) },
+      { id: 'padovan', cat: 'Sequences', name: 'Padovan', desc: '1, 1, 1, 2, 2, 3, 4, 5, 7, 9…', set: PADOVAN, test: has(PADOVAN) },
+      { id: 'perrin', cat: 'Sequences', name: 'Perrin', desc: '3, 0, 2, 3, 2, 5, 5, 7, 10…', set: PERRIN, test: has(PERRIN) },
+      { id: 'jacob', cat: 'Sequences', name: 'Jacobsthal', desc: '0, 1, 1, 3, 5, 11, 21, 43…', set: JACOB, test: has(JACOB) },
+      { id: 'pellLucas', cat: 'Sequences', name: 'Pell-Lucas', desc: '2, 2, 6, 14, 34, 82…', set: PELL_LUCAS, test: has(PELL_LUCAS) },
+      { id: 'leonardo', cat: 'Sequences', name: 'Leonardo', desc: '1, 1, 3, 5, 9, 15, 25…', set: LEONARDO, test: has(LEONARDO) },
+      { id: 'sylvester', cat: 'Sequences', name: 'Sylvester', desc: '2, 3, 7, 43, 1807…', set: SYLVESTER, test: has(SYLVESTER) },
+      { id: 'motzkin', cat: 'Sequences', name: 'Motzkin', desc: '1, 1, 2, 4, 9, 21, 51…', set: MOTZKIN, test: has(MOTZKIN) },
+      { id: 'pronic', cat: 'Sequences', name: 'Pronic', desc: 'k × (k + 1): 2, 6, 12, 20…', set: PRONIC, test: has(PRONIC) },
+      { id: 'oct', cat: 'Sequences', name: 'Octagonal', desc: '1, 8, 21, 40, 65…', set: OCT, test: has(OCT) },
+      { id: 'hept', cat: 'Sequences', name: 'Heptagonal', desc: '1, 7, 18, 34, 55…', set: HEPT, test: has(HEPT) },
+      { id: 'csq', cat: 'Sequences', name: 'Centered Square', desc: '1, 5, 13, 25, 41…', set: CSQ, test: has(CSQ) },
+      { id: 'chex', cat: 'Sequences', name: 'Hex Number', desc: 'Centered hexagonal: 1, 7, 19, 37, 61…', set: CHEX, test: has(CHEX) },
+      { id: 'sqpyr', cat: 'Sequences', name: 'Square Pyramid', desc: 'A stack of squares: 1, 5, 14, 30, 55…', set: SQPYR, test: has(SQPYR) },
+      { id: 'pentatope', cat: 'Sequences', name: 'Pentatope', desc: '1, 5, 15, 35, 70…', set: PENTATOPE, test: has(PENTATOPE) },
+      { id: 'caterer', cat: 'Sequences', name: 'Lazy Caterer', desc: 'The most pieces k straight cuts make of a pancake', set: CATERER, test: has(CATERER) },
+      { id: 'repunit', cat: 'Sequences', name: 'Repunit', desc: '1, 11, 111, 1111…', set: REPUNIT, test: has(REPUNIT) },
+
+      // Digits
+      { id: 'lead1', cat: 'Digits', name: "Benford's Favourite", desc: 'Starts with 1', group: 'lead', count: prefixCount(1), test: (n, s) => s[0] === '1' },
+      { id: 'lead9', cat: 'Digits', name: 'Top Digit', desc: 'Starts with 9', group: 'lead', count: prefixCount(1), test: (n, s) => s[0] === '9' },
+      { id: 'lead123', cat: 'Digits', name: 'Lift Off', desc: 'Starts with 123', group: 'lead', count: prefixCount(3), test: (n, s) => s.startsWith('123') },
+      { id: 'lead999', cat: 'Digits', name: 'Nines First', desc: 'Starts with 999', group: 'lead', count: prefixCount(3), test: (n, s) => s.startsWith('999') },
+      { id: 'run6', cat: 'Digits', name: 'Sextet', desc: 'The same digit six times in a row', group: 'run', dfa: runDfa(6), test: (n, s) => maxRun(s) >= 6 },
+      { id: 'run8', cat: 'Digits', name: 'Octave', desc: 'The same digit eight times in a row', group: 'run', dfa: runDfa(8), test: (n, s) => maxRun(s) >= 8 },
+      { id: 'run9', cat: 'Digits', name: 'Nine in a Row', desc: 'The same digit nine times in a row', group: 'run', dfa: runDfa(9), test: (n, s) => maxRun(s) >= 9 },
+      ...DIGIT_NAMES.map((name, d) => {
+        const k = d === 7 ? 6 : 5;
+        return { id: `many${d}`, cat: 'Digits', name, desc: `${k} or more ${DIGIT_WORDS[d].toLowerCase()} anywhere`, dfa: digitCountDfa(d, k), test: (n, s) => countOf(s, String(d)) >= k };
+      }),
+      { id: 'almostPan', cat: 'Digits', name: 'Almost Pandigital', desc: `${LENGTH_NAMES[DIGITS]} using exactly ${DIGITS - 1} different digits`, dfa: distinctDfa(DIGITS - 1, DIGITS), test: (n, s) => s.length === DIGITS && distinct(s) === DIGITS - 1 },
+      { id: 'tone4', cat: 'Digits', name: 'Four-Tone', desc: 'Eight or more digits, using exactly four different ones', dfa: distinctDfa(4, 8), test: (n, s) => s.length >= 8 && distinct(s) === 4 },
+      { id: 'restless', cat: 'Digits', name: 'Restless', desc: `${LENGTH_NAMES[DIGITS]} with no digit next to its twin`, dfa: restlessDfa, test: (n, s) => s.length === DIGITS && !/(\d)\1/.test(s) },
+      { id: 'balanced', cat: 'Digits', name: 'Balanced', desc: `${LENGTH_NAMES[DIGITS]}, half odd and half even`, dfa: balancedDfa, test: (n, s) => s.length === DIGITS && 2 * [...s].filter(c => c % 2).length === DIGITS },
+      { id: 'sum7', cat: 'Digits', name: 'Lucky Sum', desc: 'Digits add up to exactly 7', dfa: digitSumDfa(t => t === 7), test: (n, s) => digitSum(s) === 7 },
+      { id: 'sum13', cat: 'Digits', name: 'Unlucky Sum', desc: 'Digits add up to exactly 13', dfa: digitSumDfa(t => t === 13), test: (n, s) => digitSum(s) === 13 },
+      { id: 'sum42', cat: 'Digits', name: 'Sum of Everything', desc: 'Digits add up to exactly 42', dfa: digitSumDfa(t => t === 42), test: (n, s) => digitSum(s) === 42 },
+      { id: 'sum69', cat: 'Digits', name: 'Nice Sum', desc: 'Digits add up to exactly 69', dfa: digitSumDfa(t => t === 69), test: (n, s) => digitSum(s) === 69 },
+      { id: 'sum45', cat: 'Digits', name: 'Full Count', desc: 'Digits add up to exactly 45, like 0 to 9 once each', dfa: digitSumDfa(t => t === 45), test: (n, s) => digitSum(s) === 45 },
+      { id: 'sumPrime', cat: 'Digits', name: 'Prime Sum', desc: 'Digits add up to a prime', dfa: digitSumDfa(t => PR100.has(t)), test: (n, s) => PR100.has(digitSum(s)) },
+      { id: 'sumSquare', cat: 'Digits', name: 'Square Sum', desc: 'Digits add up to a perfect square', dfa: digitSumDfa(isSq), test: (n, s) => isSq(digitSum(s)) },
+      { id: 'sumRound', cat: 'Digits', name: 'Round Sum', desc: 'Digits add up to a multiple of 10', dfa: digitSumDfa(t => t % 10 === 0), test: (n, s) => digitSum(s) % 10 === 0 },
+      { id: 'ultra', cat: 'Digits', name: 'Ultraheavy', desc: `Digits add up to ${ULTRA} or more`, dfa: digitSumDfa(t => t >= ULTRA), test: (n, s) => digitSum(s) >= ULTRA },
+      { id: 'paper', cat: 'Digits', name: 'Paperweight', desc: 'Digits add up to 2 or less', dfa: digitSumDfa(t => t <= 2), test: (n, s) => digitSum(s) <= 2 },
+      { id: 'complement', cat: 'Digits', name: 'Complement', desc: `${LENGTH_NAMES[DIGITS]} where each digit and its mirror image add up to 9`, count: DIGITS % 2 ? 0 : 9 * 10 ** (DIGITS / 2 - 1), test: (n, s) => isComplement(s) },
+      { id: 'ticket', cat: 'Digits', name: 'Lucky Ticket', desc: `${LENGTH_NAMES[DIGITS]} whose two halves have the same digit sum`, count: luckyTicketCount(), test: (n, s) => isLuckyTicket(s) },
+      {
+        id: 'outer', cat: 'Digits', name: 'Outer Mirror', desc: 'Four or more digits, with the first two mirrored at the end, like 12…21',
+        count: Array.from({ length: Math.max(0, DIGITS - 3) }, (_, i) => 90 * 10 ** i).reduce((a, b) => a + b, 0),
+        test: (n, s) => s.length >= 4 && s[0] === s[s.length - 1] && s[1] === s[s.length - 2],
+      },
+      { id: 'allOdd', cat: 'Digits', name: 'Odd Collection', desc: 'Has every odd digit: 1, 3, 5, 7 and 9', dfa: needDigitsDfa([1, 3, 5, 7, 9]), test: (n, s) => [...'13579'].every(c => s.includes(c)) },
+      { id: 'allEven', cat: 'Digits', name: 'Even Collection', desc: 'Has every even digit: 0, 2, 4, 6 and 8', dfa: needDigitsDfa([0, 2, 4, 6, 8]), test: (n, s) => [...'02468'].every(c => s.includes(c)) },
+      { id: 'allPrime', cat: 'Digits', name: 'Prime Collection', desc: 'Has every prime digit: 2, 3, 5 and 7', dfa: needDigitsDfa([2, 3, 5, 7]), test: (n, s) => [...'2357'].every(c => s.includes(c)) },
+      { id: 'noSeven', cat: 'Digits', name: 'Seven-Less', desc: `${LENGTH_NAMES[DIGITS]} without a single 7`, count: 8 * 9 ** (DIGITS - 1), test: (n, s) => s.length === DIGITS && !s.includes('7') },
+
+      // Memes
+      contains('c13', '13', 'Unlucky'),
+      contains('c21', '21', 'Blackjack'),
+      contains('c51', '51', 'Area 51'),
+      contains('c64', '64', 'Sixty-Four Bits'),
+      contains('c99', '99', '99 Problems'),
+      contains('c101', '101', 'Dalmatians'),
+      contains('c255', '255', 'Full Byte'),
+      contains('c360', '360', 'No Scope'),
+      contains('c500', '500', 'Server Error'),
+      contains('c747', '747', 'Jumbo Jet'),
+      contains('c1024', '1024', 'Kilobyte'),
+      contains('c1138', '1138', 'THX'),
+      contains('c1701', '1701', 'Starship'),
+      contains('c1729', '1729', 'Hardy-Ramanujan'),
+      contains('c1776', '1776', 'Independence'),
+      contains('c1999', '1999', 'Party Like It'),
+      contains('c2000', '2000', 'Y2K'),
+      contains('c2001', '2001', 'Space Odyssey'),
+      contains('c2020', '2020', 'Hindsight'),
+      contains('c2048', '2048', 'Merge Tiles'),
+      contains('c3000', '3000', 'Love You 3000'),
+      contains('c7734', '7734', 'Upside-Down Hello'),
+      contains('c8888', '8888', 'Fortune'),
+      contains('c9000', '9000', 'Over Nine Thousand'),
+      contains('c0101', '0101', 'New Year'),
+      contains('c0214', '0214', 'Valentine'),
+      contains('c1031', '1031', 'Spooky'),
+      contains('c1225', '1225', 'Festive'),
+      contains('c12345', '12345', 'Luggage Combination', 'Contains 12345, the worst luggage code'),
+      contains('c42069', '42069', 'The Ultimate Meme'),
+      contains('c314159', '314159', 'Big Slice of Pi'),
+      contains('c271828', '271828', 'Big e'),
+      contains('c4815162342', '4815162342', 'Lost', 'Exactly 4 8 15 16 23 42'),
+      contains('c9876', '9876', 'Countdown'),
+      contains('c2112', '2112', 'Palindrome Year'),
+      contains('c1492', '1492', 'Ocean Blue'),
+      contains('c1969', '1969', 'Moon Landing'),
+      contains('c6174', '6174', 'Kaprekar Inside'),
+      contains('c161803', '161803', 'Golden Slice'),
+      contains('c11235', '11235', 'Fibonacci Start'),
+      contains('c24601', '24601', 'Prisoner Number'),
+      contains('c4096', '4096', 'Four Kay'),
+
+      // Combos
+      among('fibSquare', 'Combos', 'Fibonacci Square', 'A Fibonacci number that is a perfect square', FIB, n => SQUARES.has(n)),
+      among('fibTri', 'Combos', 'Triangular Fibonacci', 'A Fibonacci number that is triangular', FIB, n => TRI.has(n)),
+      among('fibPal', 'Combos', 'Fibonacci Palindrome', 'A Fibonacci number that is a palindrome', FIB, (n, s) => isPal(s)),
+      among('lucasPrime', 'Combos', 'Lucas Prime', 'A Lucas number that is prime', LUCAS, (n, s, c) => c.prime),
+      among('pellPrime', 'Combos', 'Pell Prime', 'A Pell number that is prime', PELL, (n, s, c) => c.prime),
+      among('mersPrime', 'Combos', 'Mersenne Prime', 'One less than a power of two, and prime', MERSENNE, (n, s, c) => c.prime),
+      among('fermatPrime', 'Combos', 'Fermat Prime', 'A Fermat number that is prime', FERMAT, (n, s, c) => c.prime),
+      among('tribPrime', 'Combos', 'Tribonacci Prime', 'A Tribonacci number that is prime', TRIB, (n, s, c) => c.prime),
+      among('starPrime', 'Combos', 'Star Prime', 'A star number that is prime', STAR, (n, s, c) => c.prime),
+      among('csqPrime', 'Combos', 'Centered Square Prime', 'A centered square number that is prime', CSQ, (n, s, c) => c.prime),
+      among('repTri', 'Combos', 'Repdigit Triangle', 'A repdigit that is triangular, like 666', REPDIGITS, n => TRI.has(n)),
+      among('pronicPal', 'Combos', 'Mirror Pronic', 'A pronic number that is a palindrome', PRONIC, (n, s) => isPal(s)),
+      among('pyrSquare', 'Combos', 'Cannonball', 'A square pyramid that is also a perfect square', SQPYR, n => SQUARES.has(n)),
+      among('happySquare', 'Combos', 'Happy Square', 'A perfect square that is a happy number', SQUARES, n => isHappy(n)),
+      among('happyCube', 'Combos', 'Happy Cube', 'A perfect cube that is a happy number', CUBES, n => isHappy(n)),
+      among('powPal', 'Combos', 'Mirror Power', 'A perfect power that is a palindrome', PERFECT_POWERS, (n, s) => isPal(s)),
+      { id: 'binHappy', cat: 'Combos', name: 'Happy Binary', desc: 'Only 0s and 1s, and a happy number', dfa: andDfa(onlyDigitsDfa([0, 1]), happyDfa), test: (n, s) => /^[01]+$/.test(s) && isHappy(n) },
+      { id: 'oddStairs', cat: 'Combos', name: 'Odd Staircase', desc: 'Odd digits only, each higher than the last, at least three', dfa: andDfa(onlyDigitsDfa([1, 3, 5, 7, 9]), monotoneDfa(1, 3)), test: (n, s) => /^[13579]+$/.test(s) && s.length >= 3 && isStrictlyMonotone(s, 1) },
+      { id: 'evenStairs', cat: 'Combos', name: 'Even Staircase', desc: 'Even digits only, each higher than the last, at least three', dfa: andDfa(onlyDigitsDfa([0, 2, 4, 6, 8]), monotoneDfa(1, 3)), test: (n, s) => /^[02468]+$/.test(s) && s.length >= 3 && isStrictlyMonotone(s, 1) },
+      { id: 'binRun', cat: 'Combos', name: 'Binary Run', desc: 'Only 0s and 1s, with five of one in a row', dfa: andDfa(onlyDigitsDfa([0, 1]), runDfa(5)), test: (n, s) => /^[01]+$/.test(s) && maxRun(s) >= 5 },
+      { id: 'trinity', cat: 'Combos', name: 'Holy Trinity', desc: 'Contains 42, 69 and 420', dfa: andDfa(andDfa(containsDfa('42'), containsDfa('69')), containsDfa('420')), test: (n, s) => s.includes('42') && s.includes('69') && s.includes('420') },
+      { id: 'leetNice', cat: 'Combos', name: 'Elite and Nice', desc: 'Contains both 1337 and 69', dfa: andDfa(containsDfa('1337'), containsDfa('69')), test: (n, s) => s.includes('1337') && s.includes('69') },
+      { id: 'beastHeavy', cat: 'Combos', name: 'Heavy Metal', desc: `Contains 666, and the digits add up to ${HEAVY_HAPPY} or more`, dfa: andDfa(containsDfa('666'), digitSumDfa(t => t >= HEAVY_HAPPY)), test: (n, s) => s.includes('666') && digitSum(s) >= HEAVY_HAPPY },
+      { id: 'luckySum', cat: 'Combos', name: 'Lucky All Over', desc: 'Contains 777, and the digits add up to a multiple of 7', dfa: andDfa(containsDfa('777'), digitSumDfa(t => t % 7 === 0)), test: (n, s) => s.includes('777') && digitSum(s) % 7 === 0 },
+    ];
 
     const BADGES = [
       // Size
@@ -519,6 +756,7 @@
       { id: 'oddtriple', cat: 'Combos', name: 'Odd Triple', desc: 'Odd digits only, with three in a row', dfa: andDfa(onlyDigitsDfa([1, 3, 5, 7, 9]), runDfa(3)), test: (n, s) => /^[13579]+$/.test(s) && maxRun(s) >= 3 },
       { id: 'happyheavy', cat: 'Combos', name: 'Heavy Heart', desc: `A happy number whose digits add up to ${HEAVY_HAPPY} or more`, dfa: andDfa(happyDfa, digitSumDfa(t => t >= HEAVY_HAPPY)), test: (n, s) => isHappy(n) && digitSum(s) >= HEAVY_HAPPY },
       { id: 'jackpot2', cat: 'Combos', name: 'Double Jackpot', desc: 'Contains 777 twice, without sharing a 7', dfa: doubleTripleDfa, test: (n, s) => /777.*777/.test(s) },
+      ...MORE_BADGES,
     ];
 
     // Exponent-mode badges look at the exponent e and at base^e.
@@ -531,7 +769,7 @@
     }
     const thresholds = power => { const t = []; for (let k = 1; k <= E_MAX; k++) t[k] = powThreshold(k, power); return t; };
     const pAtLeast = k => { let p = 0; for (let j = k; j <= E_MAX; j++) p += pExp(j); return p; };
-    const GOOGOL = thresholds(100), BIGBANG = thresholds(200);
+    const GOOGOL = thresholds(100), BIGBANG = thresholds(200), STARS = thresholds(300);
     const pBeyond = T => { let p = 0; for (let k = 1; k <= E_MAX; k++) p += (pExp(k) * (SPACE - T[k])) / SPACE; return p; };
 
     const POWER_BADGES = [
@@ -544,6 +782,11 @@
       { id: 'eSingular', name: 'Singularity', desc: 'Rolled an exponent of 20 or more', group: 'exp', prob: pAtLeast(20), test: (n, s, c) => c.e >= 20 },
       { id: 'googol', name: 'Googol', desc: 'The result has at least 101 digits', group: 'huge', prob: pBeyond(GOOGOL), test: (n, s, c) => c.e >= 1 && n >= GOOGOL[c.e] },
       { id: 'bigbang', name: 'Big Bang', desc: 'The result has at least 201 digits', group: 'huge', prob: pBeyond(BIGBANG), test: (n, s, c) => c.e >= 1 && n >= BIGBANG[c.e] },
+      { id: 'eFive', name: 'High Five', desc: 'Rolled an exponent of exactly 5', group: 'exp', prob: pExp(5), test: (n, s, c) => c.e === 5 },
+      { id: 'eSix', name: 'Sixth Gear', desc: 'Rolled an exponent of exactly 6', group: 'exp', prob: pExp(6), test: (n, s, c) => c.e === 6 },
+      { id: 'eTen', name: 'Double Digits', desc: 'Rolled an exponent of 10 or more', group: 'exp', prob: pAtLeast(10), test: (n, s, c) => c.e >= 10 },
+      { id: 'eMax', name: 'Redline', desc: `Rolled the top exponent, ${E_MAX}`, group: 'exp', prob: pAtLeast(E_MAX), test: (n, s, c) => c.e >= E_MAX },
+      { id: 'stars', name: 'Count the Stars', desc: 'The result has at least 301 digits', group: 'huge', prob: pBeyond(STARS), test: (n, s, c) => c.e >= 1 && n >= STARS[c.e] },
       { id: 'selfpow', name: 'Self Power', desc: 'The base equals the exponent, like 3³', prob: 1 / SPACE, test: (n, s, c) => n === c.e },
       { id: 'oneUp', name: 'Still One', desc: 'A base of 1, so the result is just 1', prob: 1 / SPACE, test: n => n === 1 },
     ].map(b => ({ ...b, cat: 'Powers', power: true, factor: b.group === 'exp' || b.group === 'huge' }));
@@ -558,6 +801,10 @@
       { id: 'modBig', name: 'Big Divide', desc: 'A modulus of 5,000 or more divides your number exactly', group: 'mod', prob: pMod(m => (m >= 5000 ? 0 : null)), test: (n, s, c) => c.r === 0 && c.m >= 5000 },
       { id: 'modOne', name: 'Remainder One', desc: 'Dividing by the modulus leaves exactly 1', group: 'mod', prob: pMod(() => 1), test: (n, s, c) => c.r === 1 },
       { id: 'modShort', name: 'Just Short', desc: 'One more and the modulus would divide it', group: 'mod', prob: pMod(m => m - 1), test: (n, s, c) => c.r === c.m - 1 },
+      { id: 'modTwo', name: 'Remainder Two', desc: 'Dividing by the modulus leaves exactly 2', group: 'mod', prob: pMod(m => (m > 2 ? 2 : null)), test: (n, s, c) => c.r === 2 },
+      { id: 'mod42', name: 'Remainder 42', desc: 'Dividing by the modulus leaves exactly 42', group: 'mod', prob: pMod(m => (m > 42 ? 42 : null)), test: (n, s, c) => c.r === 42 },
+      { id: 'modTiny', name: 'Small Change', desc: 'A modulus of 10 or less divides your number exactly', group: 'mod', prob: pMod(m => (m <= 10 ? 0 : null)), test: (n, s, c) => c.r === 0 && c.m <= 10 },
+      { id: 'modThird', name: 'One Third', desc: 'The remainder is exactly a third of the modulus', group: 'mod', prob: pMod(m => (m % 3 ? null : m / 3)), test: (n, s, c) => c.r * 3 === c.m },
       { id: 'modHalf', name: 'Halfway', desc: 'The remainder is exactly half the modulus', group: 'mod', prob: pMod(m => (m % 2 ? null : m / 2)), test: (n, s, c) => c.r * 2 === c.m },
     ].map(b => ({ ...b, cat: 'Modulo', mode: 'mod' }));
 
@@ -567,7 +814,9 @@
     const TARGET_BADGES = [
       { id: 'tBull', name: 'Bullseye', desc: 'Landed exactly on the target', d: 1 },
       { id: 't10', name: 'Point Blank', desc: 'Within 10 of the target', d: 10 },
+      { id: 't100', name: 'Hair Width', desc: 'Within 100 of the target', d: 100 },
       { id: 't1k', name: 'Close Call', desc: 'Within 1,000 of the target', d: 1000 },
+      { id: 't100k', name: 'Near Miss', desc: 'Within 100,000 of the target', d: 1e5 },
       { id: 't1m', name: 'In Range', desc: 'Within 1,000,000 of the target', d: 1e6 },
       { id: 't1pct', name: 'Warm', desc: 'Within 1% of the whole range from the target', d: SPACE / 100 },
     ].filter(b => b.d <= SPACE / 100)
@@ -581,6 +830,10 @@
     const RADAR_BADGES = [
       { id: 'radarNext', name: 'Next Door', desc: 'One away from a prime', group: 'radarNear', test: (n, s, c) => c.d === 1 },
       { id: 'radarNear', name: 'Within Reach', desc: 'Two or three away from the nearest prime', group: 'radarNear', test: (n, s, c) => c.d === 2 || c.d === 3 },
+      { id: 'radarOn', name: 'Direct Hit', desc: 'Landed right on a prime', group: 'radarNear', test: (n, s, c) => c.d === 0 },
+      { id: 'radarFive', name: 'Almost There', desc: 'Four or five away from the nearest prime', group: 'radarNear', test: (n, s, c) => c.d === 4 || c.d === 5 },
+      { id: 'radar10', name: 'Open Ground', desc: 'At least 10 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 10 },
+      { id: 'radar30', name: 'Wilderness', desc: 'At least 30 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 30 },
       { id: 'radar20', name: 'Lonely Stretch', desc: 'At least 20 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 20 },
       { id: 'radar50', name: 'Prime Desert', desc: 'At least 50 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 50 },
       { id: 'radar100', name: 'Prime Wasteland', desc: 'At least 100 away from every prime', group: 'radarFar', test: (n, s, c) => c.d >= 100 },
@@ -674,6 +927,9 @@
       const list = [
         { id: 'calendar', cat: 'Daily', name: 'Calendar', desc: `Contains the month and day of the roll (${mmdd})`, dfa: containsDfa(mmdd), test: (n, s) => s.includes(mmdd) },
         { id: 'year', cat: 'Daily', name: 'Year Stamp', desc: `Contains the year of the roll (${y})`, dfa: containsDfa(y), test: (n, s) => s.includes(y) },
+        { id: 'dayStamp', cat: 'Daily', name: 'Day Stamp', desc: `Contains the day of the month twice in a row (${d}${d})`, dfa: containsDfa(d + d), test: (n, s) => s.includes(d + d) },
+        { id: 'usDate', cat: 'Daily', name: 'Month First', desc: `Contains the date month first (${mmdd}${y.slice(2)})`, dfa: containsDfa(mmdd + y.slice(2)), test: (n, s) => s.includes(mmdd + y.slice(2)) },
+        { id: 'fullDate', cat: 'Daily', name: 'Full Date', desc: `Contains the whole date (${y}${mmdd})`, dfa: containsDfa(y + mmdd), test: (n, s) => s.includes(y + mmdd) },
       ];
       list.forEach(finish);
       datedCache.set(date, list);

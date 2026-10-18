@@ -1,6 +1,6 @@
 {
-  "name": "RNGdle 10",
-  "short_name": "RNGdle",
+  "name": "Long Shot 10",
+  "short_name": "Long Shot 10",
   "description": "Roll a ten-digit number and collect badges for its patterns. Exact odds, runs offline.",
   "start_url": "./",
   "scope": "./",

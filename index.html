@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>RNGdle 10</title>
+<title>Long Shot 10</title>
 <meta name="description" content="Roll a ten-digit number and collect badges for its patterns. Exact odds, runs offline.">
 <meta name="theme-color" content="#0c0c10">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -22,12 +22,91 @@
 
 <div class="console" id="console" hidden>
   <pre id="conOut" aria-live="polite"></pre>
-  <form id="conForm" class="con-line"><label for="conInput">PS C:\RNGdle10&gt;&nbsp;</label><input id="conInput" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command"></form>
+  <form id="conForm" class="con-line"><label for="conInput">PS C:\LongShot10&gt;&nbsp;</label><input id="conInput" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command"></form>
+</div>
+
+<div class="chat" id="chat" hidden>
+  <header class="chat-head">
+    <span class="chat-avatar" aria-hidden="true">10</span>
+    <div><b>Tenny</b><br><span class="chat-status">online, rolling</span></div>
+    <button class="chat-leave" type="button" data-leave>Leave chat</button>
+  </header>
+  <ul class="chat-log" id="chatLog" aria-live="polite"></ul>
+  <div class="chat-chips" id="chatChips">
+    <button type="button" data-say="roll">Roll</button>
+    <button type="button" data-say="roll 100">Roll 100</button>
+    <button type="button" data-say="endless">Endless</button>
+    <button type="button" data-say="stop">Stop</button>
+    <button type="button" data-say="stats">Stats</button>
+    <button type="button" data-say="inv">Items</button>
+    <button type="button" data-say="fuse all">Fuse all</button>
+    <button type="button" data-say="spin all">Spin all</button>
+    <button type="button" data-say="quests">Quests</button>
+    <button type="button" data-say="help">Help</button>
+  </div>
+  <form class="chat-form" id="chatForm">
+    <input id="chatInput" autocomplete="off" placeholder="Message Tenny" aria-label="Message Tenny">
+    <button type="submit">Send</button>
+  </form>
+</div>
+
+<div class="handheld" id="handheld" hidden>
+  <div class="hh-body">
+    <div class="hh-bezel"><span class="hh-led" aria-hidden="true"></span><pre class="hh-screen" id="hhScreen" aria-live="polite"></pre></div>
+    <p class="hh-brand">POCKET 10</p>
+    <div class="hh-controls">
+      <div class="hh-dpad" role="group" aria-label="Direction pad">
+        <button type="button" class="up" data-hh="up" aria-label="Up">▲</button>
+        <button type="button" class="left" data-hh="left" aria-label="Left">◀</button>
+        <button type="button" class="right" data-hh="right" aria-label="Right, fuses an item">▶</button>
+        <button type="button" class="down" data-hh="down" aria-label="Down">▼</button>
+      </div>
+      <div class="hh-ab">
+        <button type="button" class="b" data-hh="b" aria-label="B, back">B</button>
+        <button type="button" class="a" data-hh="a" aria-label="A, select">A</button>
+      </div>
+    </div>
+    <div class="hh-small">
+      <button type="button" data-hh="select" aria-label="Select, changes the mode">SELECT</button>
+      <button type="button" data-hh="start" aria-label="Start, runs or stops Endless">START</button>
+    </div>
+    <p class="hh-help">Arrows move · Z or Enter is A · X is B · Space is Start · Shift is Select · ▶ fuses an item</p>
+    <button class="hh-off" type="button" data-leave>Power off</button>
+  </div>
+</div>
+
+<div class="calc" id="calc" hidden>
+  <div class="calc-body">
+    <p class="calc-brand">RNG-10 <span>SCIENTIFIC LUCK</span></p>
+    <div class="calc-lcd" aria-live="polite">
+      <div class="calc-flags" id="calcFlags"></div>
+      <div class="calc-main" id="calcMain">0</div>
+      <div class="calc-sub" id="calcSub"></div>
+    </div>
+    <div class="calc-keys">
+      <button type="button" data-key="MODE" class="fn" aria-label="Change mode">MODE</button>
+      <button type="button" data-key="SPIN" class="fn" aria-label="Spin the slot">SPIN</button>
+      <button type="button" data-key="MR" class="fn" aria-label="Recall your best roll">MR</button>
+      <button type="button" data-key="M+" class="fn" aria-label="Star the last roll">M+</button>
+      <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+      <button type="button" data-key="÷" class="op" aria-label="Fuse everything">÷</button>
+      <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+      <button type="button" data-key="×" class="op" aria-label="Use your strongest luck charm">×</button>
+      <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
+      <button type="button" data-key="−" class="op" aria-label="Stop">−</button>
+      <button type="button" data-key="C" class="clear" aria-label="Clear">C</button>
+      <button type="button" data-key="0">0</button>
+      <button type="button" data-key="=" class="eq" aria-label="Roll">=</button>
+      <button type="button" data-key="+" class="op" aria-label="Endless">+</button>
+    </div>
+    <p class="calc-help">Type a count and press = to roll that many. + runs Endless, − stops, × uses your best luck charm, ÷ fuses everything, MR shows your best roll, M+ stars the last one.</p>
+    <button class="calc-off" type="button" data-key="OFF">OFF</button>
+  </div>
 </div>
 
 <div class="wrap">
   <header class="top">
-    <h1 class="mark">RNGdle <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span><span class="prestige-mark num" id="prestigeMark" hidden></span></h1>
+    <h1 class="mark">Long Shot <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span><span class="prestige-mark num" id="prestigeMark" hidden></span></h1>
     <div class="top-actions">
       <button class="icon-btn" id="soundBtn" type="button"></button>
       <button class="icon-btn" id="settingsBtn" type="button" aria-label="Settings">
@@ -138,6 +217,7 @@
             <ul class="slot-result" id="slotResult" role="status"><li class="muted">Each spin costs one coin. Coins come from Rare or rarer rolls.</li></ul>
           </div>
           <div class="section-head"><h2>Inventory</h2><span id="invCount"></span></div>
+          <button class="btn" type="button" id="fuseEverything">Fuse everything</button>
           <ul class="items" id="invList"></ul>
           <p class="muted" id="invMsg" role="status"></p>
         </div>
@@ -235,7 +315,7 @@
     </section>
   </main>
 
-  <p class="foot">RNGdle 10 · <span id="version">v3.0</span> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v3.1</span> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -266,7 +346,7 @@
     <p class="muted">Reduced keeps the reels but drops confetti, shakes and flashes. Off also stops the reels spinning.</p>
     <h3>Install</h3>
     <p class="muted" id="installText"></p>
-    <button class="btn" id="installBtn" type="button" hidden>Install RNGdle 10</button>
+    <button class="btn" id="installBtn" type="button" hidden>Install Long Shot 10</button>
     <h3>Save files <span class="muted" id="slotCount"></span></h3>
     <p class="muted">Each save file keeps its own rolls, badges and achievements in this browser. Export one to move it or share it; importing always adds a new save file.</p>
     <ul class="slots" id="slotList"></ul>
@@ -280,7 +360,7 @@
     <p class="muted" id="dataMsg" role="status"></p>
     <div class="terminal" id="terminal" hidden>
       <pre id="termOut" aria-live="polite"></pre>
-      <form id="termForm" class="term-line"><label for="termInput">PS C:\RNGdle10&gt;&nbsp;</label><input id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
+      <form id="termForm" class="term-line"><label for="termInput">PS C:\LongShot10&gt;&nbsp;</label><input id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
     </div>
     <div class="dlg-actions"><button class="term-toggle" type="button" id="termToggle" aria-expanded="false" aria-controls="terminal" aria-label="Command line">&gt;_</button><button class="btn" type="button" data-close>Done</button></div>
   </div>

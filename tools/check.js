@@ -50,14 +50,15 @@ for (const D of [5, 6]) {
   const g = createGame(4, { dropEmpty: true }), S = g.SPACE;
   const near = (a, b) => Math.abs(a - b) <= 1e-12 + 1e-9 * Math.abs(b);
   // Modulo: every n with every modulus.
+  const modRules = {
+    modClean: (r) => r === 0, modBig: (r, m) => r === 0 && m >= 5000, modOne: r => r === 1, modShort: (r, m) => r === m - 1,
+    modHalf: (r, m) => 2 * r === m, modTwo: r => r === 2, mod42: r => r === 42, modTiny: (r, m) => r === 0 && m <= 10, modThird: (r, m) => 3 * r === m,
+  };
   const modHits = Object.fromEntries(g.MOD_BADGES.map(b => [b.id, 0]));
+  for (const b of g.MOD_BADGES) if (!modRules[b.id]) fail(`modulo ${b.id}: no independent rule`);
   for (let m = g.M_LO; m <= g.M_HI; m++) for (let n = 0; n < S; n++) {
     const r = n % m;
-    if (r === 0) modHits.modClean++;
-    if (r === 0 && m >= 5000) modHits.modBig++;
-    if (r === 1) modHits.modOne++;
-    if (r === m - 1) modHits.modShort++;
-    if (2 * r === m) modHits.modHalf++;
+    for (const id in modHits) if (modRules[id] && modRules[id](r, m)) modHits[id]++;
   }
   for (const b of g.MOD_BADGES) {
     const p = modHits[b.id] / ((g.M_HI - g.M_LO + 1) * S);
@@ -78,7 +79,10 @@ for (const D of [5, 6]) {
   for (let i = 0, last = -1e9; i < L; i++) { if (!comp[i]) last = i; left[i] = last; }
   for (let i = L - 1, next = 1e9; i >= 0; i--) { if (!comp[i]) next = i; if (i < S6) d[i] = Math.min(i - left[i], next - i); }
   const tally = test => { let k = 0; for (let i = 0; i < S6; i++) if (test(d[i])) k++; return k; };
-  const expect = { radarNext: x => x === 1, radarNear: x => x === 2 || x === 3, radar20: x => x >= 20, radar50: x => x >= 50, radar100: x => x >= 100 };
+  const expect = {
+    radarNext: x => x === 1, radarNear: x => x === 2 || x === 3, radarOn: x => x === 0, radarFive: x => x === 4 || x === 5,
+    radar10: x => x >= 10, radar20: x => x >= 20, radar30: x => x >= 30, radar50: x => x >= 50, radar100: x => x >= 100,
+  };
   for (const b of g6.RADAR_BADGES) if (b.count !== tally(expect[b.id])) fail(`radar ${b.id}: ${b.count}, sieve scan ${tally(expect[b.id])}`);
   // Multipliers: the units add up to exactly 10^15, and the reel lands as often as it should.
   const units = g.MULTIPLIERS.reduce((t, m) => t + m.units, 0);
@@ -156,7 +160,7 @@ if (globalThis.RNG_DATA) {
   }
   done();
   const modeBadges = g.MODES.reduce((t, m) => t + m.badges.length, 0);
-  console.log(`${g.BADGES.length} badges + ${modeBadges} mode badges + 2 daily, ${g.MULTIPLIERS.length - 1} multipliers`);
+  console.log(`${g.BADGES.length} badges + ${modeBadges} mode badges + 5 daily, ${g.MULTIPLIERS.length - 1} multipliers`);
 }
 
 console.log(failed ? `\n${failed} check(s) failed` : '\nall checks passed');
