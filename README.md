@@ -14,7 +14,7 @@ Every roll shows its odds as 1/N: the chance that a random roll of the same mode
 - Target: a target number is rolled; the closer you land, the bigger the bonus.
 - Prime radar: shows the nearest prime, with badges for landing beside one or far from all of them.
 
-Auto rolls until a tier you choose, or until a badge or multiplier you are hunting turns up. Endless never stops on its own; on Turbo it rolls 90, 250, 500 or 1,000 times a second (set under Auto settings) and shows the rarest roll of each screen frame. While either runs, the best rolls of the session and of all time stay beside the reels.
+Auto rolls until a tier you choose, or until a badge or multiplier you are hunting turns up. Endless never stops on its own; on Turbo it rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set under Auto settings) and shows the rarest roll of each screen frame. While either runs, the best rolls of the session and of all time stay beside the reels.
 
 ## Other things it does
 
@@ -39,7 +39,7 @@ Skins are picked in Settings and belong to the save file. Midnight, Felt and Day
 
 Each save file has an inventory of items you can use from the Inventory tab:
 
-- Luck charms, from the Charm of Ten (luck ×10, the baseline) up to the Charm of Ten Million (luck ×10,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the rolls are shared out to worker threads with progress shown: a million real rolls take a few seconds, ten million about a minute.
+- Luck charms, from the Charm of Ten (luck ×10, the baseline) up to the Charm of Ten Million (luck ×10,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the game does not roll L times: it draws how lucky the best of L rolls would be, from its exact distribution, and builds a real roll that lucky, so even ×10,000,000 takes a few milliseconds.
 - Drop boosters: Horn of Plenty (×25), Golden Goose (×100) and Diamond Goose (×1,000) multiply item drop chances for a number of rolls; past 100% you get several of an item at once.
 - Multiplier Lens and Prism Lens: for 30 rolls the multiplier reel spins 2 or 10 times and keeps the biggest multiplier.
 - Overclock and Overclock II: Turbo rolls 2 or 4 times as fast for 3 minutes.
@@ -75,6 +75,7 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
+- v3.05: luck charms above ×2,000 roll instantly: the best of L is drawn straight from its exact distribution instead of rolling L times (a ×10,000,000 roll took about a minute, now a few milliseconds); Turbo goes up to 2,000 and 5,000 rolls a second.
 - v3.1: renamed Long Shot 10; badges doubled to 308 (plus 41 mode and 5 daily badges), all still counted exactly; achievements doubled to 94; Fuse all and Fuse everything; three new full-screen skins to play with: Chat, Handheld and Calculator; how-to-play, odds and skins documents.
 - v3.0 (skins): sixteen skins, including secret ones, a 500-coin bundle, a hidden command line in Settings, a text-only Terminal skin, a Console skin that plays the whole game by typed commands, and five legendary skins from the new badge book; Endless on Turbo up to 1,000 rolls a second; easier tiers (Uncommon is now 1 in 5, Rare 1 in 25) and five new ones past Eternal, up to Unfathomable at 1 in 10²⁰; daily quests; prestige; charts in the Log. Item and coin drops are tied to a roll's 1/N rather than its tier, so they come as often as before.
 - v2.8.3: slot rebalance. The Charm of Ten drops from 60% to 40% and every other prize is 1.5× as likely; all six pities are lower.

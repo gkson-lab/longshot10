@@ -943,8 +943,14 @@
       w.postMessage(msg);
     });
   }
-  async function pickRoll(mode, L, lens, t) {
+  // Above INLINE_LUCK the best of L is drawn straight from its exact distribution (G.luckyPick),
+  // which takes a few milliseconds however big L is. A lens multiplies the tries like luck does.
+  function pickSync(mode, L, lens, t) {
     if (L <= INLINE_LUCK) return pickInline(mode, L, lens, t);
+    return G.luckyPick(mode, L * lens, dayKey(t)) || pickInline(mode, INLINE_LUCK, lens, t);
+  }
+  async function pickRoll(mode, L, lens, t) {
+    if (L <= INLINE_LUCK || G.luckyPick) return pickSync(mode, L, lens, t);
     heavy = { L, done: 0 };
     paintStatus();
     let best = null;
@@ -972,7 +978,7 @@
     return best;
   }
   // One roll's bookkeeping, with no drawing, so Turbo can take several per screen frame.
-  const takeRoll = () => { const t = Date.now(); return commitRoll(pickInline(state.mode, luckActive(), lensActive(), t), state.mode, luckActive(), lensActive(), t); };
+  const takeRoll = () => { const t = Date.now(); return commitRoll(pickSync(state.mode, luckActive(), lensActive(), t), state.mode, luckActive(), lensActive(), t); };
   async function takeRollAsync() {
     const mode = state.mode, L = luckActive(), lens = lensActive(), t = Date.now();
     return commitRoll(await pickRoll(mode, L, lens, t), mode, L, lens, t);
@@ -1045,7 +1051,7 @@
   // page for more than a few milliseconds. Drawing happens at most once per screen frame and shows
   // the rarest roll since the last frame, so a Mythic is never skipped over. A hidden tab or a
   // throttled screen slows the drawing, never the rolling.
-  const TURBO_RATES = [90, 250, 500, 1000]; // rolls per second
+  const TURBO_RATES = [90, 250, 500, 1000, 2000, 5000]; // rolls per second
   const turboRate = () => (TURBO_RATES.includes(state.settings.turboRate) ? state.settings.turboRate : 90);
   async function turboLoop(kind) {
     let last = performance.now(), owed = 0, best = null, changed = false, framePending = false, statusAt = 0;
@@ -1054,14 +1060,6 @@
       if (best && !document.hidden) { drawRoll(best, 3, changed); best = null; changed = false; }
     };
     while (auto === kind && speed === 3 && ready[state.mode]) {
-      if (luckActive() > INLINE_LUCK) { // huge luck: one roll at a time, each shared out to the workers
-        const roll = await takeRollAsync();
-        freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
-        drawRoll(roll, 3, !!freshEntry);
-        if (kind === 'auto' && (roll.found || T(roll.rec.tier.id) >= +$('stopAt').value)) { setAuto(null); return; }
-        last = performance.now();
-        continue;
-      }
       await sleep(15);
       const now = performance.now();
       const rate = turboRate() * turboSpeedup();
@@ -1069,7 +1067,7 @@
       // Small slices keep the page smooth; when the browser throttles timers (a hidden tab), ticks
       // come late, so take a bigger slice, still under the 50 ms that feels like lag.
       // Faster rates get a bigger slice of each tick.
-      const budget = now - last > 100 ? 40 : rate > 300 ? 10 : 6;
+      const budget = now - last > 100 ? 40 : rate >= 2000 ? 12 : rate > 300 ? 10 : 6;
       last = now;
       let stop = false;
       const start = performance.now();
@@ -1846,7 +1844,7 @@
     'ENDLESS                Roll until you type STOP.',
     'STOP                   Stop Auto or Endless.',
     'SPEED 1|2|TURBO        Auto and Endless speed.',
-    'RATE 90|250|500|1000   Turbo rolls per second.',
+    'RATE 90 to 5000        Turbo rolls per second: 90, 250, 500, 1000, 2000 or 5000.',
     'MODE [name]            Show or change the mode.',
     'STATS                  Totals, best roll, collection.',
     'LUCK [mode]            Your tiers against the expected shares.',

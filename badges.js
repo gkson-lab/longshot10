@@ -1076,6 +1076,37 @@
       return { p: Math.min(1, p), estimated: est > p / 2 };
     }
     function percentile(rank, mode) { return 100 * (1 - pBeat(rank, mode).p); }
+
+    // Best of L rolls without rolling L times. The best roll's chance q of being beaten is the
+    // smallest of L uniform draws, so it is drawn directly: q = 1 - (1 - U)^(1/L). Then a real roll
+    // at least that good is built: a random number and its mode extras, and a multiplier drawn from
+    // the reel's own odds among those big enough to reach the target. At these sizes the best of
+    // millions of rolls is decided by a rare multiplier, so this is how such rolls really look.
+    function rankFor(q, mode) {
+      let lo = -1, hi = 1;
+      while (pBeat(hi, mode).p > q && hi < 1e300) { lo = hi; hi *= 2; }
+      for (let i = 0; i < 80; i++) { const mid = (lo + hi) / 2; if (pBeat(mid, mode).p > q) lo = mid; else hi = mid; }
+      return hi;
+    }
+    function luckyPick(mode, L, date) {
+      const u = randomBelow(2 ** 32) / 2 ** 32;
+      const q = -Math.expm1(Math.log1p(-u) / L);
+      const target = rankFor(Math.max(q, 1e-300), mode);
+      // Of 64 candidates, keep the one that clears the target by the least, so the result lands
+      // on the drawn luck rather than past it.
+      let best = null;
+      for (let attempt = 0; attempt < 64; attempt++) {
+        const params = randomParams(mode), n = randomBelow(SPACE);
+        const plain = score(n, date, { ...params, mult: 'unity' });
+        const need = (target - plain.rank) / (params.e || 1);
+        const mult = MULT_ASC.find(m => m.log >= need);
+        if (!mult) continue;
+        const roll = { ...params, mult: mult.id }, rank = score(n, date, roll).rank;
+        if (!best || rank < best.rank) best = { roll, n, rank };
+      }
+      return best; // null when the target is past every multiplier; the caller rolls normally
+    }
+    const MULT_ASC = [...MULTIPLIERS].sort((a, b) => a.log - b.log);
     // 1 in N, floored at 2 so an ordinary roll reads 1/2. Trash is the bottom 1%.
     function rollTier(rank, mode) {
       const { p, estimated } = pBeat(rank, mode);
@@ -1124,7 +1155,7 @@
       DIGITS, SPACE, E_MAX, M_LO, M_HI, MULT_UNITS, BADGES, POWER_BADGES, MOD_BADGES, TARGET_BADGES, RADAR_BADGES,
       MODES, MODE_BY_ID, MULTIPLIERS, MULT_BY_ID, RARITIES, ROLL_TIERS, GRID,
       CATEGORIES: ['Size', 'Math', 'Sequences', 'Digits', 'Memes', 'Combos', 'Powers', 'Modulo', 'Target', 'Radar', 'Daily'],
-      datedBadges, evaluate, score, rollTier, percentile, warmUp, tierShares, factorize, nearestPrimeDistance,
+      datedBadges, evaluate, score, rollTier, percentile, luckyPick, warmUp, tierShares, factorize, nearestPrimeDistance,
       randomRoll: () => randomBelow(SPACE), randomParams, sampleRoll, sampleLogs, tableFromSorted, pickMultiplier,
       randomExponent, pExp, computeCount, MODE_SEED,
     };

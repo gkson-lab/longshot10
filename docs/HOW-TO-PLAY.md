@@ -30,14 +30,14 @@ Each mode has badges of its own. Your 1/N always compares you with rolls of the 
 - **Roll** (or Space) rolls once.
 - **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up.
 - **Endless** (or E) never stops on its own.
-- **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500 or 1,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
+- **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
 - Your best rolls of the session and of all time stay beside the reels.
 
 ## Items
 
 Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use items from the Inventory tab:
 
-- **Luck charms** (×10 up to ×10,000,000) make each roll the best of that many rolls. Anything rare turns up about that many times as often. The 1/N shown is still the roll's true chance in the plain game.
+- **Luck charms** (×10 up to ×10,000,000) make each roll the best of that many rolls. Anything rare turns up about that many times as often. The 1/N shown is still the roll's true chance in the plain game. Above ×2,000 the game draws the best roll's luck straight from its exact odds instead of rolling every one, so even ×10,000,000 is instant.
 - **Drop boosters** (Horn of Plenty, Golden Goose, Diamond Goose) multiply item and coin drop chances for a number of rolls.
 - **Lenses** spin the multiplier reel 2 or 10 times and keep the biggest.
 - **Overclocks** make Turbo 2 or 4 times as fast for 3 minutes.

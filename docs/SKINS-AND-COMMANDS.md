@@ -36,7 +36,7 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `AUTO [tier]` | Roll until a tier or better, e.g. `AUTO mythic` |
 | `ENDLESS` / `STOP` | Roll until you type STOP |
 | `SPEED 1`, `SPEED 2`, `SPEED TURBO` | Auto and Endless speed |
-| `RATE 90`, `250`, `500` or `1000` | Turbo rolls per second |
+| `RATE 90`, `250`, `500`, `1000`, `2000` or `5000` | Turbo rolls per second |
 | `MODE [name]` | Show or change the mode |
 | `STATS` | Totals, best roll, collection, coins, prestige |
 | `LUCK [mode]` | Your tiers against the expected shares |
