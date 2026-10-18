@@ -780,7 +780,8 @@
   const slotFace = () => SLOT_FACES[randInt(SLOT_FACES.length)];
   let slotBusy = false;
   async function spinSlot(n) {
-    if (slotBusy || state.coins < n) return;
+    if (n === 'all') n = state.coins;
+    if (slotBusy || n < 1 || state.coins < n) return;
     slotBusy = true;
     state.coins -= n;
     state.spins += n;
@@ -798,8 +799,18 @@
     slotReels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', ITEM_BY_ID[best[0]].rarity >= 5); });
     const won = results;
     const prizeText = p => `${ITEM_BY_ID[p[0]].name}${p[1] > 1 ? ` ×${p[1]}` : ''}${p.pity ? ' (pity)' : ''}`;
-    $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: <b style="color:${tierVar(RARITIES[ITEM_BY_ID[p[0]].rarity].id)}">${esc(prizeText(p))}</b></li>`).join('') : '')
-      + `<li><b>Won ${won.map(prizeText).map(esc).join(', ')}</b></li>`;
+    const colored = (id, text) => `<b style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)}">${esc(text)}</b>`;
+    if (n <= 5) {
+      $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: ${colored(p[0], prizeText(p))}</li>`).join('') : '')
+        + `<li><b>Won ${won.map(prizeText).map(esc).join(', ')}</b></li>`;
+    } else { // bigger batches: totals per item, rarest first
+      const totals = new Map(), pityWins = results.filter(p => p.pity).length;
+      for (const [id, qty] of results) totals.set(id, (totals.get(id) || 0) + qty);
+      const rows = [...totals].sort((a, b) => ITEM_BY_ID[b[0]].rarity - ITEM_BY_ID[a[0]].rarity);
+      $('slotResult').innerHTML = `<li><b>${fmt(n)} spins won:</b></li>`
+        + `<li>${rows.map(([id, k]) => colored(id, `${ITEM_BY_ID[id].name} ×${fmt(k)}`)).join(', ')}</li>`
+        + (pityWins ? `<li class="muted">${pityWins} of them paid out by pity</li>` : '');
+    }
     const jackpot = won.filter(p => ITEM_BY_ID[p[0]].rarity >= 5).sort((a, b) => ITEM_BY_ID[b[0]].rarity - ITEM_BY_ID[a[0]].rarity)[0];
     if (jackpot) {
       toast(`Jackpot: <b>${esc(prizeText(jackpot))}</b>`, RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id);
@@ -815,7 +826,8 @@
     const coins = `${fmt(state.coins)} ${state.coins === 1 ? 'coin' : 'coins'}`;
     $('coinCount').textContent = coins;
     $('coinsInHand').textContent = fmt(state.coins);
-    document.querySelectorAll('[data-spin]').forEach(b => { b.disabled = slotBusy || state.coins < +b.dataset.spin; });
+    document.querySelectorAll('[data-spin]').forEach(b => { b.disabled = slotBusy || state.coins < (b.dataset.spin === 'all' ? 1 : +b.dataset.spin); });
+    $('spinAll').textContent = state.coins > 0 ? `Spin all (${fmt(state.coins)})` : 'Spin all';
     const seen = new Set();
     $('slotOdds').innerHTML = SLOT_PRIZES.map(([id, qty, units]) => {
       const name = `<span style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)};font-weight:700">${esc(ITEM_BY_ID[id].name)}</span>${qty > 1 ? ` ×${qty}` : ''}`;
@@ -828,7 +840,10 @@
       return `<tr><td>${name}</td><td class="num">${pctText(units)}</td><td class="num">${odds(units / SLOT_UNITS)}</td><td>${pity}</td></tr>`;
     }).join('');
   }
-  $('slotButtons').addEventListener('click', ev => { const b = ev.target.closest('[data-spin]'); if (b) spinSlot(+b.dataset.spin); });
+  $('slotButtons').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-spin]');
+    if (b) spinSlot(b.dataset.spin === 'all' ? 'all' : +b.dataset.spin);
+  });
 
   function fuseItem(id) {
     const it = ITEM_BY_ID[id];
