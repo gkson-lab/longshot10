@@ -646,29 +646,29 @@
   const COIN_CHANCE = 1 / 3;
   const SLOT_UNITS = 1e9;
   const SLOT_PRIZES = [ // every spin wins something
-    ['luck10', 1, 600000000, '×10'],
-    ['luck10', 3, 100000000, '×10'],
-    ['lens', 1, 80000000, 'Lens'],
-    ['overclock', 1, 60000000, 'OC'],
-    ['luck100', 1, 60000000, '×100'],
-    ['horn', 1, 40000000, 'Horn'],
-    ['luck100', 3, 20000000, '×100'],
-    ['prism', 1, 15000000, 'Prism'],
-    ['luck1k', 1, 13000000, '×1k'],
-    ['overclock2', 1, 10000000, 'OC II'],
-    ['goose', 1, 800000, 'Goose'],
-    ['goose', 2, 150000, 'Goose'],
-    ['goose', 5, 50000, 'Goose'],
-    ['luck10k', 1, 600000, '×10k'],
-    ['goose2', 1, 300000, 'Diamond'],
-    ['luck100k', 1, 94500, '×100k'],
-    ['luck1m', 1, 5000, '×1M'],
-    ['luck10m', 1, 500, '×10M'],
+    ['luck10', 1, 400000000, '×10'], // the base prize; every other prize is 1.5× its v2.8.1 chance
+    ['luck10', 3, 150000000, '×10'],
+    ['lens', 1, 120000000, 'Lens'],
+    ['overclock', 1, 90000000, 'OC'],
+    ['luck100', 1, 90000000, '×100'],
+    ['horn', 1, 60000000, 'Horn'],
+    ['luck100', 3, 30000000, '×100'],
+    ['prism', 1, 22500000, 'Prism'],
+    ['luck1k', 1, 19500000, '×1k'],
+    ['overclock2', 1, 15000000, 'OC II'],
+    ['goose', 1, 1200000, 'Goose'],
+    ['goose', 2, 225000, 'Goose'],
+    ['goose', 5, 75000, 'Goose'],
+    ['luck10k', 1, 900000, '×10k'],
+    ['goose2', 1, 450000, 'Diamond'],
+    ['luck100k', 1, 141750, '×100k'],
+    ['luck1m', 1, 7500, '×1M'],
+    ['luck10m', 1, 750, '×10M'],
   ];
   if (SLOT_PRIZES.reduce((t, p) => t + p[2], 0) !== SLOT_UNITS) throw new Error('slot prize table does not add up');
   // Hard pity: go this many spins without one of these and the next spin pays it out for sure.
   // A natural win resets the count. If several are due at once, the rarest is paid first.
-  const SLOT_PITY = { goose: 5000, luck10k: 10000, goose2: 25000, luck100k: 50000, luck1m: 500000, luck10m: 5000000 };
+  const SLOT_PITY = { goose: 2000, luck10k: 3000, goose2: 7000, luck100k: 20000, luck1m: 250000, luck10m: 2500000 };
   const PITY_ORDER = Object.keys(SLOT_PITY).sort((a, b) => SLOT_PITY[b] - SLOT_PITY[a]);
   function randInt(n) { // uniform integer in [0, n) from the CSPRNG, without modulo bias
     const buf = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;

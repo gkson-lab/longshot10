@@ -40,9 +40,9 @@ Items drop from Rare and rarer plain rolls (the chances are listed in the game),
 
 ## Coin slot
 
-Every Rare or rarer plain roll has a 1 in 3 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin: spin once, 5, 10 or 20 at a time, or spend every coin at once with Spin all. Every spin wins something, from a fixed table shown next to the slot with chances in whole parts of a billion: a Charm of Ten 60% of the time, every other item in the game from there up, a 0.1% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 200,000 and a Charm of Ten Million at 1 in 2,000,000.
+Every Rare or rarer plain roll has a 1 in 3 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin: spin once, 5, 10 or 20 at a time, or spend every coin at once with Spin all. Every spin wins something, from a fixed table shown next to the slot with chances in whole parts of a billion: a Charm of Ten 40% of the time, every other item in the game from there up, a 0.15% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 133,333 and a Charm of Ten Million at 1 in 1,333,333.
 
-Six prizes have a hard pity: go 5,000 spins without a Golden Goose, 10,000 without a Charm of Ten Thousand, 25,000 without a Diamond Goose, 50,000 without a Charm of a Hundred Thousand, 500,000 without a Charm of a Million or 5,000,000 without a Charm of Ten Million, and the next spin pays it out for sure. The panel shows your progress towards each.
+Six prizes have a hard pity: go 2,000 spins without a Golden Goose, 3,000 without a Charm of Ten Thousand, 7,000 without a Diamond Goose, 20,000 without a Charm of a Hundred Thousand, 250,000 without a Charm of a Million or 2,500,000 without a Charm of Ten Million, and the next spin pays it out for sure. The panel shows your progress towards each.
 
 ## Sharing save files
 
