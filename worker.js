@@ -8,7 +8,8 @@ self.onmessage = ({ data }) => {
   let best = null;
   for (let i = 1; i <= count; i++) {
     const roll = G.randomParams(mode), n = G.randomRoll();
-    for (let j = 1; j < tries; j++) {
+    if (data.d && data.d !== 'standard') { roll.d = data.d; roll.mult = 'unity'; }
+    for (let j = 1; j < tries && !roll.d; j++) {
       const alt = G.randomParams(mode).mult;
       if (G.MULT_BY_ID[alt].log > G.MULT_BY_ID[roll.mult].log) roll.mult = alt;
     }

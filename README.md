@@ -8,7 +8,7 @@ Every roll shows its odds as 1/N: the chance that a random roll of the same mode
 
 ## Difficulties
 
-Hardcore removes the multiplier reel, so only badges count. Nightmare, Abyss and Oblivion also raise the score to the power 2/3, 1/2 and 1/3. The 1/N still compares with the Standard game, so on Oblivion three rolls in four are Trash. Charms and lenses are paused off Standard; harder difficulties pay more lucky tokens.
+Hardcore removes the multiplier reel, so only badges count. Nightmare, Abyss and Oblivion also raise the score to the power 2/3, 1/2 and 1/3. The 1/N still compares with the Standard game, so on Oblivion three rolls in four are Trash. Luck charms work on every difficulty, up to ×100,000 off Standard (those rolls are played for real); harder difficulties pay more lucky tokens.
 
 ## Lucky tokens
 

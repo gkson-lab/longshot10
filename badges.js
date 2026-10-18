@@ -963,7 +963,7 @@
     // Hardcore drops the multiplier reel (only badges count); the others also take a root of the score.
     const DIFFICULTIES = [
       { id: 'standard', name: 'Standard', root: 1, mult: true, desc: 'Badges and the multiplier reel.' },
-      { id: 'hardcore', name: 'Hardcore', root: 1, mult: false, desc: 'No multiplier reel: only your badges count. Charms and lenses are paused.' },
+      { id: 'hardcore', name: 'Hardcore', root: 1, mult: false, desc: 'No multiplier reel: only your badges count.' },
       { id: 'nightmare', name: 'Nightmare', root: 1.5, mult: false, desc: 'Badges only, and your score is raised to the power 2/3.' },
       { id: 'abyss', name: 'Abyss', root: 2, mult: false, desc: 'Badges only, and your score is square-rooted.' },
       { id: 'oblivion', name: 'Oblivion', root: 3, mult: false, desc: 'Badges only, and your score is cube-rooted. Astronomically hard.' },

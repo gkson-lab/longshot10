@@ -37,7 +37,7 @@ Pick a difficulty under the mode buttons. It changes your score but not the yard
 | Abyss | Badges only, and your score is square-rooted. |
 | Oblivion | Badges only, and your score is cube-rooted. Three in four rolls are Trash. |
 
-Charms and lenses are paused on every difficulty but Standard. Harder difficulties pay more lucky tokens: ×2, ×3, ×5 and ×10. How often each one reaches each tier is in [ODDS.md](ODDS.md#difficulties).
+Luck charms and permanent luck work on every difficulty. Without the multiplier reel the game has to roll every one of the L rolls for real, so off Standard luck counts as at most ×100,000 (well under a second a roll). Lenses do nothing there, since there is no reel to spin. Harder difficulties pay more lucky tokens: ×2, ×3, ×5 and ×10. How often each one reaches each tier is in [ODDS.md](ODDS.md#difficulties).
 
 ## Lucky tokens and permanent luck
 

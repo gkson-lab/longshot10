@@ -802,8 +802,9 @@
   $('upgradeMax').addEventListener('click', () => upgradeLuck(Infinity));
   function effectsText() {
     const out = [];
-    if (permLuck() > 1) out.push(`Permanent luck ×${fmt(permLuck())}${hard() ? ' (paused on this difficulty)' : ''}`);
-    if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left${hard() ? ' (paused on this difficulty)' : ''}`);
+    if (permLuck() > 1) out.push(`Permanent luck ×${fmt(permLuck())}`);
+    if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left`);
+    if (hard() && luckActive() * permLuck() > HARD_LUCK_CAP) out.push(`Luck counts as ×${fmt(HARD_LUCK_CAP)} on ${G.DIFF_BY_ID[state.difficulty].name}`);
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
     if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
     if ((state.effects.lens || 0) > 0) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
@@ -1045,20 +1046,23 @@
       w.postMessage(msg);
     });
   }
-  // Luck in play: a charm times your permanent luck level. Harder difficulties pause both, since
-  // without the multiplier reel there is nothing for the instant best-of-L to build on.
+  // Luck in play: a charm times your permanent luck level. Without the multiplier reel the instant
+  // best-of-L has nothing to build on, so harder difficulties roll every one of the L rolls for real,
+  // on the worker threads, up to HARD_LUCK_CAP. Lenses do nothing there: there is no reel to spin.
+  const HARD_LUCK_CAP = 1e5;
   const permLuck = () => (state.luckLevel || 0) + 1;
   const hard = () => state.difficulty && state.difficulty !== 'standard';
-  const effLuck = () => (hard() ? 1 : luckActive() * permLuck());
+  const effLuck = () => (hard() ? Math.min(HARD_LUCK_CAP, luckActive() * permLuck()) : luckActive() * permLuck());
   const effLens = () => (hard() ? 1 : lensActive());
   // Above INLINE_LUCK the best of L is drawn straight from its exact distribution (G.luckyPick),
   // which takes a few milliseconds however big L is. A lens multiplies the tries like luck does.
   function pickSync(mode, L, lens, t) {
     if (L <= INLINE_LUCK) return pickInline(mode, L, lens, t);
+    if (hard()) return pickInline(mode, Math.min(L, 2000), lens, t); // only when no async path is possible
     return G.luckyPick(mode, L * lens, dayKey(t)) || pickInline(mode, INLINE_LUCK, lens, t);
   }
   async function pickRoll(mode, L, lens, t) {
-    if (L <= INLINE_LUCK || G.luckyPick) return pickSync(mode, L, lens, t);
+    if (L <= INLINE_LUCK || !hard()) return pickSync(mode, L, lens, t);
     heavy = { L, done: 0 };
     paintStatus();
     let best = null;
@@ -1068,7 +1072,7 @@
       const per = Math.ceil(L / ws.length), id = ++jobSeq, date = dayKey(t);
       const parts = await Promise.all(ws.map((w, i) => {
         const count = Math.min(per, L - i * per);
-        return count > 0 ? inWorker(w, { id, mode, count, date, lens }) : null;
+        return count > 0 ? inWorker(w, { id, mode, count, date, lens, d: state.difficulty }) : null;
       }));
       for (const p of parts) if (p && (!best || p.rank > best.rank)) best = p;
     } catch {
@@ -1098,7 +1102,7 @@
     if (roll.m) x.m = roll.m;
     if (roll.t !== undefined) x.tg = roll.t;
     if (hard()) x.d = state.difficulty;
-    const charmed = !hard() && luckActive() > 1; // charms block drops; permanent luck does not
+    const charmed = luckActive() > 1; // charms block drops; permanent luck does not
     if (L > 1) x.b = L;
     if (charmed) state.effects.luck.left = Math.max(0, state.effects.luck.left - 1);
     if (lens > 1) {
@@ -1172,6 +1176,14 @@
       if (best && !document.hidden) { drawRoll(best, 3, changed); best = null; changed = false; }
     };
     while (auto === kind && speed === 3 && ready[state.mode]) {
+      if (hard() && effLuck() > INLINE_LUCK) { // big luck on a hard difficulty: real rolls on the workers, one roll at a time
+        const roll = await takeRollAsync();
+        freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
+        drawRoll(roll, 3, !!freshEntry);
+        if (kind === 'auto' && (roll.found || T(roll.rec.tier.id) >= +$('stopAt').value)) { setAuto(null); return; }
+        last = performance.now();
+        continue;
+      }
       await sleep(15);
       const now = performance.now();
       const rate = turboRate() * turboSpeedup();
@@ -2029,14 +2041,17 @@
         if (!ready[state.mode]) { print('The odds are still loading. Try again in a moment.'); break; }
         if (auto) setAuto(null);
         const n = Math.max(1, Math.min(1e4, Math.floor(+arg.replace(/,/g, '') || 1)));
-        let best = null;
-        for (let i = 0; i < n; i++) {
-          const r = takeRoll();
-          if (!best || r.rec.entry.oneInLog > best.rec.entry.oneInLog) best = r;
-          if (n <= 10) print(rollLine(r.rec.entry));
-        }
-        if (n > 10) print(`${fmt(n)} rolls. Best:`, rollLine(best.rec.entry));
-        drawRoll(best, 3, true);
+        const slow = hard() && effLuck() > INLINE_LUCK;
+        (async () => {
+          let best = null;
+          for (let i = 0; i < n; i++) {
+            const r = slow ? await takeRollAsync() : takeRoll();
+            if (!best || r.rec.entry.oneInLog > best.rec.entry.oneInLog) best = r;
+            if (n <= 10) print(rollLine(r.rec.entry));
+          }
+          if (n > 10) print(`${fmt(n)} rolls. Best:`, rollLine(best.rec.entry));
+          drawRoll(best, 3, true);
+        })();
         break;
       }
       case 'auto': case 'endless': {
