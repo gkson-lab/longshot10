@@ -31,16 +31,18 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 
 Each save file has an inventory of items you can use from the Inventory tab:
 
-- Luck charms, from the Charm of Two (luck ×2) up to the Charm of a Million (luck ×1,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the rolls are shared out to worker threads, so a million real rolls take a few seconds, with progress shown.
-- Drop boosters: Magnet (×2), Treasure Map (×5), Horn of Plenty (×25) and Golden Goose (×100) multiply item drop chances for a number of rolls; past 100% you get several of an item at once.
-- Multiplier Lens: for 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.
-- Overclock: Turbo rolls twice as fast for 3 minutes.
+- Luck charms, from the Charm of Ten (luck ×10, the baseline) up to the Charm of Ten Million (luck ×10,000,000). Luck ×L makes each roll the best of L independent rolls, so anything rare turns up roughly L times as often; the 1/N shown is still the result's true odds in the plain game. Above ×2,000 the rolls are shared out to worker threads with progress shown: a million real rolls take a few seconds, ten million about a minute.
+- Drop boosters: Horn of Plenty (×25), Golden Goose (×100) and Diamond Goose (×1,000) multiply item drop chances for a number of rolls; past 100% you get several of an item at once.
+- Multiplier Lens and Prism Lens: for 30 rolls the multiplier reel spins 2 or 10 times and keeps the biggest multiplier.
+- Overclock and Overclock II: Turbo rolls 2 or 4 times as fast for 3 minutes.
 
-Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Two once a day, and several of one item fuse into the next one up (five Charms of a Hundred Thousand make a Charm of a Million). Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
+Items drop from Rare and rarer plain rolls (the chances are listed in the game), every achievement gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up (ten Charms of a Million make a Charm of Ten Million). The Charm of Two, Charm of Five, Magnet and Treasure Map are retired: they no longer drop, but any you own still work and fuse upwards. Rolls made with a charm or the Lens never drop items and are left out of the luck table. Items are part of the save file, so they go along when you export or share it.
 
 ## Coin slot
 
-Every Rare or rarer plain roll has a 1 in 4 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin, up to five spins at a time. Each spin pays out from a fixed table shown in the game: no prize 35% of the time, item prizes from a Charm of Two to a Charm of a Thousand, and a 0.1% jackpot of one, two or five Golden Geese.
+Every Rare or rarer plain roll has a 1 in 4 chance to drop a coin (drop boosters raise that too). Spend coins on the slot machine in the Inventory tab, one coin per spin, up to five spins at a time. Each spin pays out from a fixed table shown next to the slot, with chances in whole parts of a billion: no prize 30% of the time, every item in the game from the Charm of Ten up, a 0.1% Golden Goose jackpot paying one, two or five, a Charm of a Million at 1 in 200,000 and a Charm of Ten Million at 1 in 2,000,000.
+
+Six prizes have a hard pity: go 5,000 spins without a Golden Goose, 10,000 without a Charm of Ten Thousand, 25,000 without a Diamond Goose, 50,000 without a Charm of a Hundred Thousand, 500,000 without a Charm of a Million or 5,000,000 without a Charm of Ten Million, and the next spin pays it out for sure. The panel shows your progress towards each.
 
 ## Sharing save files
 
@@ -60,6 +62,7 @@ Design decisions and their reasons are in [DESIGN.md](DESIGN.md).
 
 ## Changelog
 
+- v2.8 (slot overhaul): every item is now a slot prize, up to the Charm of Ten Million; ×10 is the new baseline and the Charm of Two, Charm of Five, Magnet and Treasure Map are retired; new Charm of Ten Million, Prism Lens, Overclock II and Diamond Goose; hard pity on the six rarest prizes; a coins-and-odds panel next to the slot.
 - v2.7 (major update): coins drop from Rare or rarer rolls and buy spins on a coin slot machine, one to five at a time, with item prizes and a Golden Goose jackpot.
 - v2.6.1: the offline copy no longer mixes files from two releases when it updates in the first minutes after a deploy.
 - v2.6: luck charms up to ×1,000,000 (run on worker threads), drop boosters up to ×100, and fusing items into the next one up.

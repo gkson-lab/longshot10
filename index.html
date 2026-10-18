@@ -126,19 +126,23 @@
             </div>
             <ul class="slot-result" id="slotResult" role="status"><li class="muted">Each spin costs one coin. Coins come from Rare or rarer rolls.</li></ul>
           </div>
-          <details class="slot-odds">
-            <summary>Prize odds per spin</summary>
-            <table class="luck"><tbody id="slotOdds"></tbody></table>
-          </details>
           <div class="section-head"><h2>Inventory</h2><span id="invCount"></span></div>
           <ul class="items" id="invList"></ul>
           <p class="muted" id="invMsg" role="status"></p>
         </div>
         <div>
+          <div class="coins-panel">
+            <div class="coins-in-hand"><span class="num" id="coinsInHand">0</span><span>coins in hand</span></div>
+            <p class="muted">Every spin pays out from this table. Hard pity: go this many spins without one of the marked prizes and the next spin pays it out for sure.</p>
+            <table class="luck odds">
+              <thead><tr><th>Prize</th><th>Chance</th><th>Odds</th><th>Pity</th></tr></thead>
+              <tbody id="slotOdds"></tbody>
+            </table>
+          </div>
           <div class="section-head"><h2>Active now</h2></div>
           <ul class="effects" id="effects"></ul>
           <div class="section-head"><h2>Where items come from</h2></div>
-          <p class="muted">Each plain roll can drop items, depending on its tier, and drop boosters multiply those chances. Rolls made with a luck charm or the Lens never drop items. Every achievement also gives one, each save file gets a Charm of Two once a day, and several of one item fuse into the next one up.</p>
+          <p class="muted">Each plain roll can drop items, depending on its tier, and drop boosters multiply those chances. Rolls made with a luck charm or the Lens never drop items. Every achievement also gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up.</p>
           <table class="luck"><tbody id="dropTable"></tbody></table>
           <p class="muted">Items belong to the save file, so they go along when you export or share it.</p>
         </div>
@@ -197,7 +201,7 @@
     </section>
   </main>
 
-  <p class="foot">RNGdle 10 · v2.7 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">RNGdle 10 · v2.8 · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

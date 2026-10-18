@@ -73,7 +73,7 @@
     v: 4, log: [], total: 0, totals: perMode(() => 0), counts: {}, first: {}, mults: {}, firstMult: {},
     tiers: perMode(() => ({})), hof: perMode(() => []), favs: [], ach: {}, huntsDone: 0, shares: 0,
     settings: { theme: 'midnight', effects: 'full', sound: true }, mode: 'classic',
-    inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0,
+    inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0, pity: {},
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -479,7 +479,7 @@
     $('oneInNote').textContent = (rt.estimated
       ? 'estimated: rarer than any of the two million sampled rolls'
       : `of ${MODE_BY_ID[x.mode].name} rolls do at least this well`)
-      + (x.b ? `, rolled with luck ×${fmt(x.b)}` : '') + (x.lens ? ', with the Multiplier Lens' : '');
+      + (x.b ? `, rolled with luck ×${fmt(x.b)}` : '') + (x.lens ? `, with the ${x.lens === 10 ? 'Prism' : 'Multiplier'} Lens` : '');
 
     const f = formula(x, r), plain = f === `${fmt(r.base)} EP`;
     $('scoreLine').innerHTML = (plain ? '' : `<span class="formula num">${esc(f)} =</span> `)
@@ -607,67 +607,90 @@
   // `next` fuses: that many of this item make one of the next.
   const luckItem = (id, name, luck, rolls, rarity, next) => ({ id, name, kind: 'luck', luck, rolls, rarity, next, desc: `Luck ×${fmt(luck)} for ${rollsText(rolls)}: each roll is the best of ${fmt(luck)}.` });
   const dropItem = (id, name, drop, rolls, rarity, next) => ({ id, name, kind: 'drop', drop, rolls, rarity, next, desc: `Items drop ${fmt(drop)} times as often for ${rollsText(rolls)}.` });
+  // ×10 is the baseline. Items below it are retired: they no longer drop or come from the slot,
+  // but any already owned still work and still fuse upwards.
   const ITEMS = [
-    luckItem('luck2', 'Charm of Two', 2, 50, 1, ['luck5', 5]),
-    luckItem('luck5', 'Charm of Five', 5, 50, 2, ['luck10', 4]),
-    luckItem('luck10', 'Charm of Ten', 10, 25, 3, ['luck100', 5]),
-    luckItem('luck100', 'Charm of a Hundred', 100, 10, 5, ['luck1k', 5]),
-    luckItem('luck1k', 'Charm of a Thousand', 1000, 10, 6, ['luck10k', 5]),
-    luckItem('luck10k', 'Charm of Ten Thousand', 1e4, 5, 7, ['luck100k', 5]),
-    luckItem('luck100k', 'Charm of a Hundred Thousand', 1e5, 3, 8, ['luck1m', 5]),
-    luckItem('luck1m', 'Charm of a Million', 1e6, 3, 9),
-    dropItem('magnet', 'Magnet', 2, 500, 2, ['map', 5]),
-    dropItem('map', 'Treasure Map', 5, 500, 3, ['horn', 5]),
-    dropItem('horn', 'Horn of Plenty', 25, 200, 5, ['goose', 5]),
-    dropItem('goose', 'Golden Goose', 100, 100, 7),
-    { id: 'lens', name: 'Multiplier Lens', kind: 'lens', rolls: 30, rarity: 2, desc: 'For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.' },
-    { id: 'overclock', name: 'Overclock', kind: 'overclock', minutes: 3, rarity: 3, desc: 'Turbo rolls twice as fast, about 180 a second, for 3 minutes.' },
+    luckItem('luck10', 'Charm of Ten', 10, 25, 1, ['luck100', 5]),
+    luckItem('luck100', 'Charm of a Hundred', 100, 10, 3, ['luck1k', 5]),
+    luckItem('luck1k', 'Charm of a Thousand', 1000, 10, 4, ['luck10k', 5]),
+    luckItem('luck10k', 'Charm of Ten Thousand', 1e4, 5, 5, ['luck100k', 5]),
+    luckItem('luck100k', 'Charm of a Hundred Thousand', 1e5, 3, 6, ['luck1m', 5]),
+    luckItem('luck1m', 'Charm of a Million', 1e6, 3, 7, ['luck10m', 10]),
+    luckItem('luck10m', 'Charm of Ten Million', 1e7, 1, 9),
+    dropItem('horn', 'Horn of Plenty', 25, 200, 3, ['goose', 5]),
+    dropItem('goose', 'Golden Goose', 100, 100, 5, ['goose2', 5]),
+    dropItem('goose2', 'Diamond Goose', 1000, 100, 7),
+    { id: 'lens', name: 'Multiplier Lens', kind: 'lens', tries: 2, rolls: 30, rarity: 2, desc: 'For 30 rolls the multiplier reel spins twice and keeps the bigger multiplier.' },
+    { id: 'prism', name: 'Prism Lens', kind: 'lens', tries: 10, rolls: 30, rarity: 4, desc: 'For 30 rolls the multiplier reel spins ten times and keeps the biggest multiplier.' },
+    { id: 'overclock', name: 'Overclock', kind: 'overclock', speedup: 2, minutes: 3, rarity: 2, desc: 'Turbo rolls twice as fast, about 180 a second, for 3 minutes.' },
+    { id: 'overclock2', name: 'Overclock II', kind: 'overclock', speedup: 4, minutes: 3, rarity: 4, desc: 'Turbo rolls four times as fast, about 360 a second, for 3 minutes.' },
+    { ...luckItem('luck2', 'Charm of Two', 2, 50, 0, ['luck5', 5]), retired: true },
+    { ...luckItem('luck5', 'Charm of Five', 5, 50, 0, ['luck10', 4]), retired: true },
+    { ...dropItem('magnet', 'Magnet', 2, 500, 0, ['map', 5]), retired: true },
+    { ...dropItem('map', 'Treasure Map', 5, 500, 0, ['horn', 5]), retired: true },
   ];
   const ITEM_BY_ID = Object.fromEntries(ITEMS.map(i => [i.id, i]));
   // Drop chances after a plain roll, by its tier; each row covers its tier and up to the next row.
   const DROPS = [
-    ['rare', [['luck2', 0.03], ['magnet', 0.01]]],
-    ['epic', [['luck2', 0.15], ['lens', 0.05], ['luck5', 0.03], ['magnet', 0.05]]],
-    ['legendary', [['luck5', 0.2], ['lens', 0.15], ['overclock', 0.05], ['map', 0.05]]],
-    ['anomaly', [['luck5', 0.4], ['luck10', 0.25], ['overclock', 0.2], ['map', 0.15]]],
-    ['mythic', [['luck10', 0.5], ['luck100', 0.2], ['overclock', 0.4], ['horn', 0.1]]],
-    ['divine', [['luck100', 0.5], ['luck1k', 0.1], ['horn', 0.3]]],
-    ['cosmic', [['luck1k', 0.4], ['luck10k', 0.05], ['goose', 0.1]]],
-    ['transcendent', [['luck10k', 0.4], ['luck100k', 0.1], ['luck1m', 0.02], ['goose', 0.3]]],
+    ['rare', [['luck10', 0.03]]],
+    ['epic', [['luck10', 0.15], ['lens', 0.05], ['overclock', 0.02]]],
+    ['legendary', [['luck10', 0.3], ['lens', 0.15], ['overclock', 0.05], ['horn', 0.03]]],
+    ['anomaly', [['luck10', 0.4], ['luck100', 0.25], ['overclock', 0.2], ['horn', 0.1]]],
+    ['mythic', [['luck100', 0.5], ['luck1k', 0.1], ['overclock', 0.4], ['horn', 0.2], ['prism', 0.05]]],
+    ['divine', [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2]]],
+    ['cosmic', [['luck10k', 0.2], ['goose', 0.3], ['overclock2', 0.2]]],
+    ['transcendent', [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
   ];
   // The coin slot: each spin costs one coin and pays out from this table. Chances are whole parts
-  // in 100,000 and add up to exactly 100,000. [item or null, quantity, parts, reel symbol]
+  // of a billion and add up to exactly one billion. [item or null, quantity, parts, reel symbol]
   const COIN_CHANCE = 0.25;
-  const SLOT_UNITS = 100000;
+  const SLOT_UNITS = 1e9;
   const SLOT_PRIZES = [
-    [null, 0, 35000, ''],
-    ['luck2', 1, 25000, '×2'],
-    ['luck2', 3, 10000, '×2'],
-    ['luck5', 1, 10000, '×5'],
-    ['magnet', 1, 6000, 'Mag'],
-    ['lens', 1, 5000, 'Lens'],
-    ['luck10', 1, 4000, '×10'],
-    ['map', 1, 2000, 'Map'],
-    ['overclock', 1, 1500, 'OC'],
-    ['luck100', 1, 1000, '×100'],
-    ['horn', 1, 300, 'Horn'],
-    ['luck1k', 1, 100, '×1k'],
-    ['goose', 1, 80, 'Goose'],
-    ['goose', 2, 15, 'Goose'],
-    ['goose', 5, 5, 'Goose'],
+    [null, 0, 300000000, ''],
+    ['luck10', 1, 300000000, '×10'],
+    ['luck10', 3, 100000000, '×10'],
+    ['lens', 1, 80000000, 'Lens'],
+    ['overclock', 1, 60000000, 'OC'],
+    ['luck100', 1, 60000000, '×100'],
+    ['horn', 1, 40000000, 'Horn'],
+    ['luck100', 3, 20000000, '×100'],
+    ['prism', 1, 15000000, 'Prism'],
+    ['luck1k', 1, 13000000, '×1k'],
+    ['overclock2', 1, 10000000, 'OC II'],
+    ['goose', 1, 800000, 'Goose'],
+    ['goose', 2, 150000, 'Goose'],
+    ['goose', 5, 50000, 'Goose'],
+    ['luck10k', 1, 600000, '×10k'],
+    ['goose2', 1, 300000, 'Diamond'],
+    ['luck100k', 1, 94500, '×100k'],
+    ['luck1m', 1, 5000, '×1M'],
+    ['luck10m', 1, 500, '×10M'],
   ];
   if (SLOT_PRIZES.reduce((t, p) => t + p[2], 0) !== SLOT_UNITS) throw new Error('slot prize table does not add up');
+  // Hard pity: go this many spins without one of these and the next spin pays it out for sure.
+  // A natural win resets the count. If several are due at once, the rarest is paid first.
+  const SLOT_PITY = { goose: 5000, luck10k: 10000, goose2: 25000, luck100k: 50000, luck1m: 500000, luck10m: 5000000 };
+  const PITY_ORDER = Object.keys(SLOT_PITY).sort((a, b) => SLOT_PITY[b] - SLOT_PITY[a]);
   function randInt(n) { // uniform integer in [0, n) from the CSPRNG, without modulo bias
     const buf = new Uint32Array(1), lim = Math.floor(4294967296 / n) * n;
     do crypto.getRandomValues(buf); while (buf[0] >= lim);
     return buf[0] % n;
   }
   function spinOnce() {
-    let u = randInt(SLOT_UNITS);
-    for (const p of SLOT_PRIZES) { if (u < p[2]) return p; u -= p[2]; }
-    return SLOT_PRIZES[0];
+    const pity = state.pity;
+    for (const id of PITY_ORDER) pity[id] = (pity[id] || 0) + 1;
+    const due = PITY_ORDER.find(id => pity[id] >= SLOT_PITY[id]);
+    let prize;
+    if (due) prize = Object.assign([...SLOT_PRIZES.find(p => p[0] === due)], { pity: true });
+    else {
+      let u = randInt(SLOT_UNITS);
+      prize = SLOT_PRIZES[0];
+      for (const p of SLOT_PRIZES) { if (u < p[2]) { prize = p; break; } u -= p[2]; }
+    }
+    if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
+    return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck2', rare: 'luck2', epic: 'luck5', legendary: 'lens', anomaly: 'luck10', mythic: 'luck100', divine: 'luck1k', cosmic: 'luck10k', transcendent: 'luck100k', ethereal: 'luck1m', celestial: 'luck1m', eternal: 'luck1m', c25: 'magnet', c60: 'map', c100: 'horn', call: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -696,8 +719,11 @@
   }
   const luckActive = () => (state.effects.luck && state.effects.luck.left > 0 ? state.effects.luck.L : 1);
   const dropActive = () => (state.effects.drop && state.effects.drop.left > 0 ? state.effects.drop.D : 1);
-  const lensActive = () => (state.effects.lens || 0) > 0;
+  // Multiplier spins per roll: 10 with the Prism Lens, 2 with the Multiplier Lens, else 1.
+  const lensActive = () => ((state.effects.prism || 0) > 0 ? 10 : (state.effects.lens || 0) > 0 ? 2 : 1);
   const overclockLeft = () => Math.max(0, (state.effects.overclock || 0) - Date.now());
+  const overclock2Left = () => Math.max(0, (state.effects.overclock2 || 0) - Date.now());
+  const turboSpeedup = () => (overclock2Left() ? 4 : overclockLeft() ? 2 : 1);
   function useItem(id) {
     const it = ITEM_BY_ID[id], fx = state.effects;
     if (!(state.inv[id] > 0)) return;
@@ -709,8 +735,8 @@
       if (cur && cur[key] < power && !confirm(`${word} ×${fmt(cur[key])} has ${rollsText(cur.left)} left. Replace it with ×${fmt(power)}?`)) return;
       fx[slot] = cur && cur[key] === power ? { [key]: power, left: cur.left + it.rolls } : { [key]: power, left: it.rolls };
     }
-    if (it.kind === 'lens') fx.lens = (fx.lens || 0) + it.rolls;
-    if (it.kind === 'overclock') fx.overclock = Math.max(Date.now(), fx.overclock || 0) + it.minutes * 60000;
+    if (it.kind === 'lens') fx[it.id] = (fx[it.id] || 0) + it.rolls;
+    if (it.kind === 'overclock') fx[it.id] = Math.max(Date.now(), fx[it.id] || 0) + it.minutes * 60000;
     state.inv[id]--;
     $('invMsg').textContent = `Used ${it.name}.`;
     save();
@@ -721,9 +747,11 @@
     const out = [];
     if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left`);
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
-    if (lensActive()) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
-    const oc = overclockLeft();
-    if (oc) out.push(`Overclock, ${Math.floor(oc / 60000)}:${String(Math.floor(oc / 1000) % 60).padStart(2, '0')} left`);
+    if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
+    if ((state.effects.lens || 0) > 0) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
+    const clock = ms => `${Math.floor(ms / 60000)}:${String(Math.floor(ms / 1000) % 60).padStart(2, '0')}`;
+    if (overclock2Left()) out.push(`Overclock II, ${clock(overclock2Left())} left`);
+    if (overclockLeft()) out.push(`Overclock, ${clock(overclockLeft())} left`);
     return out;
   }
   function renderInventory() {
@@ -731,8 +759,9 @@
     $('effects').innerHTML = fx.length ? fx.map(t => `<li>${esc(t)}</li>`).join('') : '<li class="muted">Nothing active. Use an item below.</li>';
     const total = ITEMS.reduce((t, i) => t + (state.inv[i.id] || 0), 0);
     $('invCount').textContent = `${fmt(total)} ${total === 1 ? 'item' : 'items'}`;
-    $('invList').innerHTML = ITEMS.map(it => {
+    $('invList').innerHTML = ITEMS.filter(it => !it.retired || state.inv[it.id] > 0).map(it => {
       const k = state.inv[it.id] || 0;
+      if (it.retired && !it.desc.includes('Retired')) it.desc += ' Retired: it no longer drops or comes from the slot, but it still works and fuses upwards.';
       const fuse = it.next ? `<button class="btn" type="button" data-fuse="${it.id}" ${k >= it.next[1] ? '' : 'disabled'} aria-label="Fuse ${it.next[1]} ${esc(it.name)} into one ${esc(ITEM_BY_ID[it.next[0]].name)}">Fuse ${it.next[1]} → 1</button>` : '';
       return `<li class="item${k ? '' : ' none'}" style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">×${fmt(k)}</span><br><span class="muted">${esc(it.desc)}${it.next ? ` Fuse ${it.next[1]} into a ${esc(ITEM_BY_ID[it.next[0]].name)}.` : ''}</span></div>`
         + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button></div></li>`;
@@ -771,20 +800,36 @@
     else await Promise.all(slotReels.map((r, i) => spinReel(r, faces[i], 500 + i * 220, 14 + i * 4, false, slotFace, () => tick(i))));
     slotReels.forEach(r => { r.style.setProperty('--tc', color); r.classList.toggle('hit', !!best[0] && ITEM_BY_ID[best[0]].rarity >= 5); });
     const won = results.filter(p => p[0]);
-    $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: ${p[0] ? `<b style="color:${tierVar(RARITIES[ITEM_BY_ID[p[0]].rarity].id)}">${esc(ITEM_BY_ID[p[0]].name)}${p[1] > 1 ? ` ×${p[1]}` : ''}</b>` : 'no prize'}</li>`).join('') : '')
-      + `<li><b>${won.length ? `Won ${won.map(p => `${ITEM_BY_ID[p[0]].name}${p[1] > 1 ? ` ×${p[1]}` : ''}`).map(esc).join(', ')}` : 'No prize this time'}</b></li>`;
-    if (won.some(p => p[0] === 'goose')) {
-      toast('Jackpot: <b>Golden Goose</b>', 'transcendent');
-      if (effects() === 'full') burst(cssVar('--r-transcendent'), 200, 14);
-    } else if (won.length && speed !== 3) fanfare(Math.min(6, 2 + won.length));
+    const prizeText = p => `${ITEM_BY_ID[p[0]].name}${p[1] > 1 ? ` ×${p[1]}` : ''}${p.pity ? ' (pity)' : ''}`;
+    $('slotResult').innerHTML = (n > 1 ? results.map((p, k) => `<li>Spin ${k + 1}: ${p[0] ? `<b style="color:${tierVar(RARITIES[ITEM_BY_ID[p[0]].rarity].id)}">${esc(prizeText(p))}</b>` : 'no prize'}</li>`).join('') : '')
+      + `<li><b>${won.length ? `Won ${won.map(prizeText).map(esc).join(', ')}` : 'No prize this time'}</b></li>`;
+    const jackpot = won.filter(p => ITEM_BY_ID[p[0]].rarity >= 5).sort((a, b) => ITEM_BY_ID[b[0]].rarity - ITEM_BY_ID[a[0]].rarity)[0];
+    if (jackpot) {
+      toast(`Jackpot: <b>${esc(prizeText(jackpot))}</b>`, RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id);
+      if (effects() === 'full') burst(cssVar(`--r-${RARITIES[ITEM_BY_ID[jackpot[0]].rarity].id}`), 200, 14);
+      fanfare(8);
+    } else if (won.length) fanfare(Math.min(6, 2 + won.length));
     slotBusy = false;
     renderSlot();
     if (!$('tab-inventory').hidden) renderInventory();
   }
+  const pctText = units => `${+(100 * units / SLOT_UNITS).toPrecision(3)}%`;
   function renderSlot() {
-    $('coinCount').textContent = `${fmt(state.coins)} ${state.coins === 1 ? 'coin' : 'coins'}`;
+    const coins = `${fmt(state.coins)} ${state.coins === 1 ? 'coin' : 'coins'}`;
+    $('coinCount').textContent = coins;
+    $('coinsInHand').textContent = fmt(state.coins);
     document.querySelectorAll('[data-spin]').forEach(b => { b.disabled = slotBusy || state.coins < +b.dataset.spin; });
-    $('slotOdds').innerHTML = SLOT_PRIZES.map(([id, qty, units]) => `<tr><td>${id ? `<span style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)};font-weight:700">${esc(ITEM_BY_ID[id].name)}</span>${qty > 1 ? ` ×${qty}` : ''}` : 'No prize'}</td><td class="num">${+(units / 1000).toFixed(3)}%</td></tr>`).join('');
+    const seen = new Set();
+    $('slotOdds').innerHTML = SLOT_PRIZES.map(([id, qty, units]) => {
+      const name = id ? `<span style="color:${tierVar(RARITIES[ITEM_BY_ID[id].rarity].id)};font-weight:700">${esc(ITEM_BY_ID[id].name)}</span>${qty > 1 ? ` ×${qty}` : ''}` : 'No prize';
+      let pity = '';
+      if (id in SLOT_PITY && !seen.has(id)) {
+        seen.add(id);
+        const so = state.pity[id] || 0, cap = SLOT_PITY[id];
+        pity = `<span class="pity"><span class="pity-bar"><i style="width:${(100 * so / cap).toFixed(2)}%"></i></span><span class="num">${fmt(so)} / ${fmt(cap)}</span></span>`;
+      }
+      return `<tr><td>${name}</td><td class="num">${pctText(units)}</td><td class="num">1 in ${fmt(SLOT_UNITS / units)}</td><td>${pity}</td></tr>`;
+    }).join('');
   }
   $('slotButtons').addEventListener('click', ev => { const b = ev.target.closest('[data-spin]'); if (b) spinSlot(+b.dataset.spin); });
 
@@ -804,7 +849,7 @@
     let pick = null;
     for (let k = 0; k < L; k++) {
       const roll = G.randomParams(mode), n = G.randomRoll();
-      if (lens) { const alt = G.randomParams(mode).mult; if (MULT_BY_ID[alt].log > MULT_BY_ID[roll.mult].log) roll.mult = alt; }
+      for (let j = 1; j < lens; j++) { const alt = G.randomParams(mode).mult; if (MULT_BY_ID[alt].log > MULT_BY_ID[roll.mult].log) roll.mult = alt; }
       const rank = L > 1 ? G.score(n, dayKey(t), roll).rank : 0;
       if (!pick || rank > pick.rank) pick = { roll, n, rank };
     }
@@ -873,7 +918,11 @@
     if (roll.m) x.m = roll.m;
     if (roll.t !== undefined) x.tg = roll.t;
     if (L > 1) { x.b = L; state.effects.luck.left = Math.max(0, state.effects.luck.left - 1); }
-    if (lens) { x.lens = 1; state.effects.lens = Math.max(0, state.effects.lens - 1); }
+    if (lens > 1) {
+      x.lens = lens;
+      const which = lens === 10 ? 'prism' : 'lens';
+      state.effects[which] = Math.max(0, state.effects[which] - 1);
+    }
     const rec = record(x);
     if (!x.b && !x.lens) rollDrops(rec.tier.id); // boosted rolls never drop items, so boosts cannot feed themselves
     save();
@@ -932,7 +981,7 @@
       }
       await sleep(15);
       const now = performance.now();
-      const rate = overclockLeft() ? TURBO_RATE * 2 : TURBO_RATE;
+      const rate = TURBO_RATE * turboSpeedup();
       owed = Math.min(owed + ((now - last) / 1000) * rate, rate); // at most a second of catch-up
       // Small slices keep the page smooth; when the browser throttles timers (a hidden tab), ticks
       // come late, so take a bigger slice, still under the 50 ms that feels like lag.
@@ -1190,7 +1239,7 @@
       if (state.ach[a.id] || !a.test(rec)) continue;
       state.ach[a.id] = Date.now();
       toast(`Achievement: <b>${esc(a.name)}</b>`, 'rare');
-      grant(ACH_REWARD[a.id] || 'luck2', 'Achievement reward');
+      grant(ACH_REWARD[a.id] || 'luck10', 'Achievement reward');
     }
   }
 
@@ -1494,7 +1543,7 @@
   // Start
   if (state.lastGift !== dayKey()) { // one free charm a day, per save file
     state.lastGift = dayKey();
-    setTimeout(() => { grant('luck2', 'Daily gift'); save(); }, 600);
+    setTimeout(() => { grant('luck10', 'Daily gift'); save(); }, 600);
   }
   applySettings();
   paintSound();

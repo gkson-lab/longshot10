@@ -345,8 +345,16 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 .slot-buttons .roll { min-height: 44px; padding: 0 28px; font-size: 16px; }
 .slot-result { list-style: none; margin: 12px 0 0; padding: 0; text-align: center; font-size: 14px; }
 .slot-result li { padding: 2px 0; }
-.slot-odds { margin: 0 0 22px; }
-.slot-odds summary { cursor: pointer; color: var(--muted); min-height: 44px; display: flex; align-items: center; }
+.coins-panel { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; margin-bottom: 22px; }
+.coins-panel .muted { font-size: 13px; margin: 6px 0 10px; }
+.coins-in-hand { display: flex; align-items: baseline; gap: 8px; }
+.coins-in-hand .num { font-size: 34px; font-weight: 800; color: var(--accent); }
+.coins-in-hand span:last-child { color: var(--muted); }
+.luck.odds { margin-bottom: 0; font-size: 13px; }
+.luck.odds td:nth-child(2), .luck.odds td:nth-child(3), .luck.odds th:nth-child(2), .luck.odds th:nth-child(3) { white-space: nowrap; }
+.pity { display: flex; align-items: center; gap: 6px; justify-content: flex-end; white-space: nowrap; }
+.pity-bar { width: 48px; height: 6px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.pity-bar i { display: block; height: 100%; background: var(--ink); }
 .item-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .items li.none { opacity: 0.62; }
 .items li.none::before { background: var(--line); }
