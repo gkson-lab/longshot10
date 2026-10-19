@@ -1186,17 +1186,25 @@
     let PICKABLE = null;
     const pickable = () => PICKABLE || (PICKABLE = BADGES.filter(b => b.p < 1e-2 && (b.set || b.among || b.dfa)).sort((a, b) => a.ep - b.ep));
     const hardCache = {};
+    // P(a plain roll on a difficulty with no reel ranks at least `rank`).
+    function pHardBeat(rank, mode, diff) {
+      let p = 0;
+      for (const [e, pe, bonus] of mode === 'exp' ? E_TERMS : [[1, 1, 0]]) p += pe * tailX((rank * diff.root - bonus) / e, tables[mode]).p;
+      return p;
+    }
+    // The chance that one plain roll on a difficulty shows odds of q or rarer (1/N with N ≥ 1/q).
+    // On Standard that is q itself; the harder difficulties land there less often.
+    function reachChance(q, mode, diffId) {
+      const diff = DIFF_BY_ID[diffId];
+      if (q >= 1 || !diff || diff.mult) return Math.min(1, q);
+      return Math.min(1, pHardBeat(rankFor(q, mode), mode, diff));
+    }
     function hardRankFor(q, mode, diff) {
       const id = mode + diff.id, cache = hardCache[id] || (hardCache[id] = new Map());
       const key = Math.round(Math.log10(q) * 500);
       if (cache.has(key)) return cache.get(key);
       q = 10 ** (key / 500);
-      const Q = tables[mode];
-      const pHard = rank => {
-        let p = 0;
-        for (const [e, pe, bonus] of mode === 'exp' ? E_TERMS : [[1, 1, 0]]) p += pe * tailX((rank * diff.root - bonus) / e, Q).p;
-        return p;
-      };
+      const pHard = rank => pHardBeat(rank, mode, diff);
       let lo = -1, hi = 1;
       while (pHard(hi) > q && hi < 1e6) { lo = hi; hi *= 2; }
       for (let i = 0; i < 60 && hi - lo > 1e-9 * Math.max(1, Math.abs(hi)); i++) { const mid = (lo + hi) / 2; if (pHard(mid) > q) lo = mid; else hi = mid; }
@@ -1304,7 +1312,7 @@
       DIGITS, SPACE, E_MAX, M_LO, M_HI, MULT_UNITS, BADGES, POWER_BADGES, MOD_BADGES, TARGET_BADGES, RADAR_BADGES,
       MODES, MODE_BY_ID, DIFFICULTIES, DIFF_BY_ID, MULTIPLIERS, MULT_BY_ID, RARITIES, ROLL_TIERS, GRID,
       CATEGORIES: ['Size', 'Math', 'Sequences', 'Digits', 'Memes', 'Combos', 'Powers', 'Modulo', 'Target', 'Radar', 'Daily'],
-      datedBadges, evaluate, score, rollTier, percentile, luckyPick, hardPick, warmUp, tierShares, factorize, nearestPrimeDistance,
+      datedBadges, evaluate, score, rollTier, percentile, luckyPick, hardPick, reachChance, warmUp, tierShares, factorize, nearestPrimeDistance,
       randomRoll: () => randomBelow(SPACE), randomParams, sampleRoll, sampleLogs, tableFromSorted, pickMultiplier,
       randomExponent, pExp, computeCount, MODE_SEED,
     };

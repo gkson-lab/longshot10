@@ -736,22 +736,32 @@
   function rollDrops(oneInLog) {
     const fx = state.effects, boost = fx.drop && fx.drop.left > 0 ? fx.drop.D : 1;
     if (boost > 1) fx.drop.left--;
-    const D = boost * prestigeBonus(), n = 10 ** oneInLog;
+    const bag = {};
+    dropsInto(bag, 10 ** oneInLog, boost * prestigeBonus());
+    payDrops(bag);
+  }
+  // What one plain roll of 1 in n drops with drop boost D, added to `bag` ({ coins, [item]: count }).
+  function dropsInto(bag, n, D) {
     if (n >= COIN_FROM) { // a 1 in 3 chance of a coin for the slot machine, boosted like any other drop
       const c = COIN_CHANCE * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
-      if (k) {
-        state.coins += k;
-        questEvent('coin', k);
-        toast(`Coin found${k > 1 ? `: <b>×${fmt(k)}</b>` : ''}, ${fmt(state.coins)} in hand`, 'mythic');
-        if (!$('tab-inventory').hidden) renderSlot();
-      }
+      if (k) bag.coins = (bag.coins || 0) + k;
     }
     const row = [...DROPS].reverse().find(([from]) => n >= from);
     if (!row) return;
     for (const [id, chance] of row[1]) {
       const c = chance * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
-      if (k) grant(id, 'Item found', k);
+      if (k) bag[id] = (bag[id] || 0) + k;
     }
+  }
+  function payDrops(bag) {
+    const { coins: k, ...items } = bag;
+    if (k) {
+      state.coins += k;
+      questEvent('coin', k);
+      toast(`Coin found${k > 1 ? `: <b>×${fmt(k)}</b>` : ''}, ${fmt(state.coins)} in hand`, 'mythic');
+      if (!$('tab-inventory').hidden) renderSlot();
+    }
+    for (const [id, k] of Object.entries(items)) grant(id, 'Item found', k);
   }
   const luckActive = () => (state.effects.luck && state.effects.luck.left > 0 ? state.effects.luck.L : 1);
   const dropActive = () => (state.effects.drop && state.effects.drop.left > 0 ? state.effects.drop.D : 1);
@@ -1122,12 +1132,14 @@
     renderBoards(boardsChanged);
     paintStatus();
   }
-  async function rollOnce() {
+  // `instant`: the Roll button shows its result at once, with no reels spinning and no badges
+  // trickling in. Auto keeps the reels at its 1× and 2× speeds.
+  async function rollOnce(instant = false) {
     const roll = await takeRollAsync();
-    if (speed !== 3) $('result').hidden = true;
-    await spinTo(roll.x, consoleOn() ? 3 : speed); // the Console shows no reels, so nothing to wait for
+    if (!instant && speed !== 3) $('result').hidden = true;
+    await spinTo(roll.x, instant || consoleOn() ? 3 : speed); // the Console shows no reels, so nothing to wait for
     freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
-    drawRoll(roll, speed, !!freshEntry);
+    drawRoll(roll, instant ? Math.max(speed, 2) : speed, !!freshEntry);
     return { tier: roll.rec.tier, found: roll.found };
   }
 
@@ -1194,19 +1206,121 @@
     if (busy || !ready[state.mode]) return;
     busy = true;
     paintRollButton();
-    await rollOnce();
+    await rollOnce(true);
     busy = false;
     paintRollButton();
   }
   $('rollBtn').addEventListener('click', rollClicked);
 
-  // Batch roll: n rolls in one go, as fast as the page can take them, drawn once at the end with
-  // the best of the batch and a count per tier. It yields every 40 ms so the page stays responsive.
+  // Batch roll: n rolls at once, drawn with the best of the batch and a count per tier.
+  // The batch is counted, not played one roll at a time, so it takes a few milliseconds at any size.
+  // Its best roll is real: the best of m rolls with luck L is one roll with luck m × L, built at
+  // once like any lucky roll and recorded like any other. The other m - 1 rolls are drawn from the
+  // same odds, below the best, and land as if played: tiers, item drops, coins, lucky tokens, totals
+  // and quest progress. They do not collect badges or enter the roll log. A charm, lens or drop
+  // booster that runs out partway splits the batch, so each part rolls with what was active.
+  // While a hunt is on, a batch plays every roll instead, so the hunt can find its target.
+  // Bands of 1 in N a counted roll can land in: every tier edge, every drop row and the coin edge.
+  const BAND_FROM = [...new Set([...RARITIES.map(r => r.from), ...DROPS.map(d => d[0]), COIN_FROM])].sort((a, b) => a - b);
+  const BAND_TIER = BAND_FROM.map(N => RARITIES.filter(r => r.from <= N).pop().id);
+  const reachCache = {};
+  // For each band edge, the chance that one plain roll reaches it; `trash`: the chance of leaving Trash.
+  function reachLadder(mode) {
+    const d = state.difficulty || 'standard', key = mode + d;
+    return reachCache[key] || (reachCache[key] = {
+      trash: G.reachChance(0.99, mode, d),
+      edges: BAND_FROM.map(N => G.reachChance(1 / N, mode, d)),
+    });
+  }
+  // How m rolls with luck Leff, none beating band `top` (-1: none beating Trash), spread over the
+  // bands. A roll with luck misses an edge only if all Leff of its tries miss it: (1 - s)^Leff.
+  function spreadRolls(m, Leff, top, mode) {
+    const { trash, edges } = reachLadder(mode);
+    const miss = s => Math.exp(Leff * Math.log1p(-Math.min(s, 1)));
+    const w = [miss(trash)]; // index 0 is Trash, index j + 1 is band j
+    for (let j = 0; j <= top; j++) w.push((j + 1 < edges.length ? miss(edges[j + 1]) : 1) - (j ? miss(edges[j]) : miss(trash)));
+    const cum = [];
+    let total = 0;
+    for (const x of w) cum.push(total += Math.max(0, x));
+    const counts = new Array(w.length).fill(0);
+    if (!(total > 0)) { counts[w.length - 1] = m; return counts; }
+    for (let i = 0; i < m; i++) {
+      const u = Math.random() * total;
+      let k = 0;
+      while (k < cum.length - 1 && u >= cum[k]) k++;
+      counts[k]++;
+    }
+    return counts;
+  }
+  function heads(k) { // how many of k fair coin flips come up heads
+    const buf = new Uint32Array(Math.ceil(k / 32) || 1);
+    crypto.getRandomValues(buf);
+    let h = 0;
+    for (let i = 0; i < k; i++) h += (buf[i >> 5] >>> (i & 31)) & 1;
+    return h;
+  }
+  function countBatch(n) {
+    const tiers = {}, bag = {}, add = (id, k) => { tiers[id] = (tiers[id] || 0) + k; };
+    let best = null, changed = false, left = n;
+    while (left > 0) {
+      const fx = state.effects, mode = state.mode, t = Date.now();
+      const L = effLuck(), lens = effLens(), charmed = luckActive() > 1, plain = !charmed && lens === 1;
+      const lensKey = lens === 100 ? 'kaleido' : lens === 10 ? 'prism' : 'lens';
+      const boost = plain ? dropActive() : 1;
+      let m = left;
+      if (charmed) m = Math.min(m, fx.luck.left);
+      if (lens > 1) m = Math.min(m, fx[lensKey]);
+      if (boost > 1) m = Math.min(m, fx.drop.left);
+      left -= m;
+      // The part's best, built and played for real (it uses up one charm, lens and booster roll).
+      const roll = commitRoll(pickSync(mode, L * m, lens, t), mode, L, lens, t);
+      add(roll.rec.tier.id, 1);
+      if (roll.rec.madeSession || roll.rec.madeHof) { changed = true; freshEntry = roll.rec.entry; }
+      if (!best || roll.rec.entry.oneInLog > best.rec.entry.oneInLog) best = roll;
+      const r = m - 1;
+      if (!r) continue;
+      const N = 10 ** roll.rec.entry.oneInLog;
+      const top = roll.rec.tier.id === 'trash' ? -1 : BAND_FROM.filter(f => f <= N * (1 + 1e-9)).length - 1;
+      const counts = spreadRolls(r, hard() ? L : L * lens, top, mode);
+      state.total += r;
+      state.totals[mode] += r;
+      const day = dayKey(t);
+      state.daily[day] = (state.daily[day] || 0) + r;
+      session.rolls += r;
+      run.rolls += r;
+      if (L > 1 || lens > 1 || hard()) state.boosted += r;
+      if (charmed) fx.luck.left = Math.max(0, fx.luck.left - r);
+      if (lens > 1) fx[lensKey] = Math.max(0, fx[lensKey] - r);
+      if (boost > 1) fx.drop.left = Math.max(0, fx.drop.left - r);
+      const D = boost * prestigeBonus();
+      counts.forEach((c, k) => {
+        if (!c) return;
+        const id = k ? BAND_TIER[k - 1] : 'trash';
+        add(id, c);
+        if (!(L > 1 || lens > 1 || hard())) state.tiers[mode][id] = (state.tiers[mode][id] || 0) + c;
+        questEvent('tier', c, q => T(id) >= T(q.tier));
+        if (plain && k && BAND_FROM[k - 1] >= COIN_FROM) for (let i = 0; i < c; i++) dropsInto(bag, BAND_FROM[k - 1], D);
+      });
+      state.tokens = (state.tokens || 0) + heads(r) * TOKENS_PER[state.difficulty || 'standard'];
+      questEvent('roll', r);
+      questEvent('mode', r, q => q.mode === mode);
+    }
+    payDrops(bag);
+    checkAchievements();
+    save();
+    return { tiers, best, changed };
+  }
   // Gives the page a turn without a timer: browsers slow timers in background tabs to one a second,
-  // but not messages, so a batch keeps its pace when you switch tabs.
+  // but not messages.
   const yieldNow = () => new Promise(resolve => { const c = new MessageChannel(); c.port1.onmessage = () => resolve(); c.port2.postMessage(0); });
-  // Rolls n in a row (stopping early if `keepGoing` turns false), then draws the best of them.
+  // n rolls, then draws the best of them: counted at once, or played one by one during a hunt
+  // (stopping early if `keepGoing` turns false).
   async function runBatch(n, keepGoing = () => true) {
+    if (!hunt) {
+      const start = performance.now(), { tiers, best, changed } = countBatch(n);
+      if (best) drawRoll(best, 3, changed);
+      return { n, secs: (performance.now() - start) / 1000, tiers, best };
+    }
     batching = { n, done: 0 };
     paintBatch();
     const start = performance.now(), tiers = {};
@@ -1226,7 +1340,7 @@
     const done = batching.done, secs = (performance.now() - start) / 1000;
     batching = null;
     if (best) drawRoll(best, 3, changed);
-    return { n: done, secs, tiers, best };
+    return { n: done, secs, tiers, best, played: true };
   }
   const tierList = tiers => ROLL_TIERS.filter(t => tiers[t.id]).reverse()
     .map(t => `<b style="color:${tierVar(t.id)}">${t.name}</b> ${fmt(tiers[t.id])}`).join(', ');
@@ -1237,28 +1351,36 @@
     const r = await runBatch(n);
     busy = false;
     $('batchResult').hidden = false;
-    $('batchResult').innerHTML = `${fmt(r.n)} rolls in ${r.secs.toFixed(1)} s (about ${fmt(r.n / r.secs)} a second). Best shown above. ${tierList(r.tiers)}`;
+    $('batchResult').innerHTML = (r.played ? `${fmt(r.n)} rolls in ${r.secs.toFixed(1)} s, played one by one for the hunt.` : `${fmt(r.n)} rolls.`)
+      + ` Best shown above. ${tierList(r.tiers)}`;
     paintRollButton();
     paintBatch();
   }
-  // Endless in batches: each batch rolls flat out, then its stats and the run's totals show and the
-  // next batch starts. Stop ends it at once.
+  // Endless in batches: one batch a second, each shown with its stats and the run's totals. A
+  // background tab whose timers were slowed rolls the batches it missed when it wakes, up to a
+  // minute's worth. Stop ends it at once.
+  const BATCH_EVERY = 1000; // ms
   async function batchLoop() {
-    const run = { batches: 0, n: 0, secs: 0, tiers: {}, best: null };
+    const tot = { batches: 0, n: 0, tiers: {}, best: null, start: performance.now() };
+    let next = performance.now();
     while (auto === 'endless' && ready[state.mode]) {
       const size = +state.settings.batch || 0;
       if (!size) return;
       const r = await runBatch(size, () => auto === 'endless');
-      run.batches++;
-      run.n += r.n;
-      run.secs += r.secs;
-      for (const [k, v] of Object.entries(r.tiers)) run.tiers[k] = (run.tiers[k] || 0) + v;
-      if (r.best && (!run.best || r.best.rec.entry.oneInLog > run.best.oneInLog)) run.best = r.best.rec.entry;
+      tot.batches++;
+      tot.n += r.n;
+      for (const [k, v] of Object.entries(r.tiers)) tot.tiers[k] = (tot.tiers[k] || 0) + v;
+      if (r.best && (!tot.best || r.best.rec.entry.oneInLog > tot.best.oneInLog)) tot.best = r.best.rec.entry;
       const bestText = e => (e ? `<b style="color:${tierVar(e.tier)}">${ROLL_TIERS[T(e.tier)].name}</b> ${esc(oneText(e))}` : 'none');
+      const secs = Math.max((performance.now() - tot.start) / 1000, 1);
       $('batchResult').hidden = false;
-      $('batchResult').innerHTML = `<b>Batch ${fmt(run.batches)}:</b> ${fmt(r.n)} rolls in ${r.secs.toFixed(1)} s, best ${bestText(r.best && r.best.rec.entry)}. ${tierList(r.tiers)}`
-        + `<br><b>This run:</b> ${fmt(run.n)} rolls, about ${fmt(run.n / Math.max(run.secs, 1e-3))} a second, best ${bestText(run.best)}. ${tierList(run.tiers)}`;
+      $('batchResult').innerHTML = `<b>Batch ${fmt(tot.batches)}:</b> ${fmt(r.n)} rolls${r.played ? ` in ${r.secs.toFixed(1)} s` : ''}, best ${bestText(r.best && r.best.rec.entry)}. ${tierList(r.tiers)}`
+        + `<br><b>This run:</b> ${fmt(tot.n)} rolls, about ${fmt(tot.n / secs)} a second, best ${bestText(tot.best)}. ${tierList(tot.tiers)}`;
       paintStatus();
+      next += BATCH_EVERY;
+      if (next - performance.now() < -60000) next = performance.now();
+      await yieldNow();
+      while (auto === 'endless' && performance.now() < next) await sleep(Math.min(100, next - performance.now())); // short naps, so Stop lands at once
     }
   }
   function paintBatch() {

@@ -4,7 +4,7 @@ Long Shot 10 is a luck game about one ten-digit number. Press Roll and you get a
 
 ## A roll, step by step
 
-1. **The number.** Ten reels spin and land on your number. Leading zeros are dimmed, so 0000004096 reads as 4,096.
+1. **The number.** Ten reels show your number (Auto spins them at 1× and 2×; the Roll button shows it at once). Leading zeros are dimmed, so 0000004096 reads as 4,096.
 2. **Badges.** The number is checked against 308 badges (plus 41 that belong to one mode and 5 that change with the date): primes, palindromes, runs of the same digit, famous sequences like Fibonacci, meme numbers like 69 and 420, and combos like a palindrome that is also prime. Every badge's chance is an exact count of the numbers that earn it.
 3. **EP.** Each badge is worth EP equal to its odds: a badge that 1 number in 143 earns is worth 143 EP. Your badges add up. Some badges sit in a group (a power of two is also a perfect power), and then only the rarest one in the group counts, so nothing is counted twice. A roll with no badges at all still counts as 1 EP.
 4. **The multiplier.** A second reel lands on ×1 most of the time, or on one of 100 math constants from ×∛2 up to ×⁵2. Rarer multipliers are bigger. Your score is your EP times the multiplier.
@@ -45,11 +45,11 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 
 ## Rolling a lot
 
-- **Roll** (or Space) rolls once.
+- **Roll** (or Space) rolls once and shows the result at once.
 - **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up.
 - **Endless** (or E) never stops on its own.
-- **Batch ×100, ×1,000, ×5,000** does that many rolls in one go, as fast as the page can, then shows the best roll and how many landed in each tier. It is quicker than Turbo because nothing is drawn until the end.
-- **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll in batches like that, one after another: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons, then the next batch starts. Stop ends it at once. It keeps its pace when you switch tabs.
+- **Batch ×100, ×1,000, ×5,000** does that many rolls at once and shows the best roll and how many landed in each tier. The batch is counted rather than played roll by roll, so it takes a few milliseconds at any size. Its best roll is a real roll, recorded like any other (the best of 5,000 rolls with luck ×L is one roll with luck ×5,000L). The other rolls are drawn from the same odds and count fully toward tiers, item drops, coins, lucky tokens, totals and quests, but they do not collect badges or enter the roll log. A charm, lens or drop booster that runs out partway through still covers exactly the rolls it has left. During a hunt a batch plays every roll, so the hunt can find its target.
+- **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll one batch like that every second: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons. Stop ends it at once. A background tab catches up on the batches it missed, up to a minute's worth.
 - **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
 - Your best rolls of the session and of all time stay beside the reels.
 
