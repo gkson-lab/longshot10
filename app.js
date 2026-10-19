@@ -1202,15 +1202,16 @@
 
   // Batch roll: n rolls in one go, as fast as the page can take them, drawn once at the end with
   // the best of the batch and a count per tier. It yields every 40 ms so the page stays responsive.
-  async function batchRoll(n) {
-    if (auto || busy || batching || !ready[state.mode]) return;
-    busy = true;
+  // Gives the page a turn without a timer: browsers slow timers in background tabs to one a second,
+  // but not messages, so a batch keeps its pace when you switch tabs.
+  const yieldNow = () => new Promise(resolve => { const c = new MessageChannel(); c.port1.onmessage = () => resolve(); c.port2.postMessage(0); });
+  // Rolls n in a row (stopping early if `keepGoing` turns false), then draws the best of them.
+  async function runBatch(n, keepGoing = () => true) {
     batching = { n, done: 0 };
-    paintRollButton();
     paintBatch();
     const start = performance.now(), tiers = {};
     let best = null, changed = false;
-    while (batching.done < n) {
+    while (batching.done < n && keepGoing()) {
       const slice = performance.now();
       while (batching.done < n && performance.now() - slice < 40) {
         const roll = takeRoll();
@@ -1220,18 +1221,45 @@
         if (!best || roll.rec.entry.oneInLog > best.rec.entry.oneInLog) best = roll;
       }
       paintBatch();
-      await sleep(0);
+      await yieldNow();
     }
-    const secs = (performance.now() - start) / 1000;
+    const done = batching.done, secs = (performance.now() - start) / 1000;
     batching = null;
+    if (best) drawRoll(best, 3, changed);
+    return { n: done, secs, tiers, best };
+  }
+  const tierList = tiers => ROLL_TIERS.filter(t => tiers[t.id]).reverse()
+    .map(t => `<b style="color:${tierVar(t.id)}">${t.name}</b> ${fmt(tiers[t.id])}`).join(', ');
+  async function batchRoll(n) {
+    if (auto || busy || batching || !ready[state.mode]) return;
+    busy = true;
+    paintRollButton();
+    const r = await runBatch(n);
     busy = false;
-    drawRoll(best, 3, changed);
-    const list = ROLL_TIERS.filter(t => tiers[t.id]).reverse()
-      .map(t => `<b style="color:${tierVar(t.id)}">${t.name}</b> ${fmt(tiers[t.id])}`).join(', ');
     $('batchResult').hidden = false;
-    $('batchResult').innerHTML = `${fmt(n)} rolls in ${secs.toFixed(1)} s (about ${fmt(n / secs)} a second). Best shown above. ${list}`;
+    $('batchResult').innerHTML = `${fmt(r.n)} rolls in ${r.secs.toFixed(1)} s (about ${fmt(r.n / r.secs)} a second). Best shown above. ${tierList(r.tiers)}`;
     paintRollButton();
     paintBatch();
+  }
+  // Endless in batches: each batch rolls flat out, then its stats and the run's totals show and the
+  // next batch starts. Stop ends it at once.
+  async function batchLoop() {
+    const run = { batches: 0, n: 0, secs: 0, tiers: {}, best: null };
+    while (auto === 'endless' && ready[state.mode]) {
+      const size = +state.settings.batch || 0;
+      if (!size) return;
+      const r = await runBatch(size, () => auto === 'endless');
+      run.batches++;
+      run.n += r.n;
+      run.secs += r.secs;
+      for (const [k, v] of Object.entries(r.tiers)) run.tiers[k] = (run.tiers[k] || 0) + v;
+      if (r.best && (!run.best || r.best.rec.entry.oneInLog > run.best.oneInLog)) run.best = r.best.rec.entry;
+      const bestText = e => (e ? `<b style="color:${tierVar(e.tier)}">${ROLL_TIERS[T(e.tier)].name}</b> ${esc(oneText(e))}` : 'none');
+      $('batchResult').hidden = false;
+      $('batchResult').innerHTML = `<b>Batch ${fmt(run.batches)}:</b> ${fmt(r.n)} rolls in ${r.secs.toFixed(1)} s, best ${bestText(r.best && r.best.rec.entry)}. ${tierList(r.tiers)}`
+        + `<br><b>This run:</b> ${fmt(run.n)} rolls, about ${fmt(run.n / Math.max(run.secs, 1e-3))} a second, best ${bestText(run.best)}. ${tierList(run.tiers)}`;
+      paintStatus();
+    }
   }
   function paintBatch() {
     for (const b of document.querySelectorAll('[data-batch]')) b.disabled = !!(auto || busy || batching || !ready[state.mode]);
@@ -1254,6 +1282,7 @@
     while (auto) {
       if (!ready[state.mode]) { await warm(state.mode); continue; }
       const kind = auto;
+      if (kind === 'endless' && +state.settings.batch > 0) { await batchLoop(); continue; }
       if (speed === 3) { await turboLoop(kind); continue; }
       const { tier, found } = await rollOnce();
       if (kind === 'auto' && auto === 'auto' && (found || T(tier.id) >= +$('stopAt').value)) { setAuto(null); break; }
@@ -1280,6 +1309,8 @@
   $('stopAt').value = String(T('legendary'));
   $('turboRate').value = String(turboRate());
   $('turboRate').addEventListener('change', () => { state.settings.turboRate = +$('turboRate').value; save(); });
+  $('batchSize').value = String(+state.settings.batch || 0);
+  $('batchSize').addEventListener('change', () => { state.settings.batch = +$('batchSize').value; save(); });
 
   function paintRollButton() {
     const btn = $('rollBtn');

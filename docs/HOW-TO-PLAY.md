@@ -49,6 +49,7 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 - **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up.
 - **Endless** (or E) never stops on its own.
 - **Batch ×100, ×1,000, ×5,000** does that many rolls in one go, as fast as the page can, then shows the best roll and how many landed in each tier. It is quicker than Turbo because nothing is drawn until the end.
+- **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll in batches like that, one after another: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons, then the next batch starts. Stop ends it at once. It keeps its pace when you switch tabs.
 - **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
 - Your best rolls of the session and of all time stay beside the reels.
 

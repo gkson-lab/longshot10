@@ -83,7 +83,7 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
-- Batch roll: ×100, ×1,000 or ×5,000 rolls in one go, drawn once at the end with the best roll and a count per tier (5,000 lucky rolls take about two seconds).
+- Batch roll: ×100, ×1,000 or ×5,000 rolls in one go, drawn once at the end with the best roll and a count per tier. Endless can run in batches of 1,000, 5,000 or 10,000 (Auto settings), showing each batch's stats and the run's totals between batches: about 3,100 rolls a second with ×28 luck, and it keeps its pace in a background tab.
 - v3.31: luck charms work in full on every difficulty (no more ×100,000 cap off Standard) and every lucky roll is built in about a millisecond, so Turbo keeps going with luck on (about 1,000 rolls a second with ×28 on Standard, about 350 on Hardcore, up from a few). The status line says when luck is what slows Turbo down.
 - v3.3: six rarity tiers past Unfathomable, up to Beyond at 1/10¹⁰⁰; Charms of a Hundred Million, a Billion and Ten Billion; Platinum Goose (drops ×10,000) and Cosmic Goose (×100,000); Kaleidoscope Lens (100 multiplier spins); Overclock III (Turbo ×8). Lenses and Overclocks now fuse upwards too. The new items drop from 1/10¹⁰ rolls and rarer, and four of them are slot prizes; a Charm of a Hundred Million has a 30,000,000-spin pity. 108 achievements.
 - v3.26: luck charms and permanent luck work on every difficulty. Off Standard every roll of the best-of is played for real, so luck counts as at most ×100,000 there; lenses do nothing without the multiplier reel.
