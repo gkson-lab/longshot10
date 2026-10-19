@@ -155,6 +155,13 @@
               <button class="btn" id="endlessBtn" type="button" aria-pressed="false">Endless</button>
               <button class="btn" id="optsBtn" type="button" aria-expanded="false" aria-controls="opts">Auto settings</button>
             </div>
+            <div class="batch-row" id="batchRow" role="group" aria-label="Batch roll">
+              <span class="muted">Batch</span>
+              <button class="btn" type="button" data-batch="100">×100</button>
+              <button class="btn" type="button" data-batch="1000">×1,000</button>
+              <button class="btn" type="button" data-batch="5000">×5,000</button>
+            </div>
+            <p class="batch-result muted" id="batchResult" role="status" hidden></p>
             <div class="opts" id="opts" hidden>
               <div class="seg" id="speed" role="group" aria-label="Speed">
                 <button type="button" data-speed="1" aria-pressed="true">1×</button>

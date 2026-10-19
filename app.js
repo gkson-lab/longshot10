@@ -613,6 +613,7 @@
   }
 
   // Rolling
+  let batching = null; // a batch roll in progress: { n, done }
   let speed = 1, auto = null, busy = false, hunt = '', huntRolls = 0;
   const run = { start: 0, rolls: 0 }; // the current Auto or Endless run, for its rolls-a-second figure
   const huntName = id => (id.startsWith('x:') ? `× ${MULT_BY_ID[id.slice(2)].symbol} ${MULT_BY_ID[id.slice(2)].name}` : findBadge(id).name);
@@ -1198,6 +1199,45 @@
     paintRollButton();
   }
   $('rollBtn').addEventListener('click', rollClicked);
+
+  // Batch roll: n rolls in one go, as fast as the page can take them, drawn once at the end with
+  // the best of the batch and a count per tier. It yields every 40 ms so the page stays responsive.
+  async function batchRoll(n) {
+    if (auto || busy || batching || !ready[state.mode]) return;
+    busy = true;
+    batching = { n, done: 0 };
+    paintRollButton();
+    paintBatch();
+    const start = performance.now(), tiers = {};
+    let best = null, changed = false;
+    while (batching.done < n) {
+      const slice = performance.now();
+      while (batching.done < n && performance.now() - slice < 40) {
+        const roll = takeRoll();
+        batching.done++;
+        tiers[roll.rec.tier.id] = (tiers[roll.rec.tier.id] || 0) + 1;
+        if (roll.rec.madeSession || roll.rec.madeHof) { changed = true; freshEntry = roll.rec.entry; }
+        if (!best || roll.rec.entry.oneInLog > best.rec.entry.oneInLog) best = roll;
+      }
+      paintBatch();
+      await sleep(0);
+    }
+    const secs = (performance.now() - start) / 1000;
+    batching = null;
+    busy = false;
+    drawRoll(best, 3, changed);
+    const list = ROLL_TIERS.filter(t => tiers[t.id]).reverse()
+      .map(t => `<b style="color:${tierVar(t.id)}">${t.name}</b> ${fmt(tiers[t.id])}`).join(', ');
+    $('batchResult').hidden = false;
+    $('batchResult').innerHTML = `${fmt(n)} rolls in ${secs.toFixed(1)} s (about ${fmt(n / secs)} a second). Best shown above. ${list}`;
+    paintRollButton();
+    paintBatch();
+  }
+  function paintBatch() {
+    for (const b of document.querySelectorAll('[data-batch]')) b.disabled = !!(auto || busy || batching || !ready[state.mode]);
+    if (batching) { $('batchResult').hidden = false; $('batchResult').textContent = `Rolling ${fmt(batching.done)} of ${fmt(batching.n)}…`; }
+  }
+  $('batchRow').addEventListener('click', ev => { const b = ev.target.closest('[data-batch]'); if (b) batchRoll(+b.dataset.batch); });
   function setAuto(kind) {
     if (kind !== auto) { run.start = performance.now(); run.rolls = 0; }
     auto = kind;
@@ -1243,6 +1283,7 @@
 
   function paintRollButton() {
     const btn = $('rollBtn');
+    paintBatch();
     if (auto) { btn.textContent = 'Stop'; btn.disabled = false; return; }
     btn.textContent = ready[state.mode] ? 'Roll' : 'Loading odds…';
     btn.disabled = !ready[state.mode] || busy;
