@@ -379,6 +379,39 @@ const STEPS = [
     if (now !== rolls) throw new Error(`restored ${now} rolls, the backup had ${rolls}`);
     await click('[data-tab="roll"]');
   }],
+  // v4.4
+  ['sound settings, rolling while away, and the Hourglass', async ({ page, click }) => {
+    await click('#settingsBtn');
+    await page.fill('#volume', '40');
+    await page.dispatchEvent('#volume', 'input');
+    if (!/40%/.test(await page.textContent('#volumeOut'))) throw new Error('volume did not change');
+    await page.selectOption('#soundSet', 'chip');
+    await click('#soundTest');
+    await page.selectOption('#soundSet', 'classic');
+    await page.keyboard.press('Escape');
+    await page.reload();
+    await page.waitForFunction(() => document.getElementById('rollBtn').textContent === 'Roll', null, { timeout: 60000 });
+    await page.waitForTimeout(1500); // the page's own save lands first
+    const before = await page.evaluate(() => {
+      const ix = JSON.parse(localStorage.getItem('rngdle10:slots')), key = !ix || ix.active === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + ix.active;
+      const s = JSON.parse(localStorage.getItem(key));
+      s.seenAt = Date.now() - 2 * 3600e3;
+      localStorage.setItem(key, JSON.stringify(s));
+      return s.total;
+    });
+    await page.reload();
+    await page.waitForFunction(() => /Welcome back/.test(document.getElementById('batchResult').textContent), null, { timeout: 60000 });
+    if (!/7,200 rolls/.test(await page.textContent('#batchResult'))) throw new Error(`away said "${(await page.textContent('#batchResult')).slice(0, 120)}"`);
+    await click('[data-tab="inventory"]');
+    if (!(await page.isVisible('#shopList'))) await click('#shopFold summary');
+    await click('[data-buy="hourglass"]');
+    await click('[data-use="hourglass"]');
+    if (!/rolled 3,600 rolls/.test(await page.textContent('#invMsg'))) throw new Error(`the Hourglass said "${await page.textContent('#invMsg')}"`);
+    await click('[data-tab="log"]');
+    const after = +(await page.textContent('#stats .stat .v')).replace(/,/g, '');
+    if (after < before + 7200 + 3600) throw new Error(`rolls went from ${before} to ${after}`);
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };

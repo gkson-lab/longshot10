@@ -920,3 +920,21 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
   --accent: #9d1c1c; --accent-ink: #ffffff; --focus: #161616;
 }
 [data-swatch="news"] { background: linear-gradient(135deg, #f2f1ec 55%, #9d1c1c 55%); }
+
+/* v4.4 */
+.sound-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.sound-row input[type="range"] { width: 140px; min-height: 44px; accent-color: var(--accent); }
+/* Abacus: dark polished wood with a bead-red Roll button, for coming back to rolls made while away. */
+:root[data-theme="abacus"] {
+  --bg: #17100a; --surface: #1f160e; --surface-2: #261b11; --line: #4a3622;
+  --ink: #f6ebdc; --muted: #d6c2a8; --faint: #bca78c; --cell: #0d0805; --cell-ink: #f3e1c4; --cell-lead: #7d6248;
+  --accent: #e05a3a; --accent-ink: #1c0802; --focus: #f3a58f;
+}
+/* Royal: deep navy and gold, for the third prestige. */
+:root[data-theme="royal"] {
+  --bg: #070b1c; --surface: #0c1228; --surface-2: #111833; --line: #26315c;
+  --ink: #eef1ff; --muted: #b9c0e0; --faint: #9da6cb; --cell: #04060f; --cell-ink: #f5d77a; --cell-lead: #5c6690;
+  --accent: #e6c35c; --accent-ink: #140f00; --focus: #f5d77a;
+}
+[data-swatch="abacus"] { background: linear-gradient(135deg, #17100a 55%, #e05a3a 55%); }
+[data-swatch="royal"] { background: linear-gradient(135deg, #070b1c 55%, #e6c35c 55%); }

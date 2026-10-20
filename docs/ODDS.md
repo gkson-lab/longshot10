@@ -613,11 +613,11 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 1.01% | 1 in 10.0 | 1 in 101 | 1 in 1,028 | 1 in 9,302 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.49% | 1 in 16 | 1 in 338 | 1 in 2,721 | 1 in 66,667 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.44% | 1 in 746 | 1 in 57,143 | 0 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.2% | 1 in 30,769 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
-| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1.04% | 1 in 10.0 | 1 in 101 | 1 in 993 | 1 in 10,000 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.52% | 1 in 16 | 1 in 342 | 1 in 3,030 | 1 in 80,000 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.42% | 1 in 714 | 1 in 30,769 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 44,444 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.3% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels
 
@@ -649,7 +649,7 @@ Rolls made with a luck charm or a lens never drop items or coins; permanent luck
 | 1/10,000 | Charm of Ten 30%, Multiplier Lens 15%, Overclock 5%, Horn of Plenty 3%, Coin Magnet 2% |
 | 1/100,000 | Charm of Ten 40%, Charm of a Hundred 25%, Overclock 20%, Horn of Plenty 10%, Token Charm 5% |
 | 1/1,000,000 | Charm of a Hundred 50%, Charm of a Thousand 10%, Overclock 40%, Horn of Plenty 20%, Prism Lens 5%, Coin Magnet 10%, Token Charm 10% |
-| 1/10,000,000 | Charm of a Thousand 30%, Golden Goose 10%, Prism Lens 20% |
+| 1/10,000,000 | Charm of a Thousand 30%, Golden Goose 10%, Prism Lens 20%, Hourglass 5% |
 | 1/100,000,000 | Charm of Ten Thousand 20%, Golden Goose 30%, Overclock II 20% |
 | 1/1,000,000,000 | Charm of a Hundred Thousand 15%, Charm of a Million 3%, Diamond Goose 10%, Overclock II 30% |
 | 1/10,000,000,000 | Charm of a Million 20%, Charm of Ten Million 5%, Platinum Goose 5%, Kaleidoscope Lens 20%, Overclock III 30% |
@@ -723,6 +723,7 @@ Up to 100,000 spins at once are played one by one. Bigger batches are counted in
 | Overclock III | Turbo rolls eight times as fast for 3 minutes. |  |
 | Coin Magnet | Coins drop 5 times as often for 500 plain rolls. |  |
 | Token Charm | Three times the lucky tokens for 500 rolls. |  |
+| Hourglass | Rolls an hour of away rolls at once, at your away rate, without using any charm or booster. |  |
 | Streak Freeze | Covers one missed day of your daily streak, on its own. |  |
 | Quest Ticket | Rerolls a daily quest once the free reroll of the day is used. |  |
 
@@ -738,6 +739,7 @@ Lasting upgrades bought with lucky tokens. They stay through prestige, like luck
 | Item sense | Items drop 10% more often per level. At the top: ×3 item drops. | 20 | 150 | 89,645 | 313,391 |
 | Token sense | 10% more lucky tokens per level. At the top: ×3 tokens. | 20 | 100 | 59,764 | 208,930 |
 | Quest sense | Daily quests pay 25% more coins per level. At the top: ×3 quest coins. | 8 | 300 | 18,367 | 40,953 |
+| Night shift | Rolling while away goes one roll a second faster per level. At the top: ×10 away rolls. | 9 | 400 | 27,904 | 67,197 |
 
 ## Coin shop
 
@@ -751,6 +753,7 @@ Fixed prices in coins. Each item costs more coins here than the slot needs on av
 | Horn of Plenty | 12 |
 | Quest Ticket | 20 |
 | Streak Freeze | 60 |
+| Hourglass | 150 |
 | Coin Magnet | 25 |
 | Token Charm | 25 |
 | Prism Lens | 30 |

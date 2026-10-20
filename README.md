@@ -31,7 +31,7 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A luck table comparing your tiers with how often each tier really comes up, a rating of how lucky you have been, an odds calculator, records and milestones
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Thirty-five skins (see below), an effects setting, and offline install from the hosted copy
+- Thirty-seven skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three, and a free reroll a day; three weekly quests with bigger rewards
 - A daily streak with rewards and Streak Freezes, a lucky hour each day, and double coins at weekends
 - A token workshop of lasting upgrades, a coin shop, and quick-use buttons for pinned items
@@ -40,6 +40,8 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A weekly bingo card of badges and a bounty board that changes every six hours
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
+- Rolling while away: the time the game was closed is rolled when you come back, up to eight hours
+- Sound settings (volume and three sound sets) and vibration on rare rolls
 - A profile with titles from your achievements, saved as an image card
 - Up to ten save files in the browser, each with its own progress and its newest three automatic backups; export one to move or share it, and importing always adds a new save file instead of replacing yours
 - Keys for everything: Space rolls, A toggles Auto, E toggles Endless, ? lists the rest
@@ -93,6 +95,7 @@ npm run smoke   # play the game in Chromium (Playwright) at phone and desktop wi
 
 Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
 
+- v4.4 (2026-10-20 04:03 UTC): Rolling while away (the time the game was closed is rolled on your return, one roll a second up to eight hours, using no charm or booster); Night shift in the workshop (up to ten away rolls a second); the Hourglass item (an hour of away rolls at once); volume and three sound sets; vibration on rare rolls; Abacus (reward for Night shift) and Royal (reward for prestige 3) skins; three achievements.
 - v4.2 (2026-10-20 03:59 UTC): Receipt, a full-screen secret skin that prints every roll on a till roll; a profile with titles from your achievements, saved as an image card; automatic backups of each save (every 30 minutes and before a prestige or restore, newest three kept) with Restore; PROFILE and RECEIPT commands; Newsprint skin (reward for Front page); three achievements.
 - v4.0 (2026-10-20 03:55 UTC): Major update: an Arcade tab with four games that each show their exact chances and payback: higher or lower (95% of the fair price for an exact chance), digit pick (payback 90.8%), a free daily wheel with segments sized by their chances, and scratch cards for lucky tokens; HL, DIGIT, WHEEL and SCRATCH commands; Casino and Marquee skins; eight achievements.
 - v3.9 (2026-10-20 03:47 UTC): Spreadsheet, a full-screen secret skin driven by formulas (=ROLL(100), any command, SUM, AVERAGE, MIN, MAX) with sheet tabs for stats, luck, items, quests, best rolls and records; a run summary when Auto or Endless stops; five orders for the Collection; badge mastery (four levels per badge); Olive, a skin bought for 2,000 coins; three achievements.

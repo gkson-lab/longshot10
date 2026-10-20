@@ -133,6 +133,7 @@
     clearTimeout(saveTimer);
     saveTimer = 0;
     if (restoring) return; // a restored backup is in storage; this state must not overwrite it
+    state.seenAt = Date.now(); // for rolling while away
     if (state.total && Date.now() - (state.backupAt || 0) > BACKUP_EVERY) backupNow('auto');
     try { localStorage.setItem(KEY, JSON.stringify(state)); storageOk = true; } catch { storageOk = false; }
     $('storageNotice').hidden = storageOk;
@@ -162,6 +163,7 @@
   }
 
   const state = load();
+  const seenBefore = state.seenAt; // when this save was last open, for rolling while away
   const session = { rolls: 0, best: perMode(() => []), start: Date.now() };
   // Records that only grow: the busiest session and day. Called after every roll and every batch.
   function noteRecords() {
@@ -211,14 +213,19 @@
 
   // Sound
   let audio = null;
+  // Sound sets change every tone's waveform, pitch and loudness: Soft is sine waves an octave down,
+  // Chiptune square waves an octave up. Volume scales them all.
+  const SOUND_SETS = { classic: {}, soft: { type: 'sine', pitch: 0.5, gain: 0.8 }, chip: { type: 'square', pitch: 2, gain: 0.45 } };
   function tone(freq, dur, { type = 'triangle', gain = 0.05, when = 0 } = {}) {
     if (!state.settings.sound) return;
+    const set = SOUND_SETS[state.settings.soundSet] || SOUND_SETS.classic, vol = (state.settings.volume ?? 100) / 100;
+    if (vol <= 0) return;
     try {
       audio = audio || new AudioContext();
       const t0 = audio.currentTime + when, o = audio.createOscillator(), g = audio.createGain();
-      o.type = type;
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(gain, t0);
+      o.type = set.type || type;
+      o.frequency.value = freq * (set.pitch || 1);
+      g.gain.setValueAtTime(gain * (set.gain || 1) * vol, t0);
       g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
       o.connect(g).connect(audio.destination);
       o.start(t0);
@@ -238,6 +245,20 @@
       : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4V5z"/><path d="m22 9-6 6M16 9l6 6"/></svg>';
   }
   $('soundBtn').addEventListener('click', () => { state.settings.sound = !state.settings.sound; paintSound(); save(); });
+  function paintSoundSettings() {
+    $('volume').value = String(state.settings.volume ?? 100);
+    $('volumeOut').textContent = `${state.settings.volume ?? 100}%`;
+    $('soundSet').value = state.settings.soundSet || 'classic';
+    $('hapticsBox').checked = !!state.settings.haptics;
+    $('awayBox').checked = state.settings.away !== false;
+    $('soundTest').disabled = !state.settings.sound;
+    $('soundTest').textContent = state.settings.sound ? 'Play a fanfare' : 'Sound is off (top right)';
+  }
+  $('volume').addEventListener('input', () => { state.settings.volume = +$('volume').value; paintSoundSettings(); save(); });
+  $('soundSet').addEventListener('change', () => { state.settings.soundSet = $('soundSet').value; save(); fanfare(4); });
+  $('soundTest').addEventListener('click', () => fanfare(6));
+  $('hapticsBox').addEventListener('change', () => { state.settings.haptics = $('hapticsBox').checked; save(); if (state.settings.haptics && navigator.vibrate) navigator.vibrate(80); });
+  $('awayBox').addEventListener('change', () => { state.settings.away = $('awayBox').checked; save(); });
   const effects = () => (systemReduced.matches ? 'off' : state.settings.effects);
 
   // Reels: ten digits, the exponent, and the multiplier window.
@@ -362,6 +383,10 @@
     // the flash from 1/50,000 (Divine), and in Turbo only from 1/1,000,000 (Transcendent).
     for (const r of reels.concat($('expReel'))) { r.style.setProperty('--tc', tierVar(tierId)); r.classList.toggle('hit', i >= T('divine') && !r.classList.contains('lead')); }
     if (speed !== 3) fanfare(Math.max(1, i - 2));
+    // Haptics: a pulse for Legendary, one more for each tier past it, up to six.
+    if (state.settings.haptics && speed !== 3 && i >= T('legendary') && effects() !== 'off' && navigator.vibrate) {
+      navigator.vibrate(Array.from({ length: Math.min(6, i - T('legendary') + 1) * 2 - 1 }, (_, k) => (k % 2 ? 60 : 80)));
+    }
     if (effects() !== 'full' || (speed === 3 && i < T('transcendent'))) return;
     if (i >= T('epic')) burst(color, Math.min(400, 20 * 2 ** (i - T('epic'))), 6 + i - T('epic'));
     // No shake or flash in Turbo, and never more than one flash every 3 seconds.
@@ -700,6 +725,7 @@
     { id: 'overclock3', name: 'Overclock III', kind: 'overclock', speedup: 8, minutes: 3, rarity: 7, desc: 'Turbo rolls eight times as fast for 3 minutes.' },
     { id: 'coinmag', name: 'Coin Magnet', kind: 'coin', coin: 5, rolls: 500, rarity: 4, desc: 'Coins drop 5 times as often for 500 plain rolls.' },
     { id: 'tokencharm', name: 'Token Charm', kind: 'token', token: 3, rolls: 500, rarity: 4, desc: 'Three times the lucky tokens for 500 rolls.' },
+    { id: 'hourglass', name: 'Hourglass', kind: 'hourglass', hours: 1, rarity: 5, desc: 'Rolls an hour of away rolls at once, at your away rate, without using any charm or booster.' },
     // Passive items are never used by hand: they do their job on their own.
     { id: 'freeze', name: 'Streak Freeze', kind: 'passive', rarity: 3, desc: 'Covers one missed day of your daily streak, on its own.' },
     { id: 'ticket', name: 'Quest Ticket', kind: 'passive', rarity: 2, desc: 'Rerolls a daily quest once the free reroll of the day is used.' },
@@ -717,7 +743,7 @@
     [1e4, [['luck10', 0.3], ['lens', 0.15], ['overclock', 0.05], ['horn', 0.03], ['coinmag', 0.02]]],
     [1e5, [['luck10', 0.4], ['luck100', 0.25], ['overclock', 0.2], ['horn', 0.1], ['tokencharm', 0.05]]],
     [1e6, [['luck100', 0.5], ['luck1k', 0.1], ['overclock', 0.4], ['horn', 0.2], ['prism', 0.05], ['coinmag', 0.1], ['tokencharm', 0.1]]],
-    [1e7, [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2]]],
+    [1e7, [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2], ['hourglass', 0.05]]],
     [1e8, [['luck10k', 0.2], ['goose', 0.3], ['overclock2', 0.2]]],
     [1e9, [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
     [1e10, [['luck1m', 0.2], ['luck10m', 0.05], ['goose3', 0.05], ['kaleido', 0.2], ['overclock3', 0.3]]],
@@ -781,7 +807,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -852,6 +878,21 @@
       fx[slot] = cur && cur[key] === power ? { [key]: power, left: cur.left + k * it.rolls, id } : { [key]: power, left: k * it.rolls, id };
     }
     if (it.kind === 'lens') fx[it.id] = (fx[it.id] || 0) + k * it.rolls;
+    if (it.kind === 'hourglass') { // used up first, so the batch below sees the right inventory
+      state.inv[id] -= k;
+      state.used = (state.used || 0) + k;
+      state.hourglasses = (state.hourglasses || 0) + k;
+      const r = plainBatch(Math.round(awayRate() * 3600 * k * it.hours));
+      const text = `${k > 1 ? `${fmt(k)} Hourglasses` : 'The Hourglass'} rolled ${rollsText(r.n)}: ${plain(tierList(r.tiers))}.`;
+      $('invMsg').textContent = text;
+      if (r.best) drawRoll(r.best, 3, r.changed);
+      $('batchResult').hidden = false;
+      $('batchResult').innerHTML = `${esc(text.split(':')[0])}. ${tierList(r.tiers)}`;
+      checkAchievements();
+      save();
+      renderInventory();
+      return;
+    }
     if (it.kind === 'overclock') fx[it.id] = Math.max(Date.now(), fx[it.id] || 0) + k * it.minutes * 60000;
     state.inv[id] -= k;
     state.used = (state.used || 0) + k;
@@ -913,6 +954,7 @@
     { id: 'itemSense', name: 'Item sense', short: 'item drops', step: 0.1, max: 20, base: 150, grow: 1.4, desc: 'Items drop 10% more often per level.' },
     { id: 'tokenSense', name: 'Token sense', short: 'tokens', step: 0.1, max: 20, base: 100, grow: 1.4, desc: '10% more lucky tokens per level.' },
     { id: 'questSense', name: 'Quest sense', short: 'quest coins', step: 0.25, max: 8, base: 300, grow: 1.8, desc: 'Daily quests pay 25% more coins per level.' },
+    { id: 'nightShift', name: 'Night shift', short: 'away rolls', step: 1, max: 9, base: 400, grow: 1.7, desc: 'Rolling while away goes one roll a second faster per level.' },
   ];
   const WS_BY_ID = Object.fromEntries(WORKSHOP.map(w => [w.id, w]));
   const wsLevel = id => (state.workshop && state.workshop[id]) || 0;
@@ -943,7 +985,7 @@
 
   // Coin shop: fixed prices, a sure way to an item. Each costs more coins than the slot needs on
   // average to pay it out, so the slot stays the better deal and the shop the dependable one.
-  const SHOP = [['lens', 4], ['overclock', 5], ['luck100', 8], ['horn', 12], ['ticket', 20], ['freeze', 60], ['coinmag', 25], ['tokencharm', 25], ['prism', 30], ['overclock2', 40], ['luck1k', 60], ['goose', 900], ['luck10k', 1500]];
+  const SHOP = [['lens', 4], ['overclock', 5], ['luck100', 8], ['horn', 12], ['ticket', 20], ['freeze', 60], ['hourglass', 150], ['coinmag', 25], ['tokencharm', 25], ['prism', 30], ['overclock2', 40], ['luck1k', 60], ['goose', 900], ['luck10k', 1500]];
   function buyShop(id, k = 1) {
     const row = SHOP.find(x => x[0] === id);
     if (!row) return 0;
@@ -1532,6 +1574,35 @@
     save();
     return { tiers, best, changed };
   }
+  // A batch with no charm, lens or booster in play (permanent luck, the workshop and prestige still
+  // count): for away rolls and the Hourglass, which must never use up items meant for active play.
+  function plainBatch(n) {
+    const keep = state.effects;
+    state.effects = {};
+    try { return { n, ...countBatch(n) }; } finally { state.effects = keep; }
+  }
+  // Rolling while away: when the game opens again, the time it was closed is rolled as counted
+  // rolls, one a second (more with Night shift in the workshop), up to eight hours.
+  const AWAY_MAX = 8 * 3600e3, AWAY_MIN = 60e3;
+  const awayRate = () => wsBonus('nightShift');
+  function rollAway() {
+    const gone = Date.now() - (seenBefore || Date.now());
+    state.seenAt = Date.now();
+    if (state.settings.away === false || gone < AWAY_MIN || !state.total) return;
+    const ms = Math.min(gone, AWAY_MAX), n = Math.floor((ms / 1000) * awayRate());
+    if (n < 1) return;
+    const r = plainBatch(n);
+    state.awayRolls = Math.max(state.awayRolls || 0, n);
+    state.awayTimes = (state.awayTimes || 0) + 1;
+    const h = Math.floor(gone / 3600e3), m = Math.floor(gone / 60000) % 60;
+    const html = `<b>Welcome back.</b> You were away ${h ? `${h} h ` : ''}${m} min${gone > AWAY_MAX ? ' (8 hours count at most)' : ''}, so ${rollsText(n)} were rolled at ${fmt(awayRate())} a second${r.best ? `, best <b style="color:${tierVar(r.best.rec.tier.id)}">${r.best.rec.tier.name}</b> ${esc(oneText(r.best.rec.entry))}` : ''}. ${tierList(r.tiers)}`;
+    checkAchievements();
+    save();
+    if (fullSkin()) { fullNotice(plain(html)); return; }
+    if (r.best) drawRoll(r.best, 3, r.changed);
+    $('batchResult').hidden = false;
+    $('batchResult').innerHTML = html;
+  }
   // Gives the page a turn without a timer: browsers slow timers in background tabs to one a second,
   // but not messages.
   const yieldNow = () => new Promise(resolve => { const c = new MessageChannel(); c.port1.onmessage = () => resolve(); c.port2.postMessage(0); });
@@ -2018,6 +2089,10 @@
     { id: 'titled', name: 'Titled', desc: 'Wear a title on your profile', test: () => !!titleOf() },
     { id: 'profileCard', name: 'Front page', desc: 'Save your profile card as an image', test: () => (state.profileCards || 0) >= 1 },
     { id: 'receipt100', name: 'Paper trail', desc: 'Print 100 receipts', test: () => (state.receipts || 0) >= 100 },
+    // v4.4
+    { id: 'away1', name: 'Night shift', desc: 'Come back to rolls made while you were away', test: () => (state.awayTimes || 0) >= 1 },
+    { id: 'away25k', name: 'Sleep roller', desc: 'Come back to 25,000 or more rolls made while away', test: () => (state.awayRolls || 0) >= 25000 },
+    { id: 'hourglass1', name: 'Time in a bottle', desc: 'Use an Hourglass', test: () => (state.hourglasses || 0) >= 1 },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2551,7 +2626,7 @@
     for (const r of document.querySelectorAll('#settingsDialog input[name="text"]')) r.checked = r.value === (s.text || 'normal');
     for (const r of document.querySelectorAll('#settingsDialog input[name="notice"]')) r.checked = !s.notices || s.notices[r.value] !== false;
   }
-  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); renderBackups(); renderSkins(); $('settingsDialog').showModal(); });
+  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); paintSoundSettings(); renderSlots(); renderBackups(); renderSkins(); $('settingsDialog').showModal(); });
   $('settingsDialog').addEventListener('change', ev => {
     const { name, value } = ev.target;
     if (name === 'effects') state.settings.effects = value;
@@ -2750,6 +2825,8 @@
     { id: 'punch', name: 'Punch Card', how: 'reward', ach: 'bounty10', light: true },
     { id: 'casino', name: 'Casino', how: 'reward', ach: 'hl5' },
     { id: 'news', name: 'Newsprint', how: 'reward', ach: 'profileCard', light: true },
+    { id: 'abacus', name: 'Abacus', how: 'reward', ach: 'away1' },
+    { id: 'royal', name: 'Royal', how: 'reward', ach: 'p3' },
     { id: 'marquee', name: 'Marquee', how: 'reward', ach: 'wheel7' },
     // Coin skins: bought one at a time for coins, in Settings.
     { id: 'olive', name: 'Olive', how: 'coins', price: 2000 },
@@ -4134,6 +4211,14 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v4.4', at: '2026-10-20 04:03', title: 'While you are away', items: [
+      'Rolling while away: when you come back, the time the game was closed is rolled, one roll a second for up to eight hours, with no charm or booster used. A welcome-back line shows what came of it. It can be switched off in Settings.',
+      'Night shift in the token workshop: each level makes rolling while away one roll a second faster, up to ten a second.',
+      'Hourglass: rolls an hour of away rolls at once. It drops from rare rolls, sells in the coin shop and is the reward for Night shift.',
+      'Sound settings: a volume slider and three sound sets: Classic, Soft (sine waves an octave down) and Chiptune (square waves an octave up).',
+      'Haptics: phones that can vibrate pulse on Legendary or rarer rolls, one more pulse per tier past it (Settings).',
+      'Two skins: Abacus, the reward for coming back to away rolls, and Royal, the reward for reaching prestige 3. Three new achievements.',
+    ] },
     { v: 'v4.2', at: '2026-10-20 03:59', title: 'Receipts and profiles', items: [
       'Receipt, a full-screen secret skin: every roll prints a ticket on a till roll, with Print, Print ×10, Feed (Endless), Total and Cut. Its hint is in Settings.',
       'Profile (Trophies): your save at a glance: rolls, best roll, badges, mastery, achievements, skins, prestige, longest streak and the day you started.',
@@ -4246,4 +4331,5 @@
     });
   }
   fromHash();
+  warm(state.mode).then(rollAway);
 })();

@@ -54,6 +54,10 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 - Your best rolls of the session and of all time stay beside the reels.
 - **Keys:** press ? for the full list. Space rolls, A and E start Auto and Endless, B batches ×1,000, T changes speed, M changes mode, S stars the roll shown, and 1 to 6 switch tabs.
 
+## While you are away
+
+When you open the game again, the time it was closed is rolled for you: one roll a second, for up to eight hours, as counted rolls like a batch (its best roll is real and recorded, the rest bring tiers, items, coins, tokens and quest progress). No charm, lens or booster is used, so nothing you saved for active play is spent; permanent luck, the workshop and prestige still count. Night shift in the token workshop raises the rate by one roll a second per level, and an Hourglass rolls an hour's worth at once. Switch it off in Settings if you prefer.
+
 ## Items
 
 Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use items from the Inventory tab:

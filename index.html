@@ -495,7 +495,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v4.2</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v4.4</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -542,6 +542,15 @@
       <label><input type="radio" name="effects" value="off"> Off</label>
     </div>
     <p class="muted">Reduced keeps the reels but drops confetti, shakes and flashes. Off also stops the reels spinning.</p>
+    <h3>Sound</h3>
+    <div class="sound-row">
+      <label class="field">Volume <input type="range" id="volume" min="0" max="100" step="5" aria-describedby="volumeOut"> <span class="num" id="volumeOut"></span></label>
+      <label class="field">Sound <select id="soundSet"><option value="classic">Classic</option><option value="soft">Soft</option><option value="chip">Chiptune</option></select></label>
+      <button class="btn" type="button" id="soundTest">Play a fanfare</button>
+    </div>
+    <label class="check-row"><input type="checkbox" id="hapticsBox"> Vibrate on Legendary or rarer rolls, on phones that can</label>
+    <h3>While you are away</h3>
+    <label class="check-row"><input type="checkbox" id="awayBox"> Roll while the game is closed: one roll a second, up to eight hours, with no charm or booster used</label>
     <h3>Text size</h3>
     <div class="choices" id="textChoices">
       <label><input type="radio" name="text" value="normal"> Normal</label>

@@ -35,6 +35,8 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Bingo Hall | Earn Bingo (a line on the bingo card) | Cream card stock and red dauber ink. |
 | Punch Card | Earn Most wanted (10 bounties) | Manila card and tabulator blue. |
 | Newsprint | Earn Front page (save your profile card) | Grey newsprint and black ink. |
+| Abacus | Earn Night shift (come back to away rolls) | Polished dark wood with a bead-red button. |
+| Royal | Earn Phoenix (reach prestige 3) | Deep navy and gold. |
 | Casino | Earn Called it (five right calls in a row at higher or lower) | Roulette-red felt and gold. |
 | Marquee | Earn Wheel regular (spin the daily wheel on 7 days) | A dark theatre front with bulb-white digits. |
 | Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
