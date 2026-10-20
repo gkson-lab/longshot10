@@ -33,6 +33,7 @@ Dial: ENERGY 3 / RHYTHM 2 / MOTION 3
 - **Chances never round up to 100%.** A 99.996% chance is shown as 99.9960%, and anything closer as "more than 99.9999%", because 100% would claim a certainty the odds do not have.
 - **The coin shop is folded away.** It is a fallback for a sure item, so it opens on request and the slot keeps the top of the Inventory. Folded sections show a turning marker so they read as openable.
 - **Quick use sits under the roll buttons and only appears when something is pinned.** Its buttons are rebuilt only when the pins change, so a click during Turbo never lands on a button that was just replaced.
+- **Bingo cells fill with ink when marked.** A filled cell is how a dauber marks paper, and it reads at arm's length without colour. The thin top edge of each cell is its badge's rarity colour, the same encoding as the card stripe elsewhere.
 - **Type: the system UI font for text, the system monospace font for digits only.** No web fonts, because the game runs fully offline. Monospace keeps every digit the same width, so reels and number columns line up.
 - **Headings in sentence case, with no wide-tracked capitals.** Rarity names are set in weight, not in tracking.
 - **Radius scale: 4 / 8 / 12, plus one full pill on the Roll button.** Chips, controls and panels each get their own radius, and the primary action is the only round shape.

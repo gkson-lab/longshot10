@@ -432,6 +432,8 @@
     $('bdFacts').innerHTML = rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join('');
     if (first) $('bdFacts').insertAdjacentHTML('beforeend', `<dt>First found</dt><dd class="num"><a href="${hashOf(first)}" data-close>${esc(label(first))} (${esc(MODE_BY_ID[first.mode].name)})</a></dd>`);
     $('bdHunt').hidden = !huntId;
+    $('bdAlso').hidden = !huntId || !hunt || huntId === hunt;
+    $('bdAlso').textContent = 'Also hunt';
     $('badgeDialog').showModal();
   }
   function openBadge(b) {
@@ -467,6 +469,13 @@
       first: state.firstMult[m.id],
     });
   }
+  $('bdAlso').addEventListener('click', () => {
+    const b = !dialogTarget.startsWith('x:') && findBadge(dialogTarget);
+    if (b && b.mode && state.mode !== b.mode) { $('bdAlso').textContent = `Only in ${MODE_BY_ID[b.mode].name}: use Hunt this badge`; return; }
+    if (!addAlsoHunt(dialogTarget)) { $('bdAlso').textContent = `Already hunting ${MAX_ALSO + 1} things`; return; }
+    $('badgeDialog').close();
+    selectTab('roll');
+  });
   $('bdHunt').addEventListener('click', () => {
     const b = !dialogTarget.startsWith('x:') && findBadge(dialogTarget);
     if (b && b.mode && state.mode !== b.mode) setMode(b.mode);
@@ -642,6 +651,9 @@
   // Rolling
   let batching = null; // a batch roll in progress: { n, done }
   let speed = 1, auto = null, busy = false, hunt = '', huntRolls = 0;
+  let alsoHunt = []; // up to two more hunt targets beside the one in Auto settings: { id, rolls }
+  const MAX_ALSO = 2;
+  const hunting = () => !!hunt || alsoHunt.length > 0;
   const run = { start: 0, rolls: 0 }; // the current Auto or Endless run, for its rolls-a-second figure
   const huntName = id => (id.startsWith('x:') ? `× ${MULT_BY_ID[id.slice(2)].symbol} ${MULT_BY_ID[id.slice(2)].name}` : findBadge(id).name);
   const huntP = id => (id.startsWith('x:') ? MULT_BY_ID[id.slice(2)].p : findBadge(id).p);
@@ -759,7 +771,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -1277,17 +1289,19 @@
     }
     if (rec.freshMult) toast(`New multiplier: <b>× ${esc(rec.r.mult.symbol)} ${esc(rec.r.mult.name)}</b>`, RARITIES[rec.r.mult.rarity].id, 'badge');
     let found = false;
-    if (hunt) {
-      huntRolls++;
-      found = hunt.startsWith('x:') ? rec.r.mult.id === hunt.slice(2) : rec.r.badges.some(b => b.id === hunt);
-      if (found) {
-        toast(`Found <b>${esc(huntName(hunt))}</b> after ${fmt(huntRolls)} ${huntRolls === 1 ? 'roll' : 'rolls'}`, 'rare');
-        state.huntsDone++;
-        state.lastHuntP = huntP(hunt);
-        state.rec.hunt = Math.max(state.rec.hunt || 0, huntRolls);
-        huntRolls = 0;
-      }
-    }
+    const hit = id => (id.startsWith('x:') ? rec.r.mult.id === id.slice(2) : rec.r.badges.some(b => b.id === id));
+    const foundIt = (id, rolls) => {
+      toast(`Found <b>${esc(huntName(id))}</b> after ${fmt(rolls)} ${rolls === 1 ? 'roll' : 'rolls'}`, 'rare');
+      state.huntsDone++;
+      state.lastHuntP = huntP(id);
+      state.rec.hunt = Math.max(state.rec.hunt || 0, rolls);
+      found = true;
+    };
+    if (hunt) { huntRolls++; if (hit(hunt)) { foundIt(hunt, huntRolls); huntRolls = 0; } }
+    for (const h of alsoHunt) { h.rolls++; if (hit(h.id)) { foundIt(h.id, h.rolls); h.done = true; } }
+    if (alsoHunt.some(h => h.done)) { alsoHunt = alsoHunt.filter(h => !h.done); paintAlsoHunt(); }
+    markBingo(rec.r.badges);
+    checkBounties(rec);
     questEvent('roll');
     questEvent('mode', 1, q => q.mode === x.mode);
     questEvent('tier', 1, q => T(rec.entry.tier) >= T(q.tier));
@@ -1295,7 +1309,8 @@
     if (rec.r.mult.id !== 'unity' && rec.r.mult.rarity >= 2) questEvent('mult');
     checkAchievements(rec);
     if (fullSkin()) fullRoll(rec.entry);
-    return { x, rec, found };
+    // `stop`: what ends Auto. A hunt target, or with the setting on, a badge you did not have.
+    return { x, rec, found, stop: found || (!!state.settings.stopNew && rec.fresh.size > 0) };
   }
   // In Turbo the result changes many times a second and its height with it (more or fewer badges),
   // which made everything below it jump. While auto-rolling, the result area may grow but never
@@ -1322,7 +1337,7 @@
     await spinTo(roll.x, instant || consoleOn() ? 3 : speed); // the Console shows no reels, so nothing to wait for
     freshEntry = roll.rec.madeSession || roll.rec.madeHof ? roll.rec.entry : null;
     drawRoll(roll, instant ? Math.max(speed, 2) : speed, !!freshEntry);
-    return { tier: roll.rec.tier, found: roll.found };
+    return { tier: roll.rec.tier, found: roll.found, stop: roll.stop };
   }
 
   // Turbo: rolls run on their own steady clock (90 to 1,000 a second, set under Auto settings) in small slices that never block the
@@ -1354,9 +1369,10 @@
         const roll = takeRoll();
         if (roll.rec.madeSession || roll.rec.madeHof) { changed = true; freshEntry = roll.rec.entry; }
         if (!best || roll.rec.entry.oneInLog > best.rec.entry.oneInLog) best = roll;
-        if (kind === 'auto' && (roll.found || T(roll.rec.tier.id) >= +$('stopAt').value)) { best = roll; stop = true; break; }
+        if (kind === 'auto' && (roll.stop || T(roll.rec.tier.id) >= +$('stopAt').value)) { best = roll; stop = true; break; }
+        if (kind === 'endless' && endlessDone()) { stop = 'limit'; break; }
       }
-      if (stop) { draw(); setAuto(null); return; }
+      if (stop) { draw(); if (stop === 'limit') stopEndless(); else setAuto(null); return; }
       if (best && !framePending) { framePending = true; requestAnimationFrame(draw); }
       if (now - statusAt > 250 && !document.hidden) { statusAt = now; paintStatus(); } // counters stay current even when frames are slow
     }
@@ -1377,6 +1393,8 @@
         + (L > 1 && speed === 3 ? ` (luck ×${fmt(L)} makes every roll the best of ${fmt(L)}, which is slower than a plain roll)` : ''));
     }
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
+    for (const h of alsoHunt) parts.push(`Also hunting <b>${esc(huntName(h.id))}</b> (${odds(huntP(h.id))}), <span class="num">${fmt(h.rolls)}</span> rolls so far`);
+    if (auto === 'endless' && state.settings.endlessLimit) parts.push(`Stops after ${esc($('endlessLimit').selectedOptions[0].textContent)}`);
     if (hard()) parts.push(`<b>${esc(G.DIFF_BY_ID[state.difficulty].name)}:</b> no multiplier, only badges count`);
     const fx = effectsText();
     if (inLuckyHour()) fx.unshift(`Lucky hour, drops and coins ×2 until ${hourText(luckyHour() + 1)}`);
@@ -1509,7 +1527,7 @@
   // n rolls, then draws the best of them: counted at once, or played one by one during a hunt
   // (stopping early if `keepGoing` turns false).
   async function runBatch(n, keepGoing = () => true) {
-    if (!hunt) {
+    if (!hunting()) {
       const start = performance.now(), { tiers, best, changed } = countBatch(n);
       if (best) drawRoll(best, 3, changed);
       return { n, secs: (performance.now() - start) / 1000, tiers, best };
@@ -1573,6 +1591,7 @@
       $('batchResult').innerHTML = `<b>Batch ${fmt(tot.batches)}:</b> ${fmt(r.n)} rolls${r.played ? ` in ${r.secs.toFixed(1)} s` : ''}, best ${bestText(r.best && r.best.rec.entry)}. ${tierList(r.tiers)}`
         + `<br><b>This run:</b> ${fmt(tot.n)} rolls, about ${fmt(tot.n / secs)} a second, best ${bestText(tot.best)}. ${tierList(tot.tiers)}`;
       paintStatus();
+      if (endlessDone()) { stopEndless(); return; }
       next += BATCH_EVERY;
       if (next - performance.now() < -60000) next = performance.now();
       await yieldNow();
@@ -1602,8 +1621,9 @@
       const kind = auto;
       if (kind === 'endless' && +state.settings.batch > 0) { await batchLoop(); continue; }
       if (speed === 3) { await turboLoop(kind); continue; }
-      const { tier, found } = await rollOnce();
-      if (kind === 'auto' && auto === 'auto' && (found || T(tier.id) >= +$('stopAt').value)) { setAuto(null); break; }
+      const { tier, stop } = await rollOnce();
+      if (kind === 'auto' && auto === 'auto' && (stop || T(tier.id) >= +$('stopAt').value)) { setAuto(null); break; }
+      if (kind === 'endless' && auto === 'endless' && endlessDone()) { stopEndless(); break; }
       await sleep(speed === 1 ? 300 : 60);
     }
     busy = false;
@@ -1741,6 +1761,9 @@
     for (const m of MULTS) og.appendChild(new Option(`× ${m.symbol} ${m.name} (${odds(m.p)})`, 'x:' + m.id));
     sel.appendChild(og);
     setHunt([...sel.options].some(o => o.value === keep) ? keep : '');
+    const before = alsoHunt.length; // a mode badge can only turn up in its own mode
+    alsoHunt = alsoHunt.filter(h => { const b = !h.id.startsWith('x:') && findBadge(h.id); return !b || !b.mode || b.mode === state.mode; });
+    if (alsoHunt.length !== before) paintAlsoHunt();
   }
   function setHunt(id) {
     if (id !== hunt) huntRolls = 0;
@@ -1750,6 +1773,45 @@
     paintStatus();
   }
   $('hunt').addEventListener('change', () => setHunt($('hunt').value));
+  // Also hunt: the badge dialog adds a second and third target, shown under the Hunt menu.
+  function addAlsoHunt(id) {
+    if (!hunt) { setHunt(id); return true; }
+    if (id === hunt || alsoHunt.some(h => h.id === id)) return true;
+    if (alsoHunt.length >= MAX_ALSO) return false;
+    alsoHunt.push({ id, rolls: 0 });
+    paintAlsoHunt();
+    checkAchievements();
+    return true;
+  }
+  function paintAlsoHunt() {
+    const box = $('alsoHunt');
+    box.hidden = !alsoHunt.length;
+    box.innerHTML = alsoHunt.map(h => `<span class="chip">Also hunting ${esc(huntName(h.id))} <button class="btn" type="button" data-unhunt="${esc(h.id)}" aria-label="Stop hunting ${esc(huntName(h.id))}">Remove</button></span>`).join('');
+    if (alsoHunt.length) { $('opts').hidden = false; $('optsBtn').setAttribute('aria-expanded', 'true'); }
+    paintStatus();
+  }
+  $('alsoHunt').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-unhunt]');
+    if (!b) return;
+    alsoHunt = alsoHunt.filter(h => h.id !== b.dataset.unhunt);
+    paintAlsoHunt();
+  });
+  // Endless limits and Stop on new badge, both under Auto settings.
+  function endlessDone() {
+    const v = state.settings.endlessLimit || '';
+    if (!v || auto !== 'endless') return false;
+    const n = +v.slice(1);
+    return v[0] === 'r' ? run.rolls >= n : performance.now() - run.start >= n * 60000;
+  }
+  function stopEndless() {
+    const k = run.rolls;
+    setAuto(null);
+    toast(`Endless stopped after ${rollsText(k)}, as set in Auto settings`, 'rare');
+  }
+  $('endlessLimit').value = state.settings.endlessLimit || '';
+  $('endlessLimit').addEventListener('change', () => { state.settings.endlessLimit = $('endlessLimit').value; save(); paintStatus(); });
+  $('stopNewBox').checked = !!state.settings.stopNew;
+  $('stopNewBox').addEventListener('change', () => { state.settings.stopNew = $('stopNewBox').checked; save(); });
 
   // Previews from the URL: #n=1729&mode=exp&e=3&x=pi (and the older #1729^3).
   function fromHash() {
@@ -1903,6 +1965,11 @@
     { id: 'streak7', name: 'Seven days straight', desc: 'Roll on 7 days in a row', test: () => ((state.streak && state.streak.best) || 0) >= 7 },
     { id: 'streak30', name: 'A month of mornings', desc: 'Roll on 30 days in a row', test: () => ((state.streak && state.streak.best) || 0) >= 30 },
     { id: 'weekly1', name: 'Week\'s work', desc: 'Claim a weekly quest', test: () => (state.weeklyDone || 0) >= 1 },
+    { id: 'bingo1', name: 'Bingo', desc: 'Complete a line on the bingo card', test: () => (state.bingoLines || 0) >= 1 },
+    { id: 'bingoFull', name: 'Full house', desc: 'Mark every cell of a bingo card', test: () => (state.bingoFull || 0) >= 1 },
+    { id: 'bounty1', name: 'Bounty hunter', desc: 'Collect a bounty', test: () => (state.bountiesDone || 0) >= 1 },
+    { id: 'bounty10', name: 'Most wanted', desc: 'Collect 10 bounties', test: () => (state.bountiesDone || 0) >= 10 },
+    { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
   function checkAchievements(rec) {
@@ -2185,7 +2252,7 @@
       b.tabIndex = on ? 0 : -1;
     });
     for (const t of TABS) $('tab-' + t).hidden = t !== name;
-    if (name === 'collection') { renderBook(); renderCollection(); }
+    if (name === 'collection') { renderBingo(); renderBounties(); renderBook(); renderCollection(); }
     if (name === 'trophies') { renderQuests(); renderPrestige(); renderTrophies(); }
     if (name === 'log') renderLog();
     if (name === 'inventory') { renderInventory(); renderSlot(); }
@@ -2408,6 +2475,8 @@
     { id: 'ledger', name: 'Ledger', how: 'reward', ach: 'shop1', light: true },
     { id: 'sakura', name: 'Sakura', how: 'reward', ach: 'streak7', light: true },
     { id: 'glacier', name: 'Glacier', how: 'reward', ach: 'weeklyAll', light: true },
+    { id: 'bingo', name: 'Bingo Hall', how: 'reward', ach: 'bingo1', light: true },
+    { id: 'punch', name: 'Punch Card', how: 'reward', ach: 'bounty10', light: true },
   ];
   const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
   const BUNDLE_PRICE = 500;
@@ -2521,6 +2590,8 @@
     'BADGES [word]          Badges by category, or the ones matching a word.',
     'ACH                    Achievements.',
     'RECORDS                Records and how lucky you have been.',
+    'BINGO                  This week\'s bingo card.',
+    'BOUNTIES               The bounty board.',
     'WORKSHOP [BUY id]      Token workshop upgrades, or buy the next level of one.',
     'SHOP [BUY item [n]]    The coin shop, or buy from it, e.g. SHOP BUY luck100 10.',
     'CHANCE tier [n]        Chance of that tier or rarer in n rolls, e.g. CHANCE mythic 5000.',
@@ -2746,6 +2817,20 @@
           break;
         }
         print(`Coins: ${fmt(state.coins)}`, ...SHOP.map(([id, price]) => `${pad(id, 12)}${pad(fmt(price) + ' coins', 14)}${ITEM_BY_ID[id].name}`), '');
+        break;
+      }
+      case 'bingo': {
+        const card = bingoCard(), w = 13;
+        print(...[0, 1, 2, 3, 4].map(r => [0, 1, 2, 3, 4].map(c => {
+          const i = r * 5 + c, id = card.cells[i];
+          return pad(`${card.marked[i] ? '[x]' : '[ ]'} ${id === 'free' ? 'FREE' : findBadge(id).name}`.slice(0, w - 1), w);
+        }).join('')), `${card.marked.filter(Boolean).length - 1} of 24 marked, ${card.lines.length} lines. Full card: ${card.full ? 'done' : 'not yet'}.`, '');
+        break;
+      }
+      case 'bounties': case 'bounty': {
+        const bs = bounties(), left = (bs.at + 1) * BOUNTY_EVERY - Date.now();
+        print(...bs.list.map(b => { const r = bountyReward(b.id); return `${b.done ? '[x]' : '[ ]'} ${pad(huntName(b.id), 32)}${pad(odds(huntP(b.id)), 18)}${r.coins} coins, ${fmt(r.tokens)} tokens`; }),
+          `New board in ${Math.floor(left / 3600e3)} h ${Math.floor(left / 60000) % 60} min.`, '');
         break;
       }
       case 'records': {
@@ -3135,6 +3220,124 @@
     return true;
   }
 
+  // Bingo: a new 5 × 5 card every Monday, 24 badges around a free centre, picked from the week and
+  // the save file. A badge marks its cell when a played roll earns it (counted batch rolls collect no
+  // badges). Each row, column and diagonal pays once; a full card pays a Diamond Goose.
+  const BINGO_LINES = [
+    ...[0, 1, 2, 3, 4].map(r => [0, 1, 2, 3, 4].map(c => r * 5 + c)),
+    ...[0, 1, 2, 3, 4].map(c => [0, 1, 2, 3, 4].map(r => r * 5 + c)),
+    [0, 6, 12, 18, 24], [4, 8, 12, 16, 20],
+  ];
+  // Eight common cells, eight uncommon, six rare and two very rare: from 1 in 20 down to 1 in 200,000.
+  const BINGO_BANDS = [[1 / 20, 1 / 200, 8], [1 / 200, 1 / 2000, 8], [1 / 2000, 1 / 20000, 6], [1 / 20000, 1 / 200000, 2]];
+  const BINGO_LINE_COINS = 15, BINGO_FULL_COINS = 100;
+  function bingoCard() {
+    const week = weekKey();
+    if (!state.bingo || state.bingo.week !== week) {
+      const next = seeded('bingo' + week + slots.active);
+      const pool = BADGES.filter(b => !b.group && b.cat !== 'Daily'), pick = [];
+      for (const [hi, lo, k] of BINGO_BANDS) {
+        const band = pool.filter(b => b.p <= hi && b.p > lo);
+        for (let i = 0; i < k && band.length; i++) pick.push(band.splice(next() % band.length, 1)[0].id);
+      }
+      for (let i = pick.length - 1; i > 0; i--) { const j = next() % (i + 1); [pick[i], pick[j]] = [pick[j], pick[i]]; }
+      pick.splice(12, 0, 'free');
+      state.bingo = { week, cells: pick, marked: pick.map(id => id === 'free'), lines: [], full: false };
+    }
+    return state.bingo;
+  }
+  function markBingo(badges) {
+    const card = bingoCard();
+    let changed = false;
+    for (const b of badges) {
+      const i = card.cells.indexOf(b.id);
+      if (i < 0 || card.marked[i]) continue;
+      card.marked[i] = changed = true;
+      toast(`Bingo: <b>${esc(b.name)}</b> marked`, RARITIES[b.rarity].id, 'quest');
+    }
+    if (!changed) return;
+    BINGO_LINES.forEach((line, k) => {
+      if (card.lines.includes(k) || !line.every(i => card.marked[i])) return;
+      card.lines.push(k);
+      state.bingoLines = (state.bingoLines || 0) + 1;
+      state.coins += BINGO_LINE_COINS;
+      grant('luck100', `Bingo line, plus ${BINGO_LINE_COINS} coins`);
+    });
+    if (!card.full && card.marked.every(Boolean)) {
+      card.full = true;
+      state.bingoFull = (state.bingoFull || 0) + 1;
+      state.coins += BINGO_FULL_COINS;
+      grant('goose2', `Full bingo card, plus ${BINGO_FULL_COINS} coins`);
+    }
+    checkAchievements();
+    if (!$('tab-collection').hidden) renderBingo();
+  }
+  function renderBingo() {
+    const card = bingoCard();
+    $('bingo').innerHTML = [0, 1, 2, 3, 4].map(r => `<div role="row">${[0, 1, 2, 3, 4].map(c => {
+      const i = r * 5 + c, id = card.cells[i], on = card.marked[i];
+      if (id === 'free') return '<span class="cell free on" role="gridcell" aria-label="Free centre, marked">Free</span>';
+      const b = findBadge(id);
+      return `<button class="cell${on ? ' on' : ''}" type="button" role="gridcell" data-bingo="${esc(id)}" style="--rc:${tierVar(RARITIES[b.rarity].id)}" aria-label="${esc(b.name)}, ${odds(b.p)}${on ? ', marked' : ''}">${esc(b.name)}</button>`;
+    }).join('')}</div>`).join('');
+    const marked = card.marked.filter(Boolean).length - 1;
+    $('bingoSub').textContent = `${marked} of 24 marked, ${card.lines.length} ${card.lines.length === 1 ? 'line' : 'lines'}`;
+    const ends = new Date(card.week + 'T00:00'); ends.setDate(ends.getDate() + 7);
+    $('bingoNote').textContent = `Each line pays ${BINGO_LINE_COINS} coins and a Charm of a Hundred; a full card pays ${BINGO_FULL_COINS} coins and a Diamond Goose. A new card on ${ends.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}. Select a cell for its odds.`;
+  }
+  $('bingo').addEventListener('click', ev => { const b = ev.target.closest('[data-bingo]'); if (b) openBadge(findBadge(b.dataset.bingo)); });
+
+  // Bounty board: three targets, badges or multipliers from 1 in 500 to 1 in 200,000, that change
+  // every six hours. Landing one before it changes pays coins and lucky tokens, more for rarer ones.
+  const BOUNTY_EVERY = 6 * 3600e3;
+  const bountyReward = id => { const p = huntP(id); return { coins: Math.ceil(Math.log10(1 / p) ** 2), tokens: Math.round(1 / p / 20) }; };
+  function bounties() {
+    const at = Math.floor(Date.now() / BOUNTY_EVERY);
+    if (!state.bounty || state.bounty.at !== at) {
+      const next = seeded('bounty' + at + slots.active);
+      const pool = BADGES.filter(b => !b.group && b.cat !== 'Daily' && b.p <= 2e-3 && b.p >= 5e-6).map(b => b.id)
+        .concat(MULTS.filter(m => m.p <= 2e-3 && m.p >= 5e-6).map(m => 'x:' + m.id));
+      const list = [];
+      while (list.length < 3) list.push({ id: pool.splice(next() % pool.length, 1)[0], done: false });
+      state.bounty = { at, list };
+    }
+    return state.bounty;
+  }
+  function checkBounties(rec) {
+    let paid = false;
+    for (const b of bounties().list) {
+      if (b.done) continue;
+      const hit = b.id.startsWith('x:') ? rec.r.mult.id === b.id.slice(2) : rec.r.badges.some(x => x.id === b.id);
+      if (!hit) continue;
+      const { coins, tokens } = bountyReward(b.id);
+      b.done = paid = true;
+      state.coins += coins;
+      addTokens(tokens);
+      state.bountiesDone = (state.bountiesDone || 0) + 1;
+      toast(`Bounty: <b>${esc(huntName(b.id))}</b>, ${fmt(coins)} coins and ${fmt(tokens)} tokens`, 'legendary', 'quest');
+    }
+    if (!paid) return;
+    checkAchievements();
+    if (!$('tab-collection').hidden) renderBounties();
+  }
+  function renderBounties() {
+    const bs = bounties(), left = (bs.at + 1) * BOUNTY_EVERY - Date.now();
+    $('bountySub').textContent = `new board in ${Math.floor(left / 3600e3)} h ${Math.floor(left / 60000) % 60} min`;
+    $('bounties').innerHTML = bs.list.map(b => {
+      const { coins, tokens } = bountyReward(b.id), p = huntP(b.id);
+      const rarity = b.id.startsWith('x:') ? MULT_BY_ID[b.id.slice(2)].rarity : findBadge(b.id).rarity;
+      return `<li style="--rc:${tierVar(RARITIES[rarity].id)}"${b.done ? ' class="none"' : ''}><div><b>${esc(huntName(b.id))}</b> <span class="muted num">${odds(p)}</span><br>`
+        + `<span class="muted">${b.done ? 'Collected' : `Pays ${fmt(coins)} coins and ${fmt(tokens)} lucky tokens`}</span></div>`
+        + `<div class="item-actions">${b.done ? '<span class="muted">Done</span>' : `<button class="btn" type="button" data-bounty="${esc(b.id)}" aria-label="Hunt ${esc(huntName(b.id))}">Hunt</button>`}</div></li>`;
+    }).join('');
+  }
+  $('bounties').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-bounty]');
+    if (!b) return;
+    if (!addAlsoHunt(b.dataset.bounty)) setHunt(b.dataset.bounty);
+    selectTab('roll');
+  });
+
   // Daily quests: three a day per save file, picked from the date and the save file so they are
   // the same all day. Each pays coins and an item; finishing all three pays a bonus. Weekly quests
   // work the same way over a week from Monday, with bigger goals and rewards.
@@ -3348,6 +3551,15 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v3.8', at: '2026-10-20 03:37', title: 'Bingo and bounties', items: [
+      'Bingo (Collection): a new 5 × 5 card of badges every Monday. Each line pays 15 coins and a Charm of a Hundred, a full card 100 coins and a Diamond Goose.',
+      'Bounty board (Collection): three badges or multipliers that change every six hours. Land one in time for coins and lucky tokens, more for rarer ones. Hunt sets it as your target.',
+      'Also hunt: hunt up to three things at once, from a badge\'s details or the bounty board.',
+      'Auto can also stop on a badge you did not have (Auto settings).',
+      'Endless can stop on its own after a number of rolls or minutes (Auto settings).',
+      'BINGO and BOUNTIES in the command line.',
+      'Two skins: Bingo Hall, the reward for a first bingo line, and Punch Card, the reward for ten bounties. Five new achievements.',
+    ] },
     { v: 'v3.7', at: '2026-10-20 03:29', title: 'Every day', items: [
       'Daily streak (Trophies): days in a row with at least one roll. Day 3, 7, 14, 30, 60, 100 and 365 pay rewards, and every seventh day brings a Streak Freeze.',
       'Streak Freeze: covers one missed day on its own. From every seventh streak day, the coin shop, and Seven days straight.',

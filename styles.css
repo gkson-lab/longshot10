@@ -771,3 +771,36 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 [data-swatch="glacier"] { background: linear-gradient(135deg, #eef5f9 55%, #0b6fa4 55%); }
 .book li > .item-actions, .quests li > .item-actions { flex: none; }
 @media (max-width: 560px) { .items li > .item-actions { flex-basis: 100%; } }
+
+/* v3.8: bingo card, bounty board, also-hunt chips */
+.goals { margin-bottom: 8px; }
+.bingo { display: grid; gap: 4px; margin-bottom: 8px; }
+.bingo [role="row"] { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.bingo .cell {
+  min-height: 56px; padding: 4px; border-radius: 4px; border: 1px solid var(--line); border-top: 3px solid var(--rc, var(--line));
+  background: var(--surface); color: var(--muted); font: 600 11px/1.2 system-ui, sans-serif; text-align: center;
+  display: grid; place-items: center; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto;
+}
+.bingo button.cell:hover { border-color: var(--faint); border-top-color: var(--rc); }
+/* A marked cell is filled in, like a dauber on paper: ink on the cell, so it reads at a glance. */
+.bingo .cell.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.bingo .cell.free { font-size: 13px; }
+@media (min-width: 600px) { .bingo .cell { min-height: 64px; font-size: 12px; } }
+.also-hunt { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 0 0 0 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--muted); }
+.bounties li.none { opacity: 0.62; }
+.opts .check-row { flex-basis: 100%; justify-content: center; padding: 0; }
+/* Bingo Hall: cream card stock and red dauber ink, for a first bingo line. */
+:root[data-theme="bingo"] {
+  --bg: #fdf6e4; --surface: #fffcf3; --surface-2: #f7eed5; --line: #e2d3a8;
+  --ink: #2a1d0e; --muted: #5c4a33; --faint: #6b5940; --cell: #2a1d0e; --cell-ink: #fff8e7; --cell-lead: #9a8566;
+  --accent: #c81d3a; --accent-ink: #ffffff; --focus: #2a1d0e;
+}
+/* Punch Card: manila card stock and the deep blue of a tabulating machine, for the tenth bounty. */
+:root[data-theme="punch"] {
+  --bg: #f7efd8; --surface: #fcf8ec; --surface-2: #f4ebd0; --line: #d6c49a;
+  --ink: #2b2618; --muted: #504731; --faint: #5c533b; --cell: #2b2618; --cell-ink: #f8f0dc; --cell-lead: #8c8064;
+  --accent: #1f4e79; --accent-ink: #ffffff; --focus: #2b2618;
+}
+[data-swatch="bingo"] { background: linear-gradient(135deg, #fdf6e4 55%, #c81d3a 55%); }
+[data-swatch="punch"] { background: linear-gradient(135deg, #f7efd8 55%, #1f4e79 55%); }

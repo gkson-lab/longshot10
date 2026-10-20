@@ -252,12 +252,42 @@ const STEPS = [
     if (!/You have 0\./.test(text)) throw new Error('the Streak Freeze was not used');
     await click('[data-tab="roll"]');
   }],
+  // v3.8
+  ['bingo card, bounty hunt, also hunt and an Endless limit', async ({ page, click, overflow, shot }) => {
+    await click('[data-tab="collection"]');
+    if ((await page.$$('#bingo .cell')).length !== 25) throw new Error('bingo card is not 5 × 5');
+    await click('#bingo [data-bingo]');
+    if (!(await page.isVisible('#badgeDialog'))) throw new Error('a bingo cell did not open its badge');
+    await page.keyboard.press('Escape');
+    if ((await page.$$('#bounties li')).length !== 3) throw new Error('bounty board is not three bounties');
+    await overflow('collection with bingo');
+    await shot('collection-v38');
+    await click('#bounties [data-bounty]');
+    if (await page.isHidden('#tab-roll')) throw new Error('Hunt on a bounty did not go to the Roll tab');
+    if (!/Hunting/.test(await page.textContent('#status'))) throw new Error('the bounty is not being hunted');
+    await click('[data-tab="collection"]');
+    await click('#collection .card');
+    await click('#bdAlso');
+    if (!/Also hunting/.test(await page.textContent('#status'))) throw new Error('Also hunt added nothing');
+    await click('#alsoHunt [data-unhunt]');
+    await page.selectOption('#hunt', '');
+    if (/Hunting/.test(await page.textContent('#status'))) throw new Error('the hunt did not clear');
+    await page.selectOption('#endlessLimit', 'r1000');
+    await click('[data-speed="3"]');
+    await click('#endlessBtn');
+    await page.waitForFunction(() => document.getElementById('endlessBtn').getAttribute('aria-pressed') === 'false', null, { timeout: 20000 });
+    await page.selectOption('#endlessLimit', '');
+    await click('#stopNewBox');
+    await click('#stopNewBox');
+    await click('[data-speed="1"]');
+    await click('#optsBtn');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

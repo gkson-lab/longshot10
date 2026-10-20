@@ -30,6 +30,8 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Ledger | Earn Customer (buy from the coin shop) | Pale green account-book paper. |
 | Sakura | Earn Seven days straight (a seven-day streak) | Cherry-blossom paper with deep cherry ink. |
 | Glacier | Earn Clean sweep (all three weekly quests of a week) | Pale ice blue with sea-blue ink. |
+| Bingo Hall | Earn Bingo (a line on the bingo card) | Cream card stock and red dauber ink. |
+| Punch Card | Earn Most wanted (10 bounties) | Manila card and tabulator blue. |
 | Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
 To leave a full-screen skin, use its Leave chat, Power off or OFF button, or type GUI in Console. You go back to the skin you wore before.
@@ -60,6 +62,8 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `BADGES [word]` | Badges by category, or every badge matching a word |
 | `ACH` | Achievements |
 | `RECORDS` | Records, and how lucky you have been |
+| `BINGO` | This week's bingo card |
+| `BOUNTIES` | The bounty board |
 | `WORKSHOP`, `WORKSHOP BUY id` | Token workshop upgrades, or buy a level |
 | `SHOP`, `SHOP BUY item [n]` | The coin shop, or buy from it |
 | `CHANCE tier [n]` | The chance of that tier or rarer in n rolls, e.g. `CHANCE mythic 5000` |

@@ -187,6 +187,19 @@
               </select></label>
               <label class="field">Auto stops at <select id="stopAt"></select></label>
               <label class="field">Hunt <select id="hunt"></select></label>
+              <label class="field">Endless stops after <select id="endlessLimit">
+                <option value="">never</option>
+                <option value="r1000">1,000 rolls</option>
+                <option value="r10000">10,000 rolls</option>
+                <option value="r100000">100,000 rolls</option>
+                <option value="r1000000">1,000,000 rolls</option>
+                <option value="m1">1 minute</option>
+                <option value="m5">5 minutes</option>
+                <option value="m15">15 minutes</option>
+                <option value="m60">1 hour</option>
+              </select></label>
+              <label class="check-row"><input type="checkbox" id="stopNewBox"> Auto also stops on a badge you did not have</label>
+              <div class="also-hunt" id="alsoHunt" hidden></div>
             </div>
             <p class="status" id="status"></p>
             <p class="notice" id="storageNotice" hidden>This browser is blocking storage, so rolls will be lost when you close the tab.</p>
@@ -281,6 +294,18 @@
     </section>
 
     <section id="tab-collection" role="tabpanel" aria-labelledby="tab-btn-collection" hidden>
+      <div class="two-col goals">
+        <div>
+          <div class="section-head"><h2>Bingo</h2><span id="bingoSub"></span></div>
+          <div class="bingo" id="bingo" role="grid" aria-label="Bingo card: 24 badges and a free centre"></div>
+          <p class="muted" id="bingoNote"></p>
+        </div>
+        <div>
+          <div class="section-head"><h2>Bounty board</h2><span id="bountySub"></span></div>
+          <ul class="items bounties" id="bounties"></ul>
+          <p class="muted">Land a bounty's badge or multiplier before the board changes to collect it. Rarer bounties pay more coins and lucky tokens.</p>
+        </div>
+      </div>
       <div class="section-head"><h2>Badge book</h2><span id="bookCount"></span></div>
       <p class="muted">A page is complete when you have every badge of its category that comes up at least 1 in 1,000,000. Five pages unlock a legendary skin.</p>
       <ul class="items book" id="book"></ul>
@@ -382,7 +407,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.7</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v3.8</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -393,6 +418,7 @@
     <dl class="facts-grid" id="bdFacts"></dl>
     <div class="dlg-actions">
       <button class="btn" id="bdHunt" type="button">Hunt this badge</button>
+      <button class="btn" id="bdAlso" type="button">Also hunt</button>
       <button class="btn" type="button" data-close>Close</button>
     </div>
   </div>

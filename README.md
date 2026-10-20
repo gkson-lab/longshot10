@@ -31,11 +31,12 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A luck table comparing your tiers with how often each tier really comes up, a rating of how lucky you have been, an odds calculator, records and milestones
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Twenty-seven skins (see below), an effects setting, and offline install from the hosted copy
+- Twenty-nine skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three, and a free reroll a day; three weekly quests with bigger rewards
 - A daily streak with rewards and Streak Freezes, a lucky hour each day, and double coins at weekends
 - A token workshop of lasting upgrades, a coin shop, and quick-use buttons for pinned items
 - Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige
+- A weekly bingo card of badges and a bounty board that changes every six hours
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
 - Up to ten save files in the browser, each with its own progress; export one to move or share it, and importing always adds a new save file instead of replacing yours
@@ -90,6 +91,7 @@ npm run smoke   # play the game in Chromium (Playwright) at phone and desktop wi
 
 Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
 
+- v3.8 (2026-10-20 03:37 UTC): Weekly bingo card of 24 badges, paying for every line and a full card; a bounty board of three badges or multipliers that changes every six hours; hunt up to three things at once; Auto can stop on any new badge; Endless can stop after a set number of rolls or minutes; BINGO and BOUNTIES commands; Bingo Hall (reward for a first line) and Punch Card (reward for ten bounties) skins; five achievements.
 - v3.7 (2026-10-20 03:29 UTC): Daily streak with rewards on days 3 to 365 and a Streak Freeze every seventh day; Streak Freeze and Quest Ticket items; a lucky hour each day with drops and coins ×2; coins ×2 at weekends; a free quest reroll a day, more with Quest Tickets; three weekly quests with a Diamond Goose for all three; Sakura (reward for a seven-day streak) and Glacier (reward for a weekly clean sweep) skins; four achievements.
 - v3.6 (2026-10-20 03:21 UTC): Token workshop with four lasting upgrades (coins, items, tokens and quest coins up to ×3, kept through prestige); a coin shop of eleven items at fixed prices; Coin Magnet and Token Charm items; auto-fuse; quick-use buttons for up to four pinned items; WORKSHOP and SHOP commands; Steel (reward for Tinkerer) and Ledger (reward for Customer) skins; four achievements.
 - v3.5 (2026-10-20 03:14 UTC): How lucky you have been (your best plain roll against everyone with as many rolls, as an exact share); an odds calculator for any tier in any number of rolls, also as CHANCE; records and milestones in the Log, also as RECORDS; recent rolls filtered by mode and tier and exported as CSV; a badge's chance in your next 1,000 plain rolls; Nixie (reward for the Pandigital badge) and Index Card (reward for Show and tell) skins.

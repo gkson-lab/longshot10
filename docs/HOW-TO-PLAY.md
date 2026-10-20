@@ -46,8 +46,8 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 ## Rolling a lot
 
 - **Roll** (or Space) rolls once and shows the result at once.
-- **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up.
-- **Endless** (or E) never stops on its own.
+- **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up, or (if you tick it in Auto settings) any badge you did not have. You can hunt up to three things at once: Also hunt in a badge's details adds a second and third.
+- **Endless** (or E) never stops on its own, unless you set it to stop after a number of rolls or minutes in Auto settings.
 - **Batch ×100 up to ×100,000** does that many rolls at once and shows the best roll and how many landed in each tier. The batch is counted rather than played roll by roll, so it takes a few milliseconds at any size. Its best roll is a real roll, recorded like any other (the best of 5,000 rolls with luck ×L is one roll with luck ×5,000L). The other rolls are drawn from the same odds and count fully toward tiers, item drops, coins, lucky tokens, totals and quests, but they do not collect badges or enter the roll log. A charm, lens or drop booster that runs out partway through still covers exactly the rolls it has left. During a hunt a batch plays every roll, so the hunt can find its target; it stops as soon as it does, and Stop batch ends it early.
 - **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll one batch like that every second: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons. Stop ends it at once. A background tab catches up on the batches it missed, up to a minute's worth.
 - **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
@@ -79,6 +79,8 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 ## Collecting
 
 - **Collection:** every badge and multiplier, with search and filters. Select one for its exact count and how often you have found it against the expectation.
+- **Bingo:** a new 5 × 5 card of badges every Monday. A badge marks its cell when a roll earns it; each line pays coins and a charm, and a full card a Diamond Goose.
+- **Bounty board:** three badges or multipliers that change every six hours. Land one before it changes for coins and lucky tokens, more for rarer ones.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
 - **Achievements:** 108 of them, each with an item reward.
 - **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
