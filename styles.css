@@ -555,10 +555,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 :root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }
 
 /* Full-screen skins: each replaces the page with its own way to play, in its own fixed colours. */
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"]) body { overflow: hidden; }
-:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet { display: flex; }
-.chat, .handheld, .calc, .sheet { position: fixed; inset: 0; z-index: 40; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"]) body { overflow: hidden; }
+:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet, :root[data-theme="receipt"] .receipt { display: flex; }
+.chat, .handheld, .calc, .sheet, .receipt { position: fixed; inset: 0; z-index: 40; }
 
 /* Chat: a messaging app with Tenny. */
 .chat { flex-direction: column; background: #eef1f5; color: #1b1f24; font: 15px/1.4 system-ui, sans-serif; }
@@ -892,3 +892,31 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 .wheel .seg.won + text { fill: var(--accent-ink); }
 .game .luck { text-align: left; }
 .game .luck td:first-child { text-align: left; }
+
+/* v4.2 */
+/* Receipt: a till roll of thermal paper on a dark counter, printed in a narrow monospace column. */
+.receipt { justify-content: center; align-items: flex-start; overflow-y: auto; padding: 16px; background: #2b2a2e; }
+.rc-body { width: min(380px, 100%); display: flex; flex-direction: column; gap: 12px; }
+.rc-paper { height: min(62vh, 560px); overflow-y: auto; padding: 14px 16px 20px; background: #fbfaf5; color: #232220; box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6); }
+.rc-paper pre { margin: 0; font: 13px/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rc-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rc-keys button { min-height: 48px; border: 0; border-radius: 8px; background: #47464c; color: #ffffff; font: 700 14px system-ui, sans-serif; cursor: pointer; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3); }
+.rc-keys [data-rc="print"] { background: #e6e3d6; color: #232220; }
+.rc-keys button:active { transform: translateY(2px); box-shadow: none; }
+.rc-help { margin: 0; color: #d4d2d8; font: 12px/1.4 system-ui, sans-serif; text-align: center; }
+.receipt :focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+[data-swatch="receipt"] { background: linear-gradient(135deg, #fbfaf5 55%, #47464c 55%); }
+/* Profile */
+.profile-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 10px; }
+.profile-name { font-size: 22px; }
+.profile-title { color: var(--accent); font-weight: 700; }
+.profile .facts-grid { margin-bottom: 12px; }
+.backups { margin-top: 6px; }
+.backups summary h2 { font-size: 15px; }
+/* Newsprint: grey newsprint and black ink, with a deep red Roll button, for your first front page. */
+:root[data-theme="news"] {
+  --bg: #f2f1ec; --surface: #faf9f6; --surface-2: #eeece6; --line: #c9c6bc;
+  --ink: #161616; --muted: #45443f; --faint: #55534d; --cell: #161616; --cell-ink: #efeee9; --cell-lead: #8a877e;
+  --accent: #9d1c1c; --accent-ink: #ffffff; --focus: #161616;
+}
+[data-swatch="news"] { background: linear-gradient(135deg, #f2f1ec 55%, #9d1c1c 55%); }

@@ -346,12 +346,45 @@ const STEPS = [
     await shot('arcade');
     await click('[data-tab="roll"]');
   }],
+  // v4.2
+  ['profile title and card, Receipt skin, backup and restore', async ({ page, click, overflow, shot }) => {
+    const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
+    await click('[data-tab="trophies"]');
+    await page.selectOption('#titleSel', { index: 1 });
+    if (!(await page.textContent('.profile-title'))) throw new Error('the title does not show');
+    const [img] = await Promise.all([page.waitForEvent('download'), click('#profileImg')]);
+    if (!/profile/.test(img.suggestedFilename())) throw new Error('no profile image');
+    await overflow('trophies with profile');
+    await click('#settingsBtn');
+    if (await page.isHidden('#terminal')) await click('#termToggle');
+    await type('#termInput', 'receipt');
+    await type('#termInput', 'SKIN receipt');
+    if (!(await page.isVisible('#receipt'))) throw new Error('Receipt did not open');
+    for (const k of ['print', 'print10', 'total']) await click(`[data-rc="${k}"]`);
+    if (!/THANK YOU/.test(await page.textContent('#rcOut'))) throw new Error('Total printed nothing');
+    await shot('receipt');
+    await click('[data-rc="cut"]');
+    await click('#receipt [data-leave]');
+    await page.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); });
+    await click('#settingsBtn');
+    await click('#skinList [data-skin="midnight"]');
+    await click('.backups summary');
+    await click('#backupNow');
+    if ((await page.$$('#backupList [data-restore]')).length < 1) throw new Error('Back up now kept nothing');
+    const rolls = await page.evaluate(() => JSON.parse(localStorage.getItem('rngdle10:backup:main'))[0].rolls);
+    await Promise.all([page.waitForEvent('load'), click('#backupList [data-restore="0"]')]);
+    await page.waitForFunction(() => document.getElementById('rollBtn').textContent === 'Roll', null, { timeout: 60000 });
+    await click('[data-tab="log"]');
+    const now = +(await page.textContent('#stats .stat .v')).replace(/,/g, '');
+    if (now !== rolls) throw new Error(`restored ${now} rolls, the backup had ${rolls}`);
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     if (await page.isHidden('#terminal')) await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

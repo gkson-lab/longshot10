@@ -128,10 +128,12 @@
   }
   const tierTotal = mode => Object.values(state.tiers[mode]).reduce((a, b) => a + b, 0);
   // Saves are throttled, not debounced: a debounce kept resetting during Endless and never fired.
-  let saveTimer = 0, storageOk = true;
+  let saveTimer = 0, storageOk = true, restoring = false;
   function writeSave() {
     clearTimeout(saveTimer);
     saveTimer = 0;
+    if (restoring) return; // a restored backup is in storage; this state must not overwrite it
+    if (state.total && Date.now() - (state.backupAt || 0) > BACKUP_EVERY) backupNow('auto');
     try { localStorage.setItem(KEY, JSON.stringify(state)); storageOk = true; } catch { storageOk = false; }
     $('storageNotice').hidden = storageOk;
   }
@@ -779,7 +781,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -2012,6 +2014,10 @@
     { id: 'wheelTop', name: 'Top of the wheel', desc: 'Land the Charm of Ten Thousand on the daily wheel', test: () => !!arc().wheelJackpot },
     { id: 'scratchWin', name: 'Scratch and win', desc: 'Win on a scratch card', test: () => (arc().scratchWins || 0) >= 1 },
     { id: 'sevens', name: 'Lucky sevens', desc: 'Scratch a row of three Sevens', test: () => !!arc().sevens },
+    // v4.2
+    { id: 'titled', name: 'Titled', desc: 'Wear a title on your profile', test: () => !!titleOf() },
+    { id: 'profileCard', name: 'Front page', desc: 'Save your profile card as an image', test: () => (state.profileCards || 0) >= 1 },
+    { id: 'receipt100', name: 'Paper trail', desc: 'Print 100 receipts', test: () => (state.receipts || 0) >= 100 },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2515,7 +2521,7 @@
     });
     for (const t of TABS) $('tab-' + t).hidden = t !== name;
     if (name === 'collection') { renderBingo(); renderBounties(); renderBook(); renderCollection(); }
-    if (name === 'trophies') { renderQuests(); renderPrestige(); renderTrophies(); }
+    if (name === 'trophies') { renderProfile(); renderQuests(); renderPrestige(); renderTrophies(); }
     if (name === 'log') renderLog();
     if (name === 'arcade') renderArcade();
     if (name === 'inventory') { renderInventory(); renderSlot(); }
@@ -2545,7 +2551,7 @@
     for (const r of document.querySelectorAll('#settingsDialog input[name="text"]')) r.checked = r.value === (s.text || 'normal');
     for (const r of document.querySelectorAll('#settingsDialog input[name="notice"]')) r.checked = !s.notices || s.notices[r.value] !== false;
   }
-  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); renderSkins(); $('settingsDialog').showModal(); });
+  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); renderBackups(); renderSkins(); $('settingsDialog').showModal(); });
   $('settingsDialog').addEventListener('change', ev => {
     const { name, value } = ev.target;
     if (name === 'effects') state.settings.effects = value;
@@ -2723,6 +2729,7 @@
     { id: 'handheld', name: 'Handheld', how: 'secret', hint: 'An old cheat code still works.' },
     { id: 'calc', name: 'Calculator', how: 'secret', hint: 'Say hello the calculator way, in the number lookup.' },
     { id: 'sheet', name: 'Spreadsheet', how: 'secret', hint: 'A command line that is spoken to in formulas.', light: true },
+    { id: 'receipt', name: 'Receipt', how: 'secret', hint: 'Ask any command line for a receipt.', light: true },
     { id: 'gold', name: 'Gold', how: 'bundle' },
     { id: 'ruby', name: 'Ruby', how: 'bundle' },
     { id: 'aurora', name: 'Aurora', how: 'bundle' },
@@ -2742,6 +2749,7 @@
     { id: 'bingo', name: 'Bingo Hall', how: 'reward', ach: 'bingo1', light: true },
     { id: 'punch', name: 'Punch Card', how: 'reward', ach: 'bounty10', light: true },
     { id: 'casino', name: 'Casino', how: 'reward', ach: 'hl5' },
+    { id: 'news', name: 'Newsprint', how: 'reward', ach: 'profileCard', light: true },
     { id: 'marquee', name: 'Marquee', how: 'reward', ach: 'wheel7' },
     // Coin skins: bought one at a time for coins, in Settings.
     { id: 'olive', name: 'Olive', how: 'coins', price: 2000 },
@@ -2869,6 +2877,7 @@
     'ACH                    Achievements.',
     'RECORDS                Records and how lucky you have been.',
     'BINGO                  This week\'s bingo card.',
+    'PROFILE [TITLE name]   Your profile, or wear a title from an achievement.',
     'HL RARER|COMMONER [bet]  Higher or lower in the arcade.',
     'DIGIT d [bet]          Digit pick: bet on how many of ten cells show d.',
     'WHEEL                  Spin the daily wheel.',
@@ -2909,6 +2918,9 @@
       case 'cls': case 'clear': print.clear(); break;
       case 'exit': if (print.exit) print.exit(); else print('Type GUI to leave the Console skin.'); break;
       case 'gui': leaveFull(); break;
+      case 'receipt':
+        print(unlockSkin('receipt', 'Receipt asked for') ? 'Here you go: the Receipt skin is unlocked. SKIN receipt prints every roll on a till roll.' : 'You already have the Receipt skin. SKIN receipt wears it.', '');
+        break;
       case 'hello': case 'hi': case 'hey':
         print(unlockSkin('chat', 'Someone said hello') ? 'Hello! You unlocked the Chat skin. SKIN chat to talk to Tenny.' : 'Hello again!', '');
         break;
@@ -3141,6 +3153,20 @@
         scratchCard.told = true;
         break;
       }
+      case 'profile': {
+        if ((rest[0] || '').toLowerCase() === 'title') {
+          const want = rest.slice(1).join(' ').toLowerCase();
+          const a = ACHIEVEMENTS.find(x => state.ach[x.id] && x.name.toLowerCase() === want);
+          if (!want) { state.settings.title = ''; print('Title removed.', ''); break; }
+          if (!a) { print('Titles come from achievements you have earned. ACH lists them.', ''); break; }
+          state.settings.title = a.id;
+          checkAchievements();
+          print(`You are now ${a.name}.`, '');
+          break;
+        }
+        print(`${slotName(slots.active)}${titleOf() ? `, ${titleOf()}` : ''}`, ...profileRows().map(([k, val]) => `${pad(k, 16)}${val}`), '');
+        break;
+      }
       case 'bingo': {
         const card = bingoCard(), w = 13;
         print(...[0, 1, 2, 3, 4].map(r => [0, 1, 2, 3, 4].map(c => {
@@ -3269,7 +3295,7 @@
   // Full-screen skins: Console, Chat, Handheld and Calculator each replace the page with their own
   // way to play. They all drive the same game through the same functions; Leave returns to the skin
   // worn before.
-  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet'];
+  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet', 'receipt'];
   const fullSkin = () => (FULL_SKINS.includes(state.settings.theme) ? state.settings.theme : null);
   function leaveFull() {
     const back = state.settings.prevSkin;
@@ -3283,6 +3309,7 @@
     if (f === 'handheld') { hh.last = entry; hhPaintSoon(); }
     if (f === 'calc') { calc.last = entry; calcPaintSoon(); }
     if (f === 'sheet') sheetRoll(entry);
+    if (f === 'receipt') receiptRoll(entry);
   }
   function fullNotice(text) {
     const f = fullSkin();
@@ -3291,6 +3318,7 @@
     if (f === 'handheld') { hh.note = text; hh.noteAt = performance.now(); hhPaintSoon(); }
     if (f === 'calc') { calc.note = text; calc.noteAt = performance.now(); calcPaintSoon(); }
     if (f === 'sheet') $('shOut').textContent = text;
+    if (f === 'receipt') rcPrint(`* ${text}`);
   }
   function paintFull() {
     const f = fullSkin();
@@ -3299,6 +3327,8 @@
     $('handheld').hidden = f !== 'handheld';
     $('calc').hidden = f !== 'calc';
     $('sheet').hidden = f !== 'sheet';
+    $('receipt').hidden = f !== 'receipt';
+    if (f === 'receipt' && !$('rcOut').textContent) rcHeader();
     if (f === 'sheet') { sheetPaint(); setTimeout(() => $('shInput').focus(), 0); }
     if (f === 'chat') {
       if (!$('chatLog').children.length) {
@@ -3568,6 +3598,147 @@
     $('shTabs').querySelector(`[data-sheet="${next}"]`).focus();
   });
 
+  // Receipt: the game as a till roll. Every roll prints a ticket on thermal paper, 32 characters
+  // wide. While Auto or Endless runs only Rare or rarer rolls print, at most ten a second.
+  const RC_W = 32;
+  const rc = { at: 0, printed: false };
+  const rcLine = (l, r = '') => l + ' '.repeat(Math.max(1, RC_W - l.length - r.length)) + r;
+  const rcCenter = t => ' '.repeat(Math.max(0, Math.floor((RC_W - t.length) / 2))) + t;
+  function rcPrint(text) {
+    $('rcOut').append(text + '\n');
+    while ($('rcOut').childNodes.length > 400) $('rcOut').firstChild.remove();
+    $('rcPaper').scrollTop = 1e9;
+  }
+  function rcHeader() {
+    rcPrint([rcCenter('LONG SHOT 10'), rcCenter('ROLL RECEIPT'), rcCenter(new Date().toLocaleString()), rcCenter(`SAVE: ${slotName(slots.active).toUpperCase()}`), '='.repeat(RC_W)].join('\n'));
+  }
+  function receiptRoll(entry) {
+    if (auto) {
+      if (T(entry.tier) < T('rare')) return;
+      const now = performance.now();
+      if (now - rc.at < 100) return;
+      rc.at = now;
+    }
+    const r = scoreOf(entry), mult = entry.x && entry.x !== 'unity' ? ` x ${MULT_BY_ID[entry.x].symbol}` : '';
+    rcPrint([rcLine(`#${fmt(state.total)}`, new Date(entry.t).toLocaleTimeString()), rcLine(`  ${label(entry)}${mult}`, MODE_BY_ID[entry.mode].name.toUpperCase()),
+      rcLine(`  ${ROLL_TIERS[T(entry.tier)].name.toUpperCase()}`, oneText(entry)), rcLine(`  ${r.badges.length} ${r.badges.length === 1 ? 'BADGE' : 'BADGES'}`, `${bigText(entry.log)} EP`), '-'.repeat(RC_W)].join('\n'));
+    state.receipts = (state.receipts || 0) + 1;
+  }
+  function rcTotal() {
+    const best = session.best[state.mode][0];
+    rcPrint(['='.repeat(RC_W), rcLine('SESSION ROLLS', fmt(session.rolls)), rcLine('BEST', best ? `${ROLL_TIERS[T(best.tier)].name.toUpperCase()} ${oneText(best)}` : 'NONE'),
+      rcLine('ALL-TIME ROLLS', fmt(state.total)), rcLine('COINS', fmt(state.coins)), rcLine('LUCKY TOKENS', fmt(state.tokens || 0)), rcLine('ITEMS', fmt(itemCount())),
+      '='.repeat(RC_W), rcCenter('THANK YOU FOR ROLLING'), ''].join('\n'));
+  }
+  function rcPress(k) {
+    if (fullSkin() !== 'receipt') return;
+    tone(k === 'cut' ? 300 : 900, 0.04, { type: 'square', gain: 0.015 });
+    if (k === 'print') shell('roll', () => {});
+    if (k === 'print10') shell('roll 10', () => {});
+    if (k === 'feed') shell(auto ? 'stop' : 'endless', () => {});
+    if (k === 'total') rcTotal();
+    if (k === 'cut') { $('rcOut').textContent = ''; rcHeader(); }
+    checkAchievements();
+    save();
+  }
+  $('receipt').addEventListener('click', ev => { const b = ev.target.closest('[data-rc]'); if (b) rcPress(b.dataset.rc); });
+  const RC_KEYS = { Enter: 'print', f: 'feed', t: 'total', c: 'cut' };
+
+  // Profile: the save file at a glance, with a title from any achievement earned, and a card to save
+  // as an image.
+  function bestEver() { return MODE_IDS.map(m => state.hof[m][0]).filter(Boolean).sort((a, b) => b.log - a.log)[0]; }
+  function profileRows() {
+    const best = bestEver(), st = state.streak || {};
+    return [
+      ['Rolls', fmt(state.total)],
+      ['Best roll', best ? `${ROLL_TIERS[T(best.tier)].name} ${oneText(best)}` : 'none yet'],
+      ['Badges', `${collected()} of ${collectable().length}`],
+      ['Mastery', `${fmt(masteryTotal())} of ${fmt(collectable().length * MASTERY.length)}`],
+      ['Achievements', `${Object.keys(state.ach).length} of ${ACHIEVEMENTS.length}`],
+      ['Skins', `${SKINS.filter(x => ownsSkin(x.id)).length} of ${SKINS.length}`],
+      ['Prestige', String(state.prestige || 0)],
+      ['Longest streak', st.best ? `${fmt(st.best)} ${st.best === 1 ? 'day' : 'days'}` : 'none yet'],
+      ['Rolling since', state.ach.first ? new Date(state.ach.first).toLocaleDateString(undefined, { dateStyle: 'medium' }) : 'not yet'],
+    ];
+  }
+  const titleOf = () => { const a = ACHIEVEMENTS.find(x => x.id === state.settings.title && state.ach[x.id]); return a ? a.name : ''; };
+  function renderProfile() {
+    const earned = ACHIEVEMENTS.filter(a => state.ach[a.id]);
+    $('profile').innerHTML = `<div class="profile-head"><b class="profile-name">${esc(slotName(slots.active))}</b>${titleOf() ? `<span class="profile-title">${esc(titleOf())}</span>` : ''}</div>`
+      + `<dl class="facts-grid">${profileRows().map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join('')}</dl>`
+      + `<div class="item-actions" style="justify-content:flex-start"><label class="field">Title <select id="titleSel"><option value="">No title</option>${earned.map(a => `<option value="${a.id}"${state.settings.title === a.id ? ' selected' : ''}>${esc(a.name)}</option>`).join('')}</select></label>`
+      + `<button class="btn" type="button" id="profileImg">Save as image</button></div>`
+      + (earned.length ? '' : '<p class="muted">Every achievement you earn becomes a title you can wear here.</p>');
+  }
+  $('profile').addEventListener('change', ev => { if (ev.target.id === 'titleSel') { state.settings.title = ev.target.value; checkAchievements(); save(); renderProfile(); } });
+  $('profile').addEventListener('click', ev => { if (ev.target.id === 'profileImg') saveProfileImage(); });
+  // A 1200 × 630 card in the current skin's colours: the reel motif, the name and title, and the stats.
+  function saveProfileImage() {
+    const W = 1200, H = 630, c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    const g = c.getContext('2d'), v = cssVar, sans = 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', mono = 'ui-monospace, Cascadia Mono, SF Mono, Menlo, Consolas, monospace';
+    g.fillStyle = v('--bg'); g.fillRect(0, 0, W, H);
+    g.fillStyle = v('--ink'); g.font = `800 34px ${sans}`; g.fillText('Long Shot', 60, 84);
+    ['1', '0'].forEach((d, i) => { g.fillStyle = v('--cell'); g.beginPath(); g.roundRect(240 + i * 34, 52, 30, 42, 5); g.fill(); g.fillStyle = v('--cell-ink'); g.font = `700 28px ${mono}`; g.textAlign = 'center'; g.fillText(d, 255 + i * 34, 84); g.textAlign = 'left'; });
+    g.fillStyle = v('--ink'); g.font = `800 58px ${sans}`; g.fillText(slotName(slots.active), 60, 186);
+    if (titleOf()) { g.fillStyle = v('--accent'); g.font = `700 30px ${sans}`; g.fillText(titleOf(), 60, 232); }
+    const best = bestEver();
+    if (best) { g.fillStyle = v(`--r-${best.tier}`); g.font = `900 44px ${sans}`; g.fillText(`${ROLL_TIERS[T(best.tier)].name} ${oneText(best)}`, 60, 300); }
+    profileRows().filter(r => r[0] !== 'Best roll').forEach(([k, val], i) => {
+      const x = 60 + (i % 2) * 560, y = 372 + Math.floor(i / 2) * 58;
+      g.fillStyle = v('--muted'); g.font = `500 22px ${sans}`; g.fillText(k, x, y);
+      g.fillStyle = v('--ink'); g.font = `700 28px ${mono}`; g.fillText(val, x, y + 30);
+    });
+    c.toBlob(blob => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `longshot10-profile-${slotName(slots.active).toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    });
+    state.profileCards = (state.profileCards || 0) + 1;
+    checkAchievements();
+    save();
+  }
+
+  // Backups: the newest three copies of this save file, kept every 30 minutes of play and before a
+  // prestige or a restore. They live in this browser only, under their own key.
+  const BACKUP_KEY = `rngdle10:backup:${slots.active}`, BACKUP_EVERY = 30 * 60e3, BACKUPS = 3;
+  function readBackups() { try { return JSON.parse(localStorage.getItem(BACKUP_KEY)) || []; } catch { return []; } }
+  function backupNow(reason) {
+    state.backupAt = Date.now();
+    const list = readBackups();
+    list.unshift({ t: Date.now(), reason, rolls: state.total, data: JSON.stringify(state) });
+    list.length = Math.min(list.length, BACKUPS);
+    // A full browser store keeps fewer copies rather than none.
+    for (let keep = list.length; keep > 0; keep--) {
+      try { localStorage.setItem(BACKUP_KEY, JSON.stringify(list.slice(0, keep))); return true; } catch { /* try with one fewer */ }
+    }
+    return false;
+  }
+  function renderBackups() {
+    const list = readBackups();
+    $('backupSub').textContent = list.length ? `${list.length} of ${BACKUPS}` : 'none yet';
+    $('backupList').innerHTML = list.length ? list.map((b, i) => `<li><div class="slot-info"><b>${esc(new Date(b.t).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }))}</b>`
+      + `<span class="muted num">${rollsText(b.rolls)} · ${esc({ auto: 'every 30 minutes', manual: 'backed up by hand', prestige: 'before a prestige', restore: 'before a restore' }[b.reason] || b.reason)}</span></div>`
+      + `<div class="slot-actions"><button class="btn" type="button" data-restore="${i}" aria-label="Restore the backup from ${esc(new Date(b.t).toLocaleString())}">Restore</button></div></li>`).join('')
+      : '<li class="empty-state">No backups yet. The first is made after 30 minutes of play, or press Back up now.</li>';
+  }
+  $('backupNow').addEventListener('click', () => { $('dataMsg').textContent = backupNow('manual') ? 'Backed up.' : 'This browser is out of storage, so no backup could be kept.'; renderBackups(); });
+  $('backupList').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-restore]');
+    if (!b) return;
+    const pick = readBackups()[+b.dataset.restore];
+    if (!pick || !confirm(`Restore this save file to ${new Date(pick.t).toLocaleString()} (${rollsText(pick.rolls)})? Everything since then is lost, though the current state is backed up first.`)) return;
+    setAuto(null);
+    backupNow('restore');
+    clearTimeout(saveTimer);
+    saveTimer = 0;
+    try { localStorage.setItem(KEY, pick.data); } catch { $('dataMsg').textContent = 'This browser is blocking storage, so the backup could not be restored.'; return; }
+    restoring = true;
+    location.reload();
+  });
+
   // Keys for the handheld and calculator, and the Konami code that unlocks the handheld.
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let konami = 0;
@@ -3578,6 +3749,7 @@
     if (ev.ctrlKey || ev.metaKey || ev.altKey || document.querySelector('dialog[open]')) return;
     const f = fullSkin();
     if (f === 'handheld' && HH_KEYS[ev.key]) { ev.preventDefault(); hhPress(HH_KEYS[ev.key]); }
+    if (f === 'receipt' && RC_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key] && !ev.target.closest('button')) { ev.preventDefault(); rcPress(RC_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key]); }
     if (f === 'calc') {
       if (ev.key === 'Backspace') { calc.entry = calc.entry.slice(0, -1); calcPaint(); ev.preventDefault(); return; }
       const key = /^\d$/.test(ev.key) ? ev.key : CALC_KEYS[ev.key];
@@ -3948,6 +4120,7 @@
   });
   function doPrestige() {
     setAuto(null);
+    backupNow('prestige');
     state.prestige = (state.prestige || 0) + 1;
     state.prestigeAt = state.total;
     Object.assign(state, { coins: 0, inv: {}, effects: {} });
@@ -3961,6 +4134,14 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v4.2', at: '2026-10-20 03:59', title: 'Receipts and profiles', items: [
+      'Receipt, a full-screen secret skin: every roll prints a ticket on a till roll, with Print, Print ×10, Feed (Endless), Total and Cut. Its hint is in Settings.',
+      'Profile (Trophies): your save at a glance: rolls, best roll, badges, mastery, achievements, skins, prestige, longest streak and the day you started.',
+      'Titles: every achievement you earn becomes a title to wear on your profile (or PROFILE TITLE name).',
+      'Profile card: save your profile as an image in your skin\'s colours.',
+      'Backups (Settings > Save files): a copy of your save every 30 minutes of play and before a prestige or a restore, the newest three kept, with Restore and Back up now.',
+      'Newsprint, the reward for Front page (save your profile card). Three new achievements.',
+    ] },
     { v: 'v4.0', at: '2026-10-20 03:55', title: 'The arcade (major update)', items: [
       'A new Arcade tab with four games. Each shows its exact chances and its payback, and arcade rolls never touch your records.',
       'Higher or lower: will the next roll be rarer or commoner? The chance is exact (a roll beaten by a share q of rolls is beaten next time with chance q), and a right call pays 95% of the fair price.',
@@ -4046,6 +4227,7 @@
     setTimeout(() => { grant('luck10', 'Daily gift'); save(); }, 600);
   }
   for (const k of Object.keys(state.daily).sort().slice(0, -60)) delete state.daily[k]; // keep two months of daily counts
+  if (!state.backupAt) state.backupAt = Date.now(); // the first automatic backup comes after 30 minutes of play
   for (const s of SKINS) if (((s.ach && state.ach[s.ach]) || (s.badge && state.counts[s.badge])) && !state.skins.includes(s.id)) state.skins.push(s.id); // earned before the skin existed
   applySettings();
   paintPrestigeMark();

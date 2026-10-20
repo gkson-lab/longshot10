@@ -19,6 +19,7 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Handheld | Type the old cheat code anywhere: **↑ ↑ ↓ ↓ ← → ← → B A** | The whole game on a pocket console. |
 | Calculator | Look up **07734** in the Collection's number lookup (it says hELLO upside down) | The whole game on a calculator. |
 | Spreadsheet | Type a formula, like **=ROLL(3)**, into any command line | The whole game as a spreadsheet. |
+| Receipt | Type **RECEIPT** into any command line | The whole game on a till roll. |
 | Gold, Ruby, Aurora | Buy the bundle for 500 coins in Settings | Three rich palettes. |
 | Graph Paper | Complete the Math page of the badge book | Red ink on squared paper. |
 | Golden Spiral | Complete the Sequences page | Gold on slate. |
@@ -33,12 +34,13 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Glacier | Earn Clean sweep (all three weekly quests of a week) | Pale ice blue with sea-blue ink. |
 | Bingo Hall | Earn Bingo (a line on the bingo card) | Cream card stock and red dauber ink. |
 | Punch Card | Earn Most wanted (10 bounties) | Manila card and tabulator blue. |
+| Newsprint | Earn Front page (save your profile card) | Grey newsprint and black ink. |
 | Casino | Earn Called it (five right calls in a row at higher or lower) | Roulette-red felt and gold. |
 | Marquee | Earn Wheel regular (spin the daily wheel on 7 days) | A dark theatre front with bulb-white digits. |
 | Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
 | Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
-To leave a full-screen skin, use its Leave chat, Power off, OFF or Close sheet button, or type GUI in Console. You go back to the skin you wore before.
+To leave a full-screen skin, use its Leave chat, Power off, OFF, Close sheet or Off button, or type GUI in Console. You go back to the skin you wore before.
 
 ## Console and the Settings command line
 
@@ -66,6 +68,8 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `BADGES [word]` | Badges by category, or every badge matching a word |
 | `ACH` | Achievements |
 | `RECORDS` | Records, and how lucky you have been |
+| `PROFILE`, `PROFILE TITLE name` | Your profile, or wear a title from an achievement |
+| `RECEIPT` | Ask for a receipt |
 | `BINGO` | This week's bingo card |
 | `HL`, `HL RARER [bet]`, `HL COMMONER [bet]` | Higher or lower |
 | `DIGIT d [bet]` | Digit pick on digit d |
@@ -127,3 +131,14 @@ Every roll is a row: time, number, mode, tier, 1/N, score, multiplier and badges
 | `=SUM(1, 2, 3)`, `=AVERAGE(...)`, `=MIN(...)`, `=MAX(...)` | Plain arithmetic on numbers |
 
 The tabs along the bottom (Rolls, Stats, Luck, Items, Quests, Best, Records, Help) show each as a table; the left and right arrow keys move between them.
+
+## Receipt
+
+| Button | Keyboard | What it does |
+| --- | --- | --- |
+| Print | Enter | Roll once and print the ticket |
+| Print ×10 | | Roll ten times, a ticket each |
+| Feed | F | Endless on or off; Rare or rarer rolls print, at most ten a second |
+| Total | T | Print the session's totals |
+| Cut | C | Clear the paper |
+| Off | | Leave the receipt |

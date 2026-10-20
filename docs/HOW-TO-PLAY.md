@@ -85,6 +85,7 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
 - **Achievements:** 108 of them, each with an item reward.
 - **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
+- **Profile:** your save at a glance, with a title from any achievement you have earned, and a card to save as an image.
 
 ## Your numbers
 
@@ -118,8 +119,8 @@ After 100,000 rolls (then 200,000 more for the second, and so on) you can presti
 
 ## Skins
 
-Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Five of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator and a spreadsheet. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
+Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Six of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet and a till roll. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
 
 ## Your saves
 
-Everything is saved in your browser and nothing is sent anywhere. Settings > Save files holds up to ten save files, each with its own rolls, items and skins. Export a save to back it up or share it; importing always adds a new save file, so it can never overwrite yours.
+Everything is saved in your browser and nothing is sent anywhere. Settings > Save files holds up to ten save files, each with its own rolls, items and skins. Each keeps its newest three backups, made every 30 minutes of play and before a prestige or a restore, and you can restore any of them. Export a save to back it up or share it; importing always adds a new save file, so it can never overwrite yours.

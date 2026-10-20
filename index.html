@@ -116,6 +116,21 @@
   <div class="sh-tabs" role="tablist" aria-label="Sheets" id="shTabs"></div>
 </div>
 
+<div class="receipt" id="receipt" hidden>
+  <div class="rc-body">
+    <div class="rc-paper" id="rcPaper" aria-live="polite"><pre id="rcOut"></pre></div>
+    <div class="rc-keys">
+      <button type="button" data-rc="print">Print</button>
+      <button type="button" data-rc="print10">Print ×10</button>
+      <button type="button" data-rc="feed">Feed</button>
+      <button type="button" data-rc="total">Total</button>
+      <button type="button" data-rc="cut">Cut</button>
+      <button type="button" data-leave>Off</button>
+    </div>
+    <p class="rc-help">Enter prints a roll, F feeds paper (Endless on or off), T prints a total, C cuts the paper.</p>
+  </div>
+</div>
+
 <div class="wrap">
   <header class="top">
     <h1 class="mark">Long Shot <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span><span class="prestige-mark num" id="prestigeMark" hidden></span></h1>
@@ -351,6 +366,8 @@
     <section id="tab-trophies" role="tabpanel" aria-labelledby="tab-btn-trophies" hidden>
       <div class="two-col">
         <div>
+          <div class="section-head"><h2>Profile</h2></div>
+          <div class="coins-panel profile" id="profile"></div>
           <div class="section-head"><h2>Daily streak</h2><span id="streakSub"></span></div>
           <div class="coins-panel streak" id="streakPanel"></div>
           <div class="section-head"><h2>Daily quests</h2><span id="rerollNote"></span></div>
@@ -478,7 +495,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v4.0</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v4.2</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -545,6 +562,12 @@
     <h3>Save files <span class="muted" id="slotCount"></span></h3>
     <p class="muted">Each save file keeps its own rolls, badges and achievements in this browser. Export one to move it or share it; importing always adds a new save file.</p>
     <ul class="slots" id="slotList"></ul>
+    <details class="fold backups">
+      <summary><h2>Backups of this save</h2><span class="muted" id="backupSub"></span></summary>
+      <p class="muted">A copy of this save file is kept every 30 minutes of play, and before a prestige or a restore. The newest three are kept, in this browser only.</p>
+      <ul class="slots" id="backupList"></ul>
+      <button class="btn" id="backupNow" type="button">Back up now</button>
+    </details>
     <div class="dlg-actions" style="justify-content:flex-start">
       <button class="btn" id="newSlotBtn" type="button">New save file</button>
       <button class="btn" id="importBtn" type="button">Import a save file</button>
