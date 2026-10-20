@@ -76,6 +76,15 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 - **Achievements:** 108 of them, each with an item reward.
 - **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
 
+## Your numbers
+
+The Log tab keeps the numbers of your play:
+
+- **How lucky you have been:** your best plain roll in each mode, against everyone with as many plain rolls. If your best is 1/N after R rolls, the share of players who do at least that well is exactly 1 - (1 - 1/N)^R.
+- **Odds calculator:** the chance of at least one roll of a tier or rarer in any number of rolls, in your current mode and difficulty and with your current luck. One roll with luck L reaches a tier its plain odds q would reach with chance 1 - (1 - q)^L.
+- **Records** that only go up, and **milestones**: the first time you reached each tier.
+- **Recent rolls**, filtered by mode and tier, and exported as a CSV file.
+
 ## Daily things
 
 - **Daily gift:** a Charm of Ten every day, per save file.

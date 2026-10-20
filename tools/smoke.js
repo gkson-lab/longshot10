@@ -165,12 +165,35 @@ const STEPS = [
     if (!before) throw new Error('inventory is empty');
     await click('[data-tab="roll"]');
   }],
+  // v3.5
+  ['Log: luck rating, odds calculator, records, milestones, filters and CSV', async ({ page, click, overflow, shot }) => {
+    await click('[data-tab="log"]');
+    if (!/players after as many rolls/.test(await page.textContent('#luckRating'))) throw new Error('no luck rating after rolling');
+    await page.fill('#ocRolls', '5000');
+    await page.selectOption('#ocTier', 'epic');
+    if (!/chance/.test(await page.textContent('#ocOut'))) throw new Error('odds calculator gave no answer');
+    await page.fill('#ocRolls', 'lots');
+    if (!/Enter a number/.test(await page.textContent('#ocOut'))) throw new Error('odds calculator took a bad number');
+    await page.fill('#ocRolls', '1000');
+    if (!/Most rolls/.test(await page.textContent('#records'))) throw new Error('no records');
+    if (!/First roll/.test(await page.textContent('#milestones'))) throw new Error('no milestones');
+    await page.selectOption('#logTier', { index: 12 });
+    const empty = await page.textContent('#log');
+    await page.selectOption('#logTier', '0');
+    if (empty === (await page.textContent('#log'))) throw new Error('the tier filter changed nothing');
+    const [dl] = await Promise.all([page.waitForEvent('download'), click('#csvBtn')]);
+    const csv = fs.readFileSync(await dl.path(), 'utf8');
+    if (!/^time,number,mode,tier/.test(csv) || csv.split('\n').length < 3) throw new Error('CSV is empty');
+    await overflow('log tab');
+    await shot('log-v35');
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

@@ -24,6 +24,8 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Odometer | Complete the Digits page | Warm dial-gauge tones. |
 | Vaporwave | Complete the Memes page | Pink and purple. |
 | Spectrum | Complete the Combos page | Clean and bright. |
+| Nixie | Find the Pandigital badge (every digit once) | Orange tubes behind smoked glass. |
+| Index Card | Earn Show and tell (copy or save a roll) | A ruled white card with a red top line. |
 | Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
 To leave a full-screen skin, use its Leave chat, Power off or OFF button, or type GUI in Console. You go back to the skin you wore before.
@@ -53,6 +55,8 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `BOOK`, `BOOK CLAIM page` | Badge book |
 | `BADGES [word]` | Badges by category, or every badge matching a word |
 | `ACH` | Achievements |
+| `RECORDS` | Records, and how lucky you have been |
+| `CHANCE tier [n]` | The chance of that tier or rarer in n rolls, e.g. `CHANCE mythic 5000` |
 | `PRESTIGE`, `PRESTIGE YES` | Progress, or prestige |
 | `SKINS`, `SKIN id`, `BUY BUNDLE` | Your skins, wear one, buy the bundle |
 | `SOUND ON` / `OFF` | Sound |

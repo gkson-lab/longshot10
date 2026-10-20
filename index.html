@@ -332,19 +332,42 @@
       </div>
       <div class="two-col">
         <div>
+          <div class="section-head"><h2>How lucky you have been</h2></div>
+          <div id="luckRating"></div>
+          <div class="section-head"><h2>Odds calculator</h2><span id="calcFor"></span></div>
+          <form class="coins-panel odds-calc" id="oddsCalc">
+            <label class="field">At least one <select id="ocTier"></select></label>
+            <label class="field">in <input type="text" inputmode="numeric" id="ocRolls" class="num" value="1,000" aria-label="Number of rolls"> rolls</label>
+            <p class="oc-out" id="ocOut" role="status"></p>
+          </form>
+        </div>
+        <div>
+          <div class="section-head"><h2>Records</h2></div>
+          <dl class="facts-grid records" id="records"></dl>
+          <div class="section-head"><h2>Milestones</h2><span>the first time you reached each tier</span></div>
+          <ol class="timeline" id="milestones"></ol>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
           <div class="section-head"><h2>Luck</h2><span>your tiers against the exact odds</span></div>
           <table class="luck" id="luck"></table>
           <p class="muted" id="luckNote"></p>
         </div>
         <div>
           <div class="section-head"><h2>Recent rolls</h2><span>last 200</span></div>
+          <div class="filters log-filters">
+            <select id="logMode" aria-label="Show rolls of this mode"><option value="">Every mode</option></select>
+            <select id="logTier" aria-label="Show rolls of this tier or rarer"><option value="0">Every tier</option></select>
+            <button class="btn" type="button" id="csvBtn">Export CSV</button>
+          </div>
           <ul class="list" id="log"></ul>
         </div>
       </div>
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.4</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v3.5</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

@@ -671,3 +671,47 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 .luck td, .list .e, .list .t { overflow-wrap: anywhere; }
 .list li { grid-template-columns: minmax(0, 1fr) auto auto; }
 .list .e { min-width: 0; max-width: 14ch; }
+
+/* v3.5: the Log tab's luck rating, odds calculator, records and milestones */
+.log-filters { margin-bottom: 8px; }
+.log-filters select { flex: 1 1 140px; }
+.rating { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 8px; }
+.rating li { padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; }
+.rating .tc { color: var(--tc); }
+.rating a { text-decoration: underline; }
+.odds-calc { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 0; }
+.odds-calc input { width: 9em; }
+.odds-calc select { max-width: 100%; }
+.oc-out { flex-basis: 100%; margin: 4px 0 0; font-size: 15px; }
+.oc-out b { font-size: 20px; }
+.records { margin: 0 0 26px; }
+.records dd { overflow-wrap: anywhere; }
+.timeline { list-style: none; margin: 0 0 26px; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+.timeline li { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 6px 0 6px 8px; }
+.timeline li::before { content: ""; position: absolute; left: -21px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--tc); border: 2px solid var(--bg); }
+.timeline li b { color: var(--tc); }
+.timeline .empty-state { display: block; }
+.timeline .empty-state::before { display: none; }
+/* Nixie: ten glowing orange tubes behind smoked glass. The reward for the Pandigital badge, the
+   roll that lights every digit once. */
+:root[data-theme="nixie"] {
+  --bg: #120d0a; --surface: #1a130f; --surface-2: #211813; --line: #3e2e24;
+  --ink: #ffe9d6; --muted: #dcbfa8; --faint: #c2a48d; --cell: #0a0705; --cell-ink: #ff9a4a; --cell-lead: #8a5c40;
+  --accent: #ff8f3a; --accent-ink: #1a0d04; --focus: #ffb27a;
+}
+/* Index Card: a ruled white card with a red top line. The faint blue rules are what an index card
+   is, so here they are identity, as the grid is for Graph Paper. */
+:root[data-theme="card"] {
+  --bg: #fbfaf5; --surface: #ffffff; --surface-2: #f6f4ec; --line: #d9d4c3;
+  --ink: #1f2430; --muted: #4b5162; --faint: #5a6072; --cell: #1f2430; --cell-ink: #fbfaf5; --cell-lead: #7d8496;
+  --accent: #c62f3b; --accent-ink: #ffffff; --focus: #1f2430;
+}
+:root[data-theme="card"] body {
+  background-image: linear-gradient(#c62f3b, #c62f3b), repeating-linear-gradient(transparent 0 27px, rgba(70, 110, 200, 0.14) 27px 28px);
+  background-size: 100% 3px, auto; background-repeat: no-repeat, repeat;
+}
+[data-swatch="nixie"] { background: linear-gradient(135deg, #120d0a 55%, #ff9a4a 55%); }
+[data-swatch="card"] { background: linear-gradient(135deg, #fbfaf5 55%, #c62f3b 55%); }
+.odds-calc .field { flex-wrap: wrap; white-space: nowrap; }
+.odds-calc .field { max-width: 100%; }
+.odds-calc .field select { flex: 1 1 auto; min-width: 0; }

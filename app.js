@@ -77,6 +77,7 @@
     inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0, pity: {},
     skins: [], book: {}, quests: {}, prestige: 0, prestigeAt: 0, daily: {},
     difficulty: 'standard', tokens: 0, luckLevel: 0,
+    bestPlain: {}, rec: {},
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -93,6 +94,12 @@
         for (const id of MODE_IDS) st.hof[id] = st.hof[id].map(upgradeEntry);
         if (!MODE_BY_ID[st.mode]) st.mode = 'classic';
         if (!(s.v >= 4)) rescale(st);
+        if (!s.bestPlain) { // saves from before v3.5: the hall of fame holds the best plain rolls it kept
+          for (const id of MODE_IDS) {
+            const e = st.hof[id].find(x => !x.b && !x.lens && !x.d && x.oneInLog !== undefined);
+            if (e) st.bestPlain[id] = { l: e.oneInLog, n: e.n, t: e.t, est: !!e.estimated };
+          }
+        }
         return st;
       }
       const old = slots.active === 'main' && JSON.parse(localStorage.getItem('rngdle9:v2'));
@@ -154,6 +161,12 @@
 
   const state = load();
   const session = { rolls: 0, best: perMode(() => []), start: Date.now() };
+  // Records that only grow: the busiest session and day. Called after every roll and every batch.
+  function noteRecords() {
+    const rc = state.rec;
+    rc.session = Math.max(rc.session || 0, session.rolls);
+    rc.day = Math.max(rc.day || 0, state.daily[dayKey()] || 0);
+  }
 
   function record(x) {
     const r = scoreOf(x);
@@ -177,10 +190,19 @@
     }
     // Boosted rolls are not random draws of the plain game, so they stay out of the luck table.
     if (x.b || x.lens || x.d) state.boosted++;
-    else state.tiers[x.mode][tier.id] = (state.tiers[x.mode][tier.id] || 0) + 1;
+    else {
+      state.tiers[x.mode][tier.id] = (state.tiers[x.mode][tier.id] || 0) + 1;
+      const bp = state.bestPlain[x.mode]; // for How lucky you have been
+      if (!bp || oneInLog > bp.l) state.bestPlain[x.mode] = { l: oneInLog, n: x.n, t: x.t, est: !!estimated };
+    }
+    const rc = state.rec;
+    rc.badges = Math.max(rc.badges || 0, r.badges.length);
+    rc.streak = tier.id === 'trash' ? 0 : (rc.streak || 0) + 1; // played rolls in a row without Trash
+    rc.streakBest = Math.max(rc.streakBest || 0, rc.streak);
     const madeHof = insertTop(state.hof[x.mode], entry);
     const madeSession = insertTop(session.best[x.mode], entry);
     session.rolls++;
+    noteRecords();
     return { r, pct, tier, fresh, freshMult, entry, madeHof, madeSession };
   }
 
@@ -424,6 +446,7 @@
         ['Worth', b.factor ? `×${fmt(b.ep)}, applied after the exponent` : `${fmt(b.ep)} EP`],
         ['You earned it', `${fmt(have)} ${have === 1 ? 'time' : 'times'}`],
         [`Expected in your ${fmt(rolls)} ${b.mode ? MODE_BY_ID[b.mode].name + ' ' : ''}rolls`, (rolls * b.p).toFixed(rolls * b.p < 10 ? 2 : 0)],
+        ['Chance in your next 1,000 plain rolls', chanceText(-Math.expm1(1000 * Math.log1p(-b.p)))],
       ],
       first: first && (typeof first === 'object' ? upgradeEntry(first) : { n: first, mode: 'classic', x: 'unity' }),
     });
@@ -1113,7 +1136,12 @@
     renewBoosts();
     save();
     run.rolls++;
-    for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id, 'badge');
+    for (const b of rec.r.badges) {
+      if (!rec.fresh.has(b.id)) continue;
+      toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id, 'badge');
+      const skin = SKINS.find(k => k.badge === b.id);
+      if (skin) unlockSkin(skin.id, b.name);
+    }
     if (rec.freshMult) toast(`New multiplier: <b>× ${esc(rec.r.mult.symbol)} ${esc(rec.r.mult.name)}</b>`, RARITIES[rec.r.mult.rarity].id, 'badge');
     let found = false;
     if (hunt) {
@@ -1123,6 +1151,7 @@
         toast(`Found <b>${esc(huntName(hunt))}</b> after ${fmt(huntRolls)} ${huntRolls === 1 ? 'roll' : 'rolls'}`, 'rare');
         state.huntsDone++;
         state.lastHuntP = huntP(hunt);
+        state.rec.hunt = Math.max(state.rec.hunt || 0, huntRolls);
         huntRolls = 0;
       }
     }
@@ -1210,6 +1239,7 @@
     if (auto === 'endless') {
       const secs = (performance.now() - run.start) / 1000;
       const L = effLuck();
+      if (secs > 10) state.rec.rate = Math.max(state.rec.rate || 0, run.rolls / secs); // a fair rate needs a few seconds
       parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`
         + (L > 1 && speed === 3 ? ` (luck ×${fmt(L)} makes every roll the best of ${fmt(L)}, which is slower than a plain roll)` : ''));
     }
@@ -1328,6 +1358,7 @@
       questEvent('mode', r, q => q.mode === mode);
     }
     payDrops(bag);
+    noteRecords();
     checkAchievements();
     save();
     return { tiers, best, changed };
@@ -1397,6 +1428,7 @@
       if (r.best && (!tot.best || r.best.rec.entry.oneInLog > tot.best.oneInLog)) tot.best = r.best.rec.entry;
       const bestText = e => (e ? `<b style="color:${tierVar(e.tier)}">${ROLL_TIERS[T(e.tier)].name}</b> ${esc(oneText(e))}` : 'none');
       const secs = Math.max((performance.now() - tot.start) / 1000, 1);
+      if (secs > 10) state.rec.rate = Math.max(state.rec.rate || 0, tot.n / secs);
       $('batchResult').hidden = false;
       $('batchResult').innerHTML = `<b>Batch ${fmt(tot.batches)}:</b> ${fmt(r.n)} rolls${r.played ? ` in ${r.secs.toFixed(1)} s` : ''}, best ${bestText(r.best && r.best.rec.entry)}. ${tierList(r.tiers)}`
         + `<br><b>This run:</b> ${fmt(tot.n)} rolls, about ${fmt(tot.n / secs)} a second, best ${bestText(tot.best)}. ${tierList(tot.tiers)}`;
@@ -1839,9 +1871,98 @@
     }
     $('luck').innerHTML = html || '<tbody><tr><td class="empty-state">Roll a few times and this compares your tiers with how often each tier really comes up.</td></tr></tbody>';
     $('luckNote').textContent = state.boosted ? `${rollsText(state.boosted)} made with luck, a lens or a harder difficulty are left out, since they are not plain rolls.` : '';
-    $('log').innerHTML = state.log.length ? state.log.map(x => rowHtml(entryFor(x), false)).join('')
-      : '<li class="empty-state">No rolls yet. Your last 200 rolls appear here.</li>';
+    renderRecentRolls();
     renderCharts();
+    renderLuckRating();
+    renderOddsCalc();
+    renderRecords();
+    renderMilestones();
+  }
+
+  // Recent rolls, filtered by mode and by tier, and exported as CSV.
+  for (const m of MODES) $('logMode').appendChild(new Option(`${m.name} only`, m.id));
+  ROLL_TIERS.slice(T('uncommon')).forEach(t => $('logTier').appendChild(new Option(`${t.name} or rarer`, String(T(t.id)))));
+  function renderRecentRolls() {
+    const mode = $('logMode').value, min = +$('logTier').value;
+    const list = state.log.filter(x => !mode || x.mode === mode).map(entryFor).filter(e => T(e.tier) >= min);
+    $('log').innerHTML = list.length ? list.map(e => rowHtml(e, false)).join('')
+      : state.log.length ? '<li class="empty-state">None of your last 200 rolls match these filters.</li>'
+        : '<li class="empty-state">No rolls yet. Your last 200 rolls appear here.</li>';
+    $('csvBtn').disabled = !state.log.length;
+  }
+  for (const id of ['logMode', 'logTier']) $(id).addEventListener('change', renderRecentRolls);
+  $('csvBtn').addEventListener('click', () => {
+    const cell = v => (v === undefined || v === null ? '' : /[",\n]/.test(String(v)) ? `"${String(v).replace(/"/g, '""')}"` : String(v));
+    const head = ['time', 'number', 'mode', 'tier', 'one_in', 'score_log10', 'multiplier', 'exponent', 'modulus', 'target', 'luck', 'lens', 'difficulty', 'starred'];
+    const rows = state.log.map(entryFor).map(e => [new Date(e.t).toISOString(), e.n, e.mode, ROLL_TIERS[T(e.tier)].name, `${e.estimated ? '~' : ''}${+(10 ** e.oneInLog).toPrecision(6)}`,
+      e.log.toFixed(4), e.x && e.x !== 'unity' ? MULT_BY_ID[e.x].name : '', e.e || '', e.m || '', e.tg ?? '', e.b || '', e.lens || '', e.d || 'standard', isFav(e) ? 'yes' : '']);
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([[head, ...rows].map(r => r.map(cell).join(',')).join('\n') + '\n'], { type: 'text/csv' }));
+    a.download = `longshot10-rolls-${dayKey()}.csv`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  });
+
+  // How lucky you have been: your best plain roll of each mode against everyone with as many plain
+  // rolls. Plain rolls are a fair draw, so the best of R of them reaches 1/N or rarer with chance
+  // 1 - (1 - 1/N)^R exactly.
+  // Never rounds up to 100%: 99.996% shows as such, and anything closer is "more than 99.9999%".
+  const chanceText = p => (p >= 0.9999995 ? 'more than 99.9999%' : p >= 0.99 ? `${(Math.floor(1e6 * p) / 1e4).toFixed(4)}%` : p >= 0.01 ? `${(100 * p).toFixed(1)}%` : p > 0 ? `1 in ${fmt(1 / p)}` : '0%');
+  function renderLuckRating() {
+    const rows = MODES.map(m => {
+      const R = tierTotal(m.id), bp = state.bestPlain[m.id];
+      if (!R || !bp) return '';
+      const p = -Math.expm1(R * Math.log1p(-(10 ** -bp.l)));
+      const verdict = p < 0.05 ? 'very lucky' : p < 0.25 ? 'lucky' : p <= 0.75 ? 'about as lucky as expected' : 'less lucky than most, so far';
+      return `<li style="--tc:${tierVar(tierOfN(10 ** bp.l))}"><b>${esc(m.name)}:</b> ${verdict}. Your best plain roll, <a class="num" href="${hashOf({ n: bp.n, mode: m.id, x: 'unity' })}">${esc(fmt(bp.n))}</a>, was <b class="tc">${bp.est ? '≈ ' : ''}1/${esc(bigText(bp.l))}</b> after ${rollsText(R)}. `
+        + `A best that good or better turns up for ${chanceText(p)} of players after as many rolls.</li>`;
+    }).filter(Boolean);
+    $('luckRating').innerHTML = rows.length ? `<ul class="rating">${rows.join('')}</ul><p class="muted">Plain rolls only: luck charms, lenses and harder difficulties are left out, as in the Luck table.</p>`
+      : '<p class="empty-state">Roll a few plain rolls (no charm, lens or harder difficulty) and this compares your best one with what everyone gets.</p>';
+  }
+
+  // Odds calculator: the chance of at least one roll of a tier or rarer in R rolls, in your current
+  // mode and difficulty, with your current luck. One roll with luck L reaches it with 1 - (1 - q)^L.
+  RARITIES.slice(1).forEach(r => $('ocTier').appendChild(new Option(`${r.name} or rarer (1/${fmt(r.from)})`, r.id)));
+  $('ocTier').value = 'mythic';
+  function renderOddsCalc() {
+    const mode = state.mode, d = state.difficulty || 'standard', L = effLuck();
+    $('calcFor').textContent = `${MODE_BY_ID[mode].name}, ${G.DIFF_BY_ID[d].name}${L > 1 ? `, luck ×${fmt(L)}` : ''}`;
+    const R = Math.floor(+$('ocRolls').value.replace(/[\s,_]/g, ''));
+    if (!ready[mode]) { $('ocOut').textContent = 'The odds are still loading.'; return; }
+    if (!(R >= 1 && R <= 1e15)) { $('ocOut').textContent = 'Enter a number of rolls from 1 to 1,000,000,000,000,000.'; return; }
+    const r = RARITIES.find(x => x.id === $('ocTier').value);
+    const q1 = G.reachChance(1 / r.from, mode, d), q = -Math.expm1(L * Math.log1p(-Math.min(q1, 1 - 1e-16)));
+    const p = -Math.expm1(R * Math.log1p(-Math.min(q, 1 - 1e-16)));
+    $('ocOut').innerHTML = q > 0 ? `<b class="num">${esc(chanceText(p))}</b> chance. One roll in <b class="num">${esc(1 / q < 1e15 ? fmt(Math.max(1, 1 / q)) : bigText(-Math.log10(q)))}</b> reaches ${esc(r.name)} or rarer on average${q1 < 1 / r.from ? `, rarer than on Standard (1 in ${fmt(r.from)})` : ''}.`
+      : `${esc(r.name)} is out of reach on ${esc(G.DIFF_BY_ID[d].name)} without luck.`;
+  }
+  $('oddsCalc').addEventListener('input', renderOddsCalc);
+  $('oddsCalc').addEventListener('submit', ev => { ev.preventDefault(); renderOddsCalc(); });
+
+  // Records that only ever go up, and the first time each tier was reached.
+  function renderRecords() {
+    const rc = state.rec;
+    const rarest = collectable().filter(b => state.counts[b.id]).sort((a, b) => a.p - b.p)[0];
+    const bigMult = MULTS.filter(m => state.mults[m.id]).sort((a, b) => b.log - a.log)[0];
+    const rows = [
+      ['Most rolls in one session', rc.session ? rollsText(rc.session) : ''],
+      ['Most rolls in one day', rc.day ? rollsText(rc.day) : ''],
+      ['Fastest Endless run', rc.rate ? `${fmt(rc.rate)} rolls a second` : ''],
+      ['Most badges on one roll', rc.badges ? String(rc.badges) : ''],
+      ['Longest run without Trash', rc.streakBest ? rollsText(rc.streakBest) : ''],
+      ['Longest hunt', rc.hunt ? rollsText(rc.hunt) : ''],
+      ['Rarest badge', rarest ? `${rarest.name}, ${odds(rarest.p)}` : ''],
+      ['Biggest multiplier', bigMult ? `${bigMult.symbol} ${bigMult.name}, ${odds(bigMult.p)}` : ''],
+    ].filter(r => r[1]);
+    $('records').innerHTML = rows.length ? rows.map(([k, v]) => `<dt>${esc(k)}</dt><dd class="num">${esc(v)}</dd>`).join('')
+      : '<dd class="empty-state">Records start with your first roll.</dd>';
+  }
+  function renderMilestones() {
+    const got = ROLL_TIERS.slice(T('uncommon')).filter(t => state.ach[t.id]).map(t => ({ t, when: state.ach[t.id] })).sort((a, b) => a.when - b.when);
+    if (state.ach.first) got.unshift({ t: { id: 'common', name: 'First roll' }, when: state.ach.first });
+    $('milestones').innerHTML = got.length ? got.map(({ t, when }) => `<li style="--tc:${tierVar(t.id)}"><b>${esc(t.name)}</b><span class="muted num">${esc(new Date(when).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }))}</span></li>`).join('')
+      : '<li class="empty-state">Each tier you reach for the first time lands here with its date.</li>';
   }
 
   // Stats charts, drawn as SVG. Bars for rolls per day (one series, so no legend); a dot plot on a
@@ -2129,6 +2250,8 @@
     { id: 'spectrum', name: 'Spectrum', how: 'book', light: true },
     // Achievement rewards: each comes with one achievement, named in Settings.
     { id: 'chalk', name: 'Chalkboard', how: 'reward', ach: 'modes' },
+    { id: 'nixie', name: 'Nixie', how: 'reward', badge: 'uniq' },
+    { id: 'card', name: 'Index Card', how: 'reward', ach: 'share', light: true },
   ];
   const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
   const BUNDLE_PRICE = 500;
@@ -2151,13 +2274,19 @@
     applySettings();
     save();
   }
+  // What earns a reward skin: one achievement, or one badge.
+  function rewardNote(s) {
+    if (s.badge) { const b = findBadge(s.badge); return `Find the ${b.name} badge (${odds(b.p)})`; }
+    const a = ACHIEVEMENTS.find(x => x.id === s.ach);
+    return `Earn ${a.name}: ${a.desc.charAt(0).toLowerCase()}${a.desc.slice(1)}`;
+  }
   function renderSkins() {
     const groups = [['free', 'Free'], ['secret', 'Secret'], ['bundle', `Bundle, ${BUNDLE_PRICE} coins`], ['book', 'Badge book'], ['reward', 'Achievement rewards']];
     $('skinList').innerHTML = groups.map(([how, title]) => `<li class="skin-group"><b>${title}</b></li>` + SKINS.filter(s => s.how === how).map(s => {
       const own = ownsSkin(s.id), on = state.settings.theme === s.id;
       const page = BOOK.find(p => p.skin === s.id);
       const note = own ? '' : how === 'secret' ? s.hint : how === 'book' ? `Complete the ${page.cat} page`
-        : how === 'reward' ? `Earn ${ACHIEVEMENTS.find(a => a.id === s.ach).name}: ${ACHIEVEMENTS.find(a => a.id === s.ach).desc.toLowerCase()}` : `${BUNDLE_PRICE} coins`;
+        : how === 'reward' ? rewardNote(s) : `${BUNDLE_PRICE} coins`;
       return `<li><button class="skin${on ? ' on' : ''}" type="button" data-skin="${s.id}" aria-pressed="${on}" ${own ? '' : 'disabled'}>`
         + `<span class="swatch" data-swatch="${s.id}" aria-hidden="true"></span><span><b>${own || how !== 'secret' ? esc(s.name) : '???'}</b>`
         + `${note ? `<br><span class="muted">${esc(note)}</span>` : ''}</span></button></li>`;
@@ -2235,6 +2364,8 @@
     'BOOK [CLAIM page]      Badge book pages, or claim one.',
     'BADGES [word]          Badges by category, or the ones matching a word.',
     'ACH                    Achievements.',
+    'RECORDS                Records and how lucky you have been.',
+    'CHANCE tier [n]        Chance of that tier or rarer in n rolls, e.g. CHANCE mythic 5000.',
     'PRESTIGE [YES]         Prestige progress, or prestige.',
     'SKINS, SKIN id         Your skins, or wear one.  BUY BUNDLE buys three.',
     'SOUND ON|OFF           Sound.',
@@ -2425,6 +2556,23 @@
         if (a === 'blueprint' && unlockSkin('blueprint', 'Secret found')) print('You found the plans.');
         const l = allBadges().filter(b => `${b.name} ${b.desc} ${b.cat}`.toLowerCase().includes(a));
         print(...(l.length ? l.map(b => `${state.counts[b.id] ? '[x]' : '[ ]'} ${pad(b.name, 26)}${pad(RARITIES[b.rarity].name, 14)}${odds(b.p)}`) : ['Nothing matches.']), '');
+        break;
+      }
+      case 'records': {
+        renderRecords();
+        renderLuckRating();
+        const rows = [...$('records').querySelectorAll('dt')].map(dt => `${pad(dt.textContent, 28)}${dt.nextElementSibling.textContent}`);
+        print(...(rows.length ? rows : ['No records yet.']), '', ...[...$('luckRating').querySelectorAll('li')].map(li => li.textContent), '');
+        break;
+      }
+      case 'chance': {
+        const [tierWord, count] = rest;
+        const r = tierWord && RARITIES.find(x => x.id === tierWord.toLowerCase() || x.name.toLowerCase() === tierWord.toLowerCase());
+        if (!r || r.id === 'common') { print('CHANCE tier [n], e.g. CHANCE mythic 5000. Tiers: ' + RARITIES.slice(1).map(x => x.id).join(', ')); break; }
+        $('ocTier').value = r.id;
+        $('ocRolls').value = count || '1000';
+        renderOddsCalc();
+        print(`${r.name} or rarer in ${fmt(+String(count || 1000).replace(/,/g, '') || 0)} rolls (${$('calcFor').textContent}):`, $('ocOut').textContent, '');
         break;
       }
       case 'ach': case 'achievements':
@@ -2907,6 +3055,15 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v3.5', at: '2026-10-20 03:14', title: 'Records and luck', items: [
+      'How lucky you have been (Log): your best plain roll of each mode against everyone with as many plain rolls, as an exact share of players.',
+      'Odds calculator (Log): the chance of at least one roll of a tier or rarer in any number of rolls, in your mode and difficulty, with your luck. CHANCE does the same in the command line.',
+      'Records (Log): busiest session and day, fastest Endless run, most badges on one roll, longest run without Trash, longest hunt, rarest badge, biggest multiplier. RECORDS lists them.',
+      'Milestones (Log): the date and time you first reached each tier.',
+      'Recent rolls can be filtered by mode and by tier, and exported as a CSV file with every detail of each roll.',
+      'A badge\'s details now give your chance of finding it in the next 1,000 plain rolls.',
+      'Two skins: Nixie, the reward for the Pandigital badge, and Index Card, the reward for Show and tell. Reward skins can now come from a badge as well as an achievement.',
+    ] },
     { v: 'v3.4', at: '2026-10-20 03:06', title: 'Settings and shortcuts', items: [
       'What\'s new: this list, with the time of every release.',
       'Keys: press ? for every keyboard shortcut. New ones: B batches ×1,000, T changes speed, M changes mode, S stars the roll, 1 to 5 switch tabs.',
@@ -2940,7 +3097,7 @@
     setTimeout(() => { grant('luck10', 'Daily gift'); save(); }, 600);
   }
   for (const k of Object.keys(state.daily).sort().slice(0, -60)) delete state.daily[k]; // keep two months of daily counts
-  for (const s of SKINS) if (s.ach && state.ach[s.ach] && !state.skins.includes(s.id)) state.skins.push(s.id); // earned before the skin existed
+  for (const s of SKINS) if (((s.ach && state.ach[s.ach]) || (s.badge && state.counts[s.badge])) && !state.skins.includes(s.id)) state.skins.push(s.id); // earned before the skin existed
   applySettings();
   paintPrestigeMark();
   $('chartMode').value = state.mode;
