@@ -27,21 +27,31 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 ## Other things it does
 
 - Collection of badges and multipliers with search and filters; select any of them for the exact count or chance and how often you have landed it against the expectation
-- 108 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
-- A luck table comparing your tiers with how often each tier really comes up
+- 153 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- A luck table comparing your tiers with how often each tier really comes up, a rating of how lucky you have been, an odds calculator, records and milestones
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Nineteen skins (see below), an effects setting, and offline install from the hosted copy
-- Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three
-- Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige
+- Forty-six skins (see below), an effects setting, and offline install from the hosted copy
+- Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three, and a free reroll a day; three weekly quests with bigger rewards
+- A daily streak with rewards and Streak Freezes, a lucky hour each day, and double coins at weekends
+- A token workshop of lasting upgrades, a coin shop, and quick-use buttons for pinned items
+- Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige, and a perk point for one of six lasting perks
+- An Arcade tab with four games (higher or lower, digit pick, a daily wheel and scratch cards), each with its exact chances and payback, and challenges: goals in a fixed number of real rolls with their exact chance
+- A weekly bingo card of badges and a bounty board that changes every six hours
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
-- Up to ten save files in the browser, each with its own progress; export one to move or share it, and importing always adds a new save file instead of replacing yours
-- Space rolls, A toggles Auto, E toggles Endless
+- Rolling while away: the time the game was closed is rolled when you come back, up to eight hours
+- Sound settings (volume and three sound sets) and vibration on rare rolls
+- A monthly season of 30 levels, with XP from every roll
+- Skins that follow the system's light or dark mode, or change every day
+- A profile with titles from your achievements, saved as an image card
+- Up to ten save files in the browser, each with its own progress and its newest three automatic backups; export one to move or share it, and importing always adds a new save file instead of replacing yours
+- Keys for everything: Space rolls, A toggles Auto, E toggles Endless, ? lists the rest
+- Settings for text size, a compact layout, and which notices pop up
 
 ## Skins
 
-Skins are picked in Settings and belong to the save file. Midnight, Felt and Daylight are free. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld and Calculator replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, and a calculator whose ten-digit display holds exactly one roll. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
+Skins are picked in Settings and belong to the save file. Midnight, Felt, Daylight and High Contrast are free; Chalkboard is the reward for the Mathematician achievement. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld, Calculator, Spreadsheet, Receipt, Ticker and Smartwatch replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, a calculator whose ten-digit display holds exactly one roll, a spreadsheet driven by formulas, a till roll that prints every roll, a market board, and a round watch face. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
 
 ## Inventory
 
@@ -72,6 +82,8 @@ Every badge probability is a count of qualifying numbers, not an estimate. Digit
 npm run data    # rebuild data.js (sieve, radar scan and percentile tables; a few minutes on 16 threads)
 npm run check   # brute-force every badge at small sizes, every mode badge, the multiplier reel, and data.js
 npm run icons   # redraw icon.svg and the PNG app icons
+npm run contrast  # every skin against the WCAG AA promises in DESIGN.md
+npm run smoke   # play the game in Chromium (Playwright) at phone and desktop width; fails on errors and overflow
 ```
 
 ## Documents
@@ -83,7 +95,21 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
-- v3.33: Roll shows its result at once, with no reels spinning (Auto still spins them at 1× and 2×). Batch rolls are counted instead of played one by one, so ×5,000 takes a few milliseconds instead of about two seconds: the best roll is real and recorded, and the other rolls bring their tiers, items, coins, tokens and quest progress but not badges. During a hunt a batch still plays every roll. Endless in batches rolls one batch a second.
+Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
+
+- v5.0 (2026-10-20 04:43 UTC): Major update: seasons, a 30-level track each month with XP from every roll and the Diamond skin at level 30; skins that follow the system's light or dark mode or change every day; Void (reward for a Rare roll on Oblivion) and Diamond skins; eight achievements, 153 in all. Since v3.33: 55 new features and 27 new skins over twelve releases.
+- v4.8 (2026-10-20 04:25 UTC): Challenges: eight goals in a fixed number of real rolls, each with its exact chance for your mode, difficulty and luck, and a CHALLENGE command; Smartwatch, a full-screen secret skin with a round face, a crown and a side button; a compact layout; Sunset (reward for a first challenge) and Lagoon (reward for four challenges) skins; three achievements.
+- v4.6 (2026-10-20 04:18 UTC): Ticker, a full-screen secret skin that turns the game into a market board with a live chart; prestige perks, one point per prestige for six lasting perks; the hall of fame by difficulty; Bronze, Silver and Platinum prestige skins; four achievements. Fix: the perks panel refreshes the moment you prestige.
+- v4.4 (2026-10-20 04:03 UTC): Rolling while away (the time the game was closed is rolled on your return, one roll a second up to eight hours, using no charm or booster); Night shift in the workshop (up to ten away rolls a second); the Hourglass item (an hour of away rolls at once); volume and three sound sets; vibration on rare rolls; Abacus (reward for Night shift) and Royal (reward for prestige 3) skins; three achievements.
+- v4.2 (2026-10-20 03:59 UTC): Receipt, a full-screen secret skin that prints every roll on a till roll; a profile with titles from your achievements, saved as an image card; automatic backups of each save (every 30 minutes and before a prestige or restore, newest three kept) with Restore; PROFILE and RECEIPT commands; Newsprint skin (reward for Front page); three achievements.
+- v4.0 (2026-10-20 03:55 UTC): Major update: an Arcade tab with four games that each show their exact chances and payback: higher or lower (95% of the fair price for an exact chance), digit pick (payback 90.8%), a free daily wheel with segments sized by their chances, and scratch cards for lucky tokens; HL, DIGIT, WHEEL and SCRATCH commands; Casino and Marquee skins; eight achievements.
+- v3.9 (2026-10-20 03:47 UTC): Spreadsheet, a full-screen secret skin driven by formulas (=ROLL(100), any command, SUM, AVERAGE, MIN, MAX) with sheet tabs for stats, luck, items, quests, best rolls and records; a run summary when Auto or Endless stops; five orders for the Collection; badge mastery (four levels per badge); Olive, a skin bought for 2,000 coins; three achievements.
+- v3.8 (2026-10-20 03:37 UTC): Weekly bingo card of 24 badges, paying for every line and a full card; a bounty board of three badges or multipliers that changes every six hours; hunt up to three things at once; Auto can stop on any new badge; Endless can stop after a set number of rolls or minutes; BINGO and BOUNTIES commands; Bingo Hall (reward for a first line) and Punch Card (reward for ten bounties) skins; five achievements.
+- v3.7 (2026-10-20 03:29 UTC): Daily streak with rewards on days 3 to 365 and a Streak Freeze every seventh day; Streak Freeze and Quest Ticket items; a lucky hour each day with drops and coins ×2; coins ×2 at weekends; a free quest reroll a day, more with Quest Tickets; three weekly quests with a Diamond Goose for all three; Sakura (reward for a seven-day streak) and Glacier (reward for a weekly clean sweep) skins; four achievements.
+- v3.6 (2026-10-20 03:21 UTC): Token workshop with four lasting upgrades (coins, items, tokens and quest coins up to ×3, kept through prestige); a coin shop of eleven items at fixed prices; Coin Magnet and Token Charm items; auto-fuse; quick-use buttons for up to four pinned items; WORKSHOP and SHOP commands; Steel (reward for Tinkerer) and Ledger (reward for Customer) skins; four achievements.
+- v3.5 (2026-10-20 03:14 UTC): How lucky you have been (your best plain roll against everyone with as many rolls, as an exact share); an odds calculator for any tier in any number of rolls, also as CHANCE; records and milestones in the Log, also as RECORDS; recent rolls filtered by mode and tier and exported as CSV; a badge's chance in your next 1,000 plain rolls; Nixie (reward for the Pandigital badge) and Index Card (reward for Show and tell) skins.
+- v3.4 (2026-10-20 03:06 UTC): What's new, with the time of every release; a key list (press ?) and new keys (B batch, T speed, M mode, S star, 1 to 5 tabs); text size; switches for each kind of notice; batch ×25,000 and ×100,000, and a hunt's batch stops when it finds its target; Keep boosts going renews a charm, lens or drop booster when it runs out; High Contrast (free) and Chalkboard (reward for Mathematician) skins. Fixes: Trophies and the Terminal skin no longer run off a phone screen; a full-screen skin worn from the Settings command line no longer opens under Settings.
+- v3.33 (2026-10-19 23:29 UTC): Roll shows its result at once, with no reels spinning (Auto still spins them at 1× and 2×). Batch rolls are counted instead of played one by one, so ×5,000 takes a few milliseconds instead of about two seconds: the best roll is real and recorded, and the other rolls bring their tiers, items, coins, tokens and quest progress but not badges. During a hunt a batch still plays every roll. Endless in batches rolls one batch a second.
 - v3.32: batch roll, ×100, ×1,000 or ×5,000 rolls in one go, drawn once at the end with the best roll and a count per tier. Endless can run in batches of 1,000, 5,000 or 10,000 (Auto settings), showing each batch's stats and the run's totals between batches: about 3,100 rolls a second with ×28 luck, and it keeps its pace in a background tab.
 - v3.31: luck charms work in full on every difficulty (no more ×100,000 cap off Standard) and every lucky roll is built in about a millisecond, so Turbo keeps going with luck on (about 1,000 rolls a second with ×28 on Standard, about 350 on Hardcore, up from a few). The status line says when luck is what slows Turbo down.
 - v3.3: six rarity tiers past Unfathomable, up to Beyond at 1/10¹⁰⁰; Charms of a Hundred Million, a Billion and Ten Billion; Platinum Goose (drops ×10,000) and Cosmic Goose (×100,000); Kaleidoscope Lens (100 multiplier spins); Overclock III (Turbo ×8). Lenses and Overclocks now fuse upwards too. The new items drop from 1/10¹⁰ rolls and rarer, and four of them are slot prizes; a Charm of a Hundred Million has a 30,000,000-spin pity. 108 achievements.

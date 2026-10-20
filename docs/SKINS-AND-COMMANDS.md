@@ -1,6 +1,6 @@
 # Skins and commands
 
-Spoilers: this page says where every hidden skin is. Skins belong to the save file. Pick one in Settings > Skin.
+Spoilers: this page says where every hidden skin is. Skins belong to the save file. Pick one in Settings > Skin, or have it follow your system's light or dark mode, or change every day.
 
 ## Every skin
 
@@ -9,6 +9,7 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Midnight | Free | The default: charcoal and brass. |
 | Felt | Free | Card-table green. |
 | Daylight | Free | Light, for bright rooms. |
+| High Contrast | Free | White on black, visible borders, a thick yellow focus ring. |
 | Neon | Press the **10** in the logo ten times in a row | Electric cyan and pink. |
 | LCD | Press the version number in the footer seven times | Green segment-display glow. |
 | Blueprint | Search the Collection for **blueprint** | White lines on a blueprint grid. |
@@ -17,14 +18,40 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Chat | Type **hello** into any command line | The whole game as a chat with Tenny, a bot. |
 | Handheld | Type the old cheat code anywhere: **↑ ↑ ↓ ↓ ← → ← → B A** | The whole game on a pocket console. |
 | Calculator | Look up **07734** in the Collection's number lookup (it says hELLO upside down) | The whole game on a calculator. |
+| Spreadsheet | Type a formula, like **=ROLL(3)**, into any command line | The whole game as a spreadsheet. |
+| Receipt | Type **RECEIPT** into any command line | The whole game on a till roll. |
+| Ticker | Type this game's market symbol, **$LS10**, into any command line | The whole game as a market board. |
+| Smartwatch | Ask any command line **what time is it** (or type TIME) | The whole game on a smartwatch. |
 | Gold, Ruby, Aurora | Buy the bundle for 500 coins in Settings | Three rich palettes. |
 | Graph Paper | Complete the Math page of the badge book | Red ink on squared paper. |
 | Golden Spiral | Complete the Sequences page | Gold on slate. |
 | Odometer | Complete the Digits page | Warm dial-gauge tones. |
 | Vaporwave | Complete the Memes page | Pink and purple. |
 | Spectrum | Complete the Combos page | Clean and bright. |
+| Nixie | Find the Pandigital badge (every digit once) | Orange tubes behind smoked glass. |
+| Index Card | Earn Show and tell (copy or save a roll) | A ruled white card with a red top line. |
+| Steel | Earn Tinkerer (buy a token workshop upgrade) | Blue-grey metal with a safety-orange button. |
+| Ledger | Earn Customer (buy from the coin shop) | Pale green account-book paper. |
+| Sakura | Earn Seven days straight (a seven-day streak) | Cherry-blossom paper with deep cherry ink. |
+| Glacier | Earn Clean sweep (all three weekly quests of a week) | Pale ice blue with sea-blue ink. |
+| Bingo Hall | Earn Bingo (a line on the bingo card) | Cream card stock and red dauber ink. |
+| Punch Card | Earn Most wanted (10 bounties) | Manila card and tabulator blue. |
+| Newsprint | Earn Front page (save your profile card) | Grey newsprint and black ink. |
+| Abacus | Earn Night shift (come back to away rolls) | Polished dark wood with a bead-red button. |
+| Royal | Earn Phoenix (reach prestige 3) | Deep navy and gold. |
+| Bronze | Earn Reborn (prestige once) | Dark bronze. |
+| Silver | Earn Twice born (reach prestige 2) | Cool silver on near-black. |
+| Platinum | Earn Ascended (reach prestige 5) | Light polished metal. |
+| Sunset | Earn Challenger (win a challenge) | Dusk over brick, with a coral button. |
+| Lagoon | Earn Up for anything (win four different challenges) | Shallow tropical water on white sand. |
+| Void | Earn Impossible (a Rare roll on Oblivion) | Black and white, nothing else. |
+| Diamond | Reach level 30 of a season | Ice blue on near-black. |
+| Casino | Earn Called it (five right calls in a row at higher or lower) | Roulette-red felt and gold. |
+| Marquee | Earn Wheel regular (spin the daily wheel on 7 days) | A dark theatre front with bulb-white digits. |
+| Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
+| Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
-To leave a full-screen skin, use its Leave chat, Power off or OFF button, or type GUI in Console. You go back to the skin you wore before.
+To leave a full-screen skin, use its Leave chat, Power off, OFF, Close sheet, Off, Close market or Take it off button, or type GUI in Console. You go back to the skin you wore before.
 
 ## Console and the Settings command line
 
@@ -47,10 +74,26 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `USE item`, `USE item ALL` | Use one of an item, or all of it, e.g. `USE goose ALL` |
 | `FUSE item`, `FUSE item ALL`, `FUSE ALL` | Fuse once, as often as you can, or everything |
 | `SPIN [n or ALL]`, `ODDS` | Spin the coin slot, see its prize table |
-| `QUESTS`, `QUESTS CLAIM n` | Daily quests |
+| `QUESTS`, `QUESTS CLAIM n`, `QUESTS CLAIM W1`, `QUESTS REROLL n` | Daily and weekly quests: claim one, or swap a daily one |
 | `BOOK`, `BOOK CLAIM page` | Badge book |
 | `BADGES [word]` | Badges by category, or every badge matching a word |
 | `ACH` | Achievements |
+| `RECORDS` | Records, and how lucky you have been |
+| `CHALLENGE`, `CHALLENGE id`, `CHALLENGE GIVEUP` | Challenges: list, start one, or give up |
+| `TIME` | The time |
+| `SEASON` | This month's season track |
+| `PERKS`, `PERKS TAKE id` | Prestige perks, or take one |
+| `PROFILE`, `PROFILE TITLE name` | Your profile, or wear a title from an achievement |
+| `RECEIPT` | Ask for a receipt |
+| `BINGO` | This week's bingo card |
+| `HL`, `HL RARER [bet]`, `HL COMMONER [bet]` | Higher or lower |
+| `DIGIT d [bet]` | Digit pick on digit d |
+| `WHEEL` | Spin the daily wheel |
+| `SCRATCH` | Buy and scratch a scratch card |
+| `BOUNTIES` | The bounty board |
+| `WORKSHOP`, `WORKSHOP BUY id` | Token workshop upgrades, or buy a level |
+| `SHOP`, `SHOP BUY item [n]` | The coin shop, or buy from it |
+| `CHANCE tier [n]` | The chance of that tier or rarer in n rolls, e.g. `CHANCE mythic 5000` |
 | `PRESTIGE`, `PRESTIGE YES` | Progress, or prestige |
 | `SKINS`, `SKIN id`, `BUY BUNDLE` | Your skins, wear one, buy the bundle |
 | `SOUND ON` / `OFF` | Sound |
@@ -91,3 +134,45 @@ The display holds ten digits, exactly one roll.
 | SPIN | s | Spin the slot (type a number first to spin that many) |
 | C | Escape or c | Clear, and stop rolling |
 | OFF | | Leave the calculator |
+
+## Spreadsheet
+
+Every roll is a row: time, number, mode, tier, 1/N, score, multiplier and badges. During Auto and Endless only Rare or rarer rolls land, at most twenty a second.
+
+| Formula | What it does |
+| --- | --- |
+| `=ROLL(100)` | Roll 100 times. Any command works as a formula: `=AUTO("mythic")`, `=USE("goose", "ALL")`, `=SPIN(10)` |
+| `roll 100` | Plain commands work too |
+| `=SUM(1, 2, 3)`, `=AVERAGE(...)`, `=MIN(...)`, `=MAX(...)` | Plain arithmetic on numbers |
+
+The tabs along the bottom (Rolls, Stats, Luck, Items, Quests, Best, Records, Help) show each as a table; the left and right arrow keys move between them.
+
+## Receipt
+
+| Button | Keyboard | What it does |
+| --- | --- | --- |
+| Print | Enter | Roll once and print the ticket |
+| Print ×10 | | Roll ten times, a ticket each |
+| Feed | F | Endless on or off; Rare or rarer rolls print, at most ten a second |
+| Total | T | Print the session's totals |
+| Cut | C | Clear the paper |
+| Off | | Leave the receipt |
+
+## Ticker
+
+| Button | Keyboard | What it does |
+| --- | --- | --- |
+| Roll | R | Roll once |
+| Roll ×100 | H | Roll a hundred times |
+| Endless | E | Endless on or off; Rare or rarer rolls reach the tape |
+| Next mode | M | Change mode |
+| Close market | | Leave the ticker |
+
+## Smartwatch
+
+| Control | Keyboard | What it does |
+| --- | --- | --- |
+| Tap the face | Enter | Roll |
+| Crown | Arrow keys | Next screen: last roll, today, streak |
+| Side button | E | Endless on or off |
+| Take it off | | Leave the watch |

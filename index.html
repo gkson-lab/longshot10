@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="styles.css">
 <script>
   // Apply the saved theme before first paint so the page never flashes the wrong colours.
-  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { document.documentElement.dataset.theme = s.settings.theme; document.documentElement.dataset.tone = ['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'; document.documentElement.dataset.effects = s.settings.effects; } } catch (e) {}
+  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { const d = document.documentElement.dataset; d.theme = s.settings.theme; d.tone = s.settings.tone || (['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'); d.effects = s.settings.effects; d.text = s.settings.text || 'normal'; d.density = s.settings.density || 'comfortable'; } } catch (e) {}
 </script>
 </head>
 <body>
@@ -104,6 +104,63 @@
   </div>
 </div>
 
+<div class="sheet" id="sheet" hidden>
+  <header class="sh-top">
+    <span class="sh-title">rolls.sheet</span>
+    <span class="sh-status" id="shStatus"></span>
+    <button class="sh-leave" type="button" data-leave>Close sheet</button>
+  </header>
+  <form class="sh-bar" id="shForm"><label for="shInput" class="sh-fx">fx</label><input id="shInput" autocomplete="off" spellcheck="false" placeholder="=ROLL(100)" aria-describedby="shOut"></form>
+  <p class="sh-out" id="shOut" aria-live="polite"></p>
+  <div class="sh-wrap" id="shWrap"><table class="sh-grid" id="shGrid"></table></div>
+  <div class="sh-tabs" role="tablist" aria-label="Sheets" id="shTabs"></div>
+</div>
+
+<div class="receipt" id="receipt" hidden>
+  <div class="rc-body">
+    <div class="rc-paper" id="rcPaper" aria-live="polite"><pre id="rcOut"></pre></div>
+    <div class="rc-keys">
+      <button type="button" data-rc="print">Print</button>
+      <button type="button" data-rc="print10">Print ×10</button>
+      <button type="button" data-rc="feed">Feed</button>
+      <button type="button" data-rc="total">Total</button>
+      <button type="button" data-rc="cut">Cut</button>
+      <button type="button" data-leave>Off</button>
+    </div>
+    <p class="rc-help">Enter prints a roll, F feeds paper (Endless on or off), T prints a total, C cuts the paper.</p>
+  </div>
+</div>
+
+<div class="ticker" id="ticker" hidden>
+  <header class="tk-top">
+    <b class="tk-sym">LS10</b><span class="tk-last num" id="tkLast"></span><span class="tk-change num" id="tkChange"></span>
+    <button class="tk-btn" type="button" data-leave>Close market</button>
+  </header>
+  <div class="tk-tape" aria-hidden="true"><div class="tk-tape-in" id="tkTape"></div></div>
+  <div class="tk-main">
+    <figure class="tk-chart"><figcaption>1/N of your last 100 rolls, log scale</figcaption><div id="tkChart"></div></figure>
+    <table class="tk-quotes" id="tkQuotes"></table>
+  </div>
+  <div class="tk-keys">
+    <button class="tk-btn" type="button" data-tk="roll">Roll <kbd>R</kbd></button>
+    <button class="tk-btn" type="button" data-tk="roll100">Roll ×100 <kbd>H</kbd></button>
+    <button class="tk-btn" type="button" data-tk="endless">Endless <kbd>E</kbd></button>
+    <button class="tk-btn" type="button" data-tk="mode">Next mode <kbd>M</kbd></button>
+  </div>
+  <p class="tk-note" id="tkNote" aria-live="polite"></p>
+</div>
+
+<div class="watch" id="watch" hidden>
+  <div class="w-body">
+    <button class="w-crown" type="button" data-w="next" aria-label="Crown: next screen">
+    </button>
+    <button class="w-side" type="button" data-w="endless" aria-label="Side button: Endless on or off"></button>
+    <button class="w-face" type="button" data-w="roll" aria-label="Tap to roll"><span class="w-screen" id="wScreen" aria-live="polite"></span></button>
+  </div>
+  <p class="w-help">Tap the face (or Enter) to roll. The crown (or the arrow keys) changes screen, the side button (or E) runs Endless.</p>
+  <button class="w-off" type="button" data-leave>Take it off</button>
+</div>
+
 <div class="wrap">
   <header class="top">
     <h1 class="mark">Long Shot <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span><span class="prestige-mark num" id="prestigeMark" hidden></span></h1>
@@ -120,6 +177,7 @@
     <button role="tab" id="tab-btn-inventory" aria-controls="tab-inventory" data-tab="inventory" aria-selected="false" tabindex="-1">Inventory</button>
     <button role="tab" id="tab-btn-collection" aria-controls="tab-collection" data-tab="collection" aria-selected="false" tabindex="-1">Collection</button>
     <button role="tab" id="tab-btn-trophies" aria-controls="tab-trophies" data-tab="trophies" aria-selected="false" tabindex="-1">Trophies</button>
+    <button role="tab" id="tab-btn-arcade" aria-controls="tab-arcade" data-tab="arcade" aria-selected="false" tabindex="-1">Arcade</button>
     <button role="tab" id="tab-btn-log" aria-controls="tab-log" data-tab="log" aria-selected="false" tabindex="-1">Log</button>
   </nav>
 
@@ -160,8 +218,11 @@
               <button class="btn" type="button" data-batch="100">×100</button>
               <button class="btn" type="button" data-batch="1000">×1,000</button>
               <button class="btn" type="button" data-batch="5000">×5,000</button>
+              <button class="btn" type="button" data-batch="25000">×25,000</button>
+              <button class="btn" type="button" data-batch="100000">×100,000</button>
             </div>
             <p class="batch-result muted" id="batchResult" role="status" hidden></p>
+            <div class="quickbar" id="quickbar" role="group" aria-label="Pinned items" hidden></div>
             <div class="opts" id="opts" hidden>
               <div class="seg" id="speed" role="group" aria-label="Speed">
                 <button type="button" data-speed="1" aria-pressed="true">1×</button>
@@ -184,10 +245,23 @@
               </select></label>
               <label class="field">Auto stops at <select id="stopAt"></select></label>
               <label class="field">Hunt <select id="hunt"></select></label>
+              <label class="field">Endless stops after <select id="endlessLimit">
+                <option value="">never</option>
+                <option value="r1000">1,000 rolls</option>
+                <option value="r10000">10,000 rolls</option>
+                <option value="r100000">100,000 rolls</option>
+                <option value="r1000000">1,000,000 rolls</option>
+                <option value="m1">1 minute</option>
+                <option value="m5">5 minutes</option>
+                <option value="m15">15 minutes</option>
+                <option value="m60">1 hour</option>
+              </select></label>
+              <label class="check-row"><input type="checkbox" id="stopNewBox"> Auto also stops on a badge you did not have</label>
+              <div class="also-hunt" id="alsoHunt" hidden></div>
             </div>
             <p class="status" id="status"></p>
             <p class="notice" id="storageNotice" hidden>This browser is blocking storage, so rolls will be lost when you close the tab.</p>
-            <p class="keys">Space rolls, A toggles Auto, E toggles Endless</p>
+            <p class="keys">Space rolls, A toggles Auto, E toggles Endless, <button class="link-btn" type="button" data-open="keysDialog">? lists every key</button></p>
           </div>
 
           <div id="result" hidden>
@@ -232,8 +306,16 @@
             </div>
             <ul class="slot-result" id="slotResult" role="status"><li class="muted">Each spin costs one coin. Coins come from Rare or rarer rolls.</li></ul>
           </div>
+          <details class="fold" id="shopFold">
+            <summary><h2>Coin shop</h2><span class="muted">a sure thing, for more coins than the slot</span></summary>
+            <ul class="items shop" id="shopList"></ul>
+          </details>
+          <p class="muted" id="shopMsg" role="status"></p>
           <div class="section-head"><h2>Inventory</h2><span id="invCount"></span></div>
-          <button class="btn" type="button" id="fuseEverything">Fuse everything</button>
+          <div class="inv-tools">
+            <button class="btn" type="button" id="fuseEverything">Fuse everything</button>
+            <label class="check-row"><input type="checkbox" id="autoFuseBox"> Fuse everything on its own whenever items come in</label>
+          </div>
           <ul class="items" id="invList"></ul>
           <p class="muted" id="invMsg" role="status"></p>
         </div>
@@ -256,8 +338,11 @@
               <button class="btn" type="button" id="upgradeMax">Upgrade max</button>
             </div>
           </div>
+          <div class="section-head"><h2>Token workshop</h2><span>lasting upgrades, kept through prestige</span></div>
+          <ul class="items workshop" id="workshop"></ul>
           <div class="section-head"><h2>Active now</h2></div>
           <ul class="effects" id="effects"></ul>
+          <label class="check-row"><input type="checkbox" id="renewBox"> Keep boosts going: when a charm, lens or drop booster runs out, use another of the same item</label>
           <div class="section-head"><h2>Where items come from</h2></div>
           <p class="muted">Each plain roll can drop items, depending on its tier, and drop boosters multiply those chances. Rolls made with a luck charm or the Lens never drop items. Every achievement also gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up.</p>
           <table class="luck"><tbody id="dropTable"></tbody></table>
@@ -267,6 +352,18 @@
     </section>
 
     <section id="tab-collection" role="tabpanel" aria-labelledby="tab-btn-collection" hidden>
+      <div class="two-col goals">
+        <div>
+          <div class="section-head"><h2>Bingo</h2><span id="bingoSub"></span></div>
+          <div class="bingo" id="bingo" role="grid" aria-label="Bingo card: 24 badges and a free centre"></div>
+          <p class="muted" id="bingoNote"></p>
+        </div>
+        <div>
+          <div class="section-head"><h2>Bounty board</h2><span id="bountySub"></span></div>
+          <ul class="items bounties" id="bounties"></ul>
+          <p class="muted">Land a bounty's badge or multiplier before the board changes to collect it. Rarer bounties pay more coins and lucky tokens.</p>
+        </div>
+      </div>
       <div class="section-head"><h2>Badge book</h2><span id="bookCount"></span></div>
       <p class="muted">A page is complete when you have every badge of its category that comes up at least 1 in 1,000,000. Five pages unlock a legendary skin.</p>
       <ul class="items book" id="book"></ul>
@@ -285,6 +382,13 @@
           <option value="missing">Missing</option>
         </select>
         <select id="collRarity" aria-label="Rarity"><option value="">Any rarity</option></select>
+        <select id="collSort" aria-label="Sort">
+          <option value="likely">Likeliest first</option>
+          <option value="rare">Rarest first</option>
+          <option value="most">Earned most</option>
+          <option value="recent">Found most recently</option>
+          <option value="name">A to Z</option>
+        </select>
       </div>
       <div id="collection"></div>
     </section>
@@ -292,27 +396,91 @@
     <section id="tab-trophies" role="tabpanel" aria-labelledby="tab-btn-trophies" hidden>
       <div class="two-col">
         <div>
-          <div class="section-head"><h2>Daily quests</h2></div>
+          <div class="section-head"><h2>Season</h2><span id="seasonSub"></span></div>
+          <div class="coins-panel season" id="season"></div>
+          <div class="section-head"><h2>Profile</h2></div>
+          <div class="coins-panel profile" id="profile"></div>
+          <div class="section-head"><h2>Daily streak</h2><span id="streakSub"></span></div>
+          <div class="coins-panel streak" id="streakPanel"></div>
+          <div class="section-head"><h2>Daily quests</h2><span id="rerollNote"></span></div>
           <ul class="items quests" id="quests"></ul>
+          <div class="section-head"><h2>Weekly quests</h2><span id="weekNote"></span></div>
+          <ul class="items quests" id="weekly"></ul>
           <div class="section-head"><h2>Prestige</h2></div>
           <div class="coins-panel prestige">
             <p id="prestigeText"></p>
             <p class="muted num" id="prestigeProgress"></p>
             <div class="progress"><i id="prestigeBar"></i></div>
-            <p class="muted">Prestige clears your coins, items and active effects. Rolls, badges, skins, achievements and the hall of fame stay.</p>
+            <p class="muted">Prestige clears your coins, items and active effects. Rolls, badges, skins, achievements, the hall of fame and perks stay.</p>
             <button class="btn" type="button" id="prestigeBtn">Prestige</button>
           </div>
+          <div class="section-head"><h2>Prestige perks</h2><span id="perkSub"></span></div>
+          <ul class="items perks" id="perks"></ul>
           <div class="section-head"><h2>Achievements</h2><span id="achCount"></span></div>
           <ul class="ach" id="achList"></ul>
         </div>
         <div>
           <div class="section-head"><h2>Hall of fame</h2><span>top 10, kept forever</span></div>
-          <label class="field hof-pick">Mode <select id="hofMode"></select></label>
+          <div class="hof-picks"><label class="field hof-pick">Mode <select id="hofMode"></select></label><label class="field hof-pick">Difficulty <select id="hofDiff"><option value="">Any</option></select></label></div>
           <ol class="list" id="hofList"></ol>
           <div class="section-head"><h2>Starred rolls</h2><span id="favCount"></span></div>
           <ul class="list" id="favList"></ul>
         </div>
       </div>
+    </section>
+
+    <section id="tab-arcade" role="tabpanel" aria-labelledby="tab-btn-arcade" hidden>
+      <p class="arcade-intro muted" id="arcadeIntro"></p>
+      <div class="two-col arcade">
+        <div>
+          <div class="section-head"><h2>Higher or lower</h2><span id="hlStreak"></span></div>
+          <div class="cabinet game" id="hlGame">
+            <p class="game-label">This roll</p>
+            <div class="mini-reels" id="hlReels" role="img"></div>
+            <p class="hl-now" id="hlNow"></p>
+            <p class="game-label">Will the next roll be rarer or commoner?</p>
+            <div class="bet-row">
+              <label class="field">Bet <select id="hlBet"><option value="1">1 coin</option><option value="5">5 coins</option><option value="25">25 coins</option><option value="100">100 coins</option></select></label>
+              <button class="btn" type="button" id="hlRarer"></button>
+              <button class="btn" type="button" id="hlCommoner"></button>
+            </div>
+            <p class="game-out" id="hlOut" role="status"></p>
+          </div>
+          <div class="section-head"><h2>Digit pick</h2><span>pick a digit, draw ten</span></div>
+          <div class="cabinet game" id="digitGame">
+            <div class="seg digit-seg" id="digitSeg" role="group" aria-label="Your digit"></div>
+            <div class="mini-reels" id="digitReels" role="img" aria-label="No draw yet"></div>
+            <div class="bet-row">
+              <label class="field">Bet <select id="digitBet"><option value="1">1 coin</option><option value="5">5 coins</option><option value="25">25 coins</option><option value="100">100 coins</option></select></label>
+              <button class="btn" type="button" id="digitDraw">Draw</button>
+            </div>
+            <p class="game-out" id="digitOut" role="status"></p>
+            <table class="luck odds" id="digitTable"></table>
+          </div>
+        </div>
+        <div>
+          <div class="section-head"><h2>Daily wheel</h2><span id="wheelSub"></span></div>
+          <div class="cabinet game wheel-game">
+            <div class="wheel-box"><svg class="wheel" id="wheel" viewBox="-110 -110 220 220" role="img" aria-label="The daily wheel"></svg><span class="wheel-pin" aria-hidden="true"></span></div>
+            <button class="roll" type="button" id="wheelSpin">Spin</button>
+            <p class="game-out" id="wheelOut" role="status"></p>
+            <table class="luck odds" id="wheelTable"></table>
+          </div>
+          <div class="section-head"><h2>Scratch card</h2><span id="scratchSub"></span></div>
+          <div class="cabinet game">
+            <div class="scratch" id="scratch" role="group" aria-label="Scratch card"></div>
+            <div class="bet-row">
+              <button class="btn" type="button" id="scratchBuy"></button>
+              <button class="btn" type="button" id="scratchAll" disabled>Scratch all</button>
+            </div>
+            <p class="game-out" id="scratchOut" role="status"></p>
+            <table class="luck odds" id="scratchTable"></table>
+          </div>
+        </div>
+      </div>
+      <div class="section-head"><h2>Challenges</h2><span id="challengeSub"></span></div>
+      <p class="muted">Real rolls, a fixed number of them, and a goal. The chance shown is exact for plain rolls in your current mode and difficulty; luck makes tier goals likelier. One challenge at a time, and each can be won once a day.</p>
+      <ul class="items challenges" id="challenges"></ul>
     </section>
 
     <section id="tab-log" role="tabpanel" aria-labelledby="tab-btn-log" hidden>
@@ -329,19 +497,42 @@
       </div>
       <div class="two-col">
         <div>
+          <div class="section-head"><h2>How lucky you have been</h2></div>
+          <div id="luckRating"></div>
+          <div class="section-head"><h2>Odds calculator</h2><span id="calcFor"></span></div>
+          <form class="coins-panel odds-calc" id="oddsCalc">
+            <label class="field">At least one <select id="ocTier"></select></label>
+            <label class="field">in <input type="text" inputmode="numeric" id="ocRolls" class="num" value="1,000" aria-label="Number of rolls"> rolls</label>
+            <p class="oc-out" id="ocOut" role="status"></p>
+          </form>
+        </div>
+        <div>
+          <div class="section-head"><h2>Records</h2></div>
+          <dl class="facts-grid records" id="records"></dl>
+          <div class="section-head"><h2>Milestones</h2><span>the first time you reached each tier</span></div>
+          <ol class="timeline" id="milestones"></ol>
+        </div>
+      </div>
+      <div class="two-col">
+        <div>
           <div class="section-head"><h2>Luck</h2><span>your tiers against the exact odds</span></div>
           <table class="luck" id="luck"></table>
           <p class="muted" id="luckNote"></p>
         </div>
         <div>
           <div class="section-head"><h2>Recent rolls</h2><span>last 200</span></div>
+          <div class="filters log-filters">
+            <select id="logMode" aria-label="Show rolls of this mode"><option value="">Every mode</option></select>
+            <select id="logTier" aria-label="Show rolls of this tier or rarer"><option value="0">Every tier</option></select>
+            <button class="btn" type="button" id="csvBtn">Export CSV</button>
+          </div>
           <ul class="list" id="log"></ul>
         </div>
       </div>
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.33</span> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v5.0</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -352,8 +543,26 @@
     <dl class="facts-grid" id="bdFacts"></dl>
     <div class="dlg-actions">
       <button class="btn" id="bdHunt" type="button">Hunt this badge</button>
+      <button class="btn" id="bdAlso" type="button">Also hunt</button>
       <button class="btn" type="button" data-close>Close</button>
     </div>
+  </div>
+</dialog>
+
+<dialog id="newsDialog" aria-labelledby="newsTitle">
+  <div class="dlg">
+    <h2 id="newsTitle">What's new</h2>
+    <p class="muted">Every release, newest first, stamped with the time it went out (UTC).</p>
+    <div id="newsList"></div>
+    <div class="dlg-actions"><button class="btn" type="button" data-close>Close</button></div>
+  </div>
+</dialog>
+
+<dialog id="keysDialog" aria-labelledby="keysTitle">
+  <div class="dlg">
+    <h2 id="keysTitle">Keys</h2>
+    <dl class="facts-grid keys-grid" id="keysList"></dl>
+    <div class="dlg-actions"><button class="btn" type="button" data-close>Close</button></div>
   </div>
 </dialog>
 
@@ -362,6 +571,16 @@
     <h2 id="setTitle">Settings</h2>
     <h3>Skin</h3>
     <ul class="skins" id="skinList"></ul>
+    <div class="choices" id="skinMode" role="radiogroup" aria-label="How your skin is chosen">
+      <label><input type="radio" name="skinMode" value="fixed"> Keep the one I pick</label>
+      <label><input type="radio" name="skinMode" value="system"> Follow the system's light or dark mode</label>
+      <label><input type="radio" name="skinMode" value="daily"> A different one each day</label>
+    </div>
+    <div class="sound-row" id="systemPicks" hidden>
+      <label class="field">Light <select id="lightSkin"></select></label>
+      <label class="field">Dark <select id="darkSkin"></select></label>
+    </div>
+    <p class="muted" id="skinModeNote"></p>
     <button class="btn" id="buyBundle" type="button"></button>
     <h3>Effects</h3>
     <div class="choices" id="effectChoices">
@@ -370,12 +589,47 @@
       <label><input type="radio" name="effects" value="off"> Off</label>
     </div>
     <p class="muted">Reduced keeps the reels but drops confetti, shakes and flashes. Off also stops the reels spinning.</p>
+    <h3>Sound</h3>
+    <div class="sound-row">
+      <label class="field">Volume <input type="range" id="volume" min="0" max="100" step="5" aria-describedby="volumeOut"> <span class="num" id="volumeOut"></span></label>
+      <label class="field">Sound <select id="soundSet"><option value="classic">Classic</option><option value="soft">Soft</option><option value="chip">Chiptune</option></select></label>
+      <button class="btn" type="button" id="soundTest">Play a fanfare</button>
+    </div>
+    <label class="check-row"><input type="checkbox" id="hapticsBox"> Vibrate on Legendary or rarer rolls, on phones that can</label>
+    <h3>While you are away</h3>
+    <label class="check-row"><input type="checkbox" id="awayBox"> Roll while the game is closed: one roll a second, up to eight hours, with no charm or booster used</label>
+    <h3>Layout</h3>
+    <div class="choices" id="densityChoices">
+      <label><input type="radio" name="density" value="comfortable"> Comfortable</label>
+      <label><input type="radio" name="density" value="compact"> Compact</label>
+    </div>
+    <p class="muted">Compact tightens the spacing so more fits on a screen. Buttons stay just as easy to press.</p>
+    <h3>Text size</h3>
+    <div class="choices" id="textChoices">
+      <label><input type="radio" name="text" value="normal"> Normal</label>
+      <label><input type="radio" name="text" value="large"> Large</label>
+      <label><input type="radio" name="text" value="larger"> Larger</label>
+    </div>
+    <h3>Notices</h3>
+    <p class="muted">Pop-up notices to show. Hunts, skins and prestige always show.</p>
+    <div class="choices" id="noticeChoices">
+      <label><input type="checkbox" name="notice" value="badge"> New badges</label>
+      <label><input type="checkbox" name="notice" value="item"> Items and coins</label>
+      <label><input type="checkbox" name="notice" value="quest"> Quests</label>
+      <label><input type="checkbox" name="notice" value="ach"> Achievements</label>
+    </div>
     <h3>Install</h3>
     <p class="muted" id="installText"></p>
     <button class="btn" id="installBtn" type="button" hidden>Install Long Shot 10</button>
     <h3>Save files <span class="muted" id="slotCount"></span></h3>
     <p class="muted">Each save file keeps its own rolls, badges and achievements in this browser. Export one to move it or share it; importing always adds a new save file.</p>
     <ul class="slots" id="slotList"></ul>
+    <details class="fold backups">
+      <summary><h2>Backups of this save</h2><span class="muted" id="backupSub"></span></summary>
+      <p class="muted">A copy of this save file is kept every 30 minutes of play, and before a prestige or a restore. The newest three are kept, in this browser only.</p>
+      <ul class="slots" id="backupList"></ul>
+      <button class="btn" id="backupNow" type="button">Back up now</button>
+    </details>
     <div class="dlg-actions" style="justify-content:flex-start">
       <button class="btn" id="newSlotBtn" type="button">New save file</button>
       <button class="btn" id="importBtn" type="button">Import a save file</button>

@@ -187,7 +187,7 @@ a { color: inherit; }
 
 /* Header */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0 10px; }
-.mark { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+.mark { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; gap: 8px; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
 .mark .cells { display: flex; gap: 2px; }
 .mini-cell {
   display: inline-grid; place-items: center; width: 20px; height: 28px; border-radius: 4px;
@@ -390,6 +390,7 @@ button.card:hover { border-color: var(--faint); }
 .ach li.got .tick { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .ach li:not(.got) { color: var(--muted); }
 .ach .when { color: var(--faint); font-size: 13px; }
+.ach li > span { overflow-wrap: anywhere; min-width: 0; } /* 1/10¹⁰⁰ written out has no break points */
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 26px; }
 @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
@@ -554,10 +555,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 :root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }
 
 /* Full-screen skins: each replaces the page with its own way to play, in its own fixed colours. */
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"]) body { overflow: hidden; }
-:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc { display: flex; }
-.chat, .handheld, .calc { position: fixed; inset: 0; z-index: 40; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"], [data-theme="watch"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"], [data-theme="watch"]) body { overflow: hidden; }
+:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet, :root[data-theme="receipt"] .receipt, :root[data-theme="ticker"] .ticker, :root[data-theme="watch"] .watch { display: flex; }
+.chat, .handheld, .calc, .sheet, .receipt, .ticker, .watch { position: fixed; inset: 0; z-index: 40; }
 
 /* Chat: a messaging app with Tenny. */
 .chat { flex-direction: column; background: #eef1f5; color: #1b1f24; font: 15px/1.4 system-ui, sans-serif; }
@@ -626,3 +627,448 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-swatch="chat"] { background: linear-gradient(135deg, #eef1f5 55%, #2b6cb0 55%); }
 [data-swatch="handheld"] { background: linear-gradient(135deg, #c9c4bd 55%, #9bbc0f 55%); }
 [data-swatch="calc"] { background: linear-gradient(135deg, #2a2d33 55%, #e08a1e 55%); }
+
+/* v3.4 */
+/* Text size scales the page and its dialogs, not the full-screen skins, which have their own fixed sizes. */
+:root[data-text="large"] { --zoom: 1.15; }
+:root[data-text="larger"] { --zoom: 1.3; }
+.wrap, dialog { zoom: var(--zoom, 1); }
+dialog { width: min(520px, calc((100vw - 32px) / var(--zoom, 1))); max-height: calc((100vh - 48px) / var(--zoom, 1)); }
+/* Buttons that read as links: the footer's What's new and the Keys link. Still 44px tall to tap. */
+.link-btn { min-height: 44px; padding: 0 2px; border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
+.foot a { display: inline-block; min-height: 44px; line-height: 44px; }
+.keys .link-btn { min-height: 32px; }
+kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); font: 600 13px ui-monospace, monospace; text-align: center; }
+.keys-grid { align-items: baseline; }
+.keys-grid dd { margin: 0; }
+.release { padding: 10px 0; border-top: 1px solid var(--line); }
+.release h3 { margin: 0; font-size: 15px; }
+.release p { margin: 2px 0 4px; }
+.release ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.release li { margin: 3px 0; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding: 10px 0; color: var(--muted); font-size: 14px; cursor: pointer; }
+.check-row input { margin-top: 3px; accent-color: var(--ink); width: 18px; height: 18px; flex: none; }
+
+/* High Contrast: for low vision and bright screens. Pure black and white, visible borders, a thick
+   yellow focus ring and underlined links. Free, like Midnight. */
+:root[data-theme="contrast"] {
+  --bg: #000000; --surface: #000000; --surface-2: #111111; --line: #a3a3a3;
+  --ink: #ffffff; --muted: #f0f0f0; --faint: #dddddd; --cell: #000000; --cell-ink: #ffffff; --cell-lead: #a3a3a3;
+  --accent: #ffd400; --accent-ink: #000000; --focus: #ffd400;
+}
+:root[data-theme="contrast"] :focus-visible { outline-width: 3px; outline-offset: 3px; }
+:root[data-theme="contrast"] .reel { box-shadow: inset 0 0 0 1px #a3a3a3; }
+:root[data-theme="contrast"] .card.locked, :root[data-theme="contrast"] .items li.none { opacity: 1; }
+/* Chalkboard: slate green with chalk-white digits and a chalk-yellow Roll button. */
+:root[data-theme="chalk"] {
+  --bg: #161f1b; --surface: #1b2621; --surface-2: #202c27; --line: #3d5048;
+  --ink: #f4f1e8; --muted: #cbd1c6; --faint: #b3bcaf; --cell: #101714; --cell-ink: #f4f1e8; --cell-lead: #6f8077;
+  --accent: #efe08f; --accent-ink: #18201c; --focus: #efe08f;
+}
+[data-swatch="contrast"] { background: linear-gradient(135deg, #000000 55%, #ffd400 55%); }
+[data-swatch="chalk"] { background: linear-gradient(135deg, #161f1b 55%, #efe08f 55%); }
+/* Long numbers (1/1,000,000,000,000) may wrap, so tables and lists fit a phone at any text size. */
+.luck td, .list .e, .list .t { overflow-wrap: anywhere; }
+.list li { grid-template-columns: minmax(0, 1fr) auto auto; }
+.list .e { min-width: 0; max-width: 14ch; }
+
+/* v3.5: the Log tab's luck rating, odds calculator, records and milestones */
+.log-filters { margin-bottom: 8px; }
+.log-filters select { flex: 1 1 140px; }
+.rating { list-style: none; margin: 0 0 6px; padding: 0; display: grid; gap: 8px; }
+.rating li { padding: 10px 12px; border-radius: 8px; background: var(--surface); border: 1px solid var(--line); font-size: 14px; }
+.rating .tc { color: var(--tc); }
+.rating a { text-decoration: underline; }
+.odds-calc { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; margin-top: 0; }
+.odds-calc input { width: 9em; }
+.odds-calc select { max-width: 100%; }
+.oc-out { flex-basis: 100%; margin: 4px 0 0; font-size: 15px; }
+.oc-out b { font-size: 20px; }
+.records { margin: 0 0 26px; }
+.records dd { overflow-wrap: anywhere; }
+.timeline { list-style: none; margin: 0 0 26px; padding: 0 0 0 14px; border-left: 2px solid var(--line); }
+.timeline li { position: relative; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; padding: 6px 0 6px 8px; }
+.timeline li::before { content: ""; position: absolute; left: -21px; top: 12px; width: 12px; height: 12px; border-radius: 50%; background: var(--tc); border: 2px solid var(--bg); }
+.timeline li b { color: var(--tc); }
+.timeline .empty-state { display: block; }
+.timeline .empty-state::before { display: none; }
+/* Nixie: ten glowing orange tubes behind smoked glass. The reward for the Pandigital badge, the
+   roll that lights every digit once. */
+:root[data-theme="nixie"] {
+  --bg: #120d0a; --surface: #1a130f; --surface-2: #211813; --line: #3e2e24;
+  --ink: #ffe9d6; --muted: #dcbfa8; --faint: #c2a48d; --cell: #0a0705; --cell-ink: #ff9a4a; --cell-lead: #8a5c40;
+  --accent: #ff8f3a; --accent-ink: #1a0d04; --focus: #ffb27a;
+}
+/* Index Card: a ruled white card with a red top line. The faint blue rules are what an index card
+   is, so here they are identity, as the grid is for Graph Paper. */
+:root[data-theme="card"] {
+  --bg: #fbfaf5; --surface: #ffffff; --surface-2: #f6f4ec; --line: #d9d4c3;
+  --ink: #1f2430; --muted: #4b5162; --faint: #5a6072; --cell: #1f2430; --cell-ink: #fbfaf5; --cell-lead: #7d8496;
+  --accent: #c62f3b; --accent-ink: #ffffff; --focus: #1f2430;
+}
+:root[data-theme="card"] body {
+  background-image: linear-gradient(#c62f3b, #c62f3b), repeating-linear-gradient(transparent 0 27px, rgba(70, 110, 200, 0.14) 27px 28px);
+  background-size: 100% 3px, auto; background-repeat: no-repeat, repeat;
+}
+[data-swatch="nixie"] { background: linear-gradient(135deg, #120d0a 55%, #ff9a4a 55%); }
+[data-swatch="card"] { background: linear-gradient(135deg, #fbfaf5 55%, #c62f3b 55%); }
+.odds-calc .field { flex-wrap: wrap; white-space: nowrap; }
+.odds-calc .field { max-width: 100%; }
+.odds-calc .field select { flex: 1 1 auto; min-width: 0; }
+
+/* v3.6 */
+.inv-tools { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: center; margin-bottom: 10px; }
+.inv-tools #fuseEverything { margin-bottom: 0; }
+.quickbar { display: flex; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.btn[data-pin][aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.workshop .progress { margin: 8px 0 0; height: 6px; }
+.workshop li, .shop li { align-items: flex-start; }
+.workshop li > div:first-child, .shop li > div:first-child { flex: 1; min-width: 0; }
+@media (max-width: 560px) {
+  .items li { flex-wrap: wrap; }
+  .items li .item-actions { width: 100%; justify-content: flex-start; }
+}
+/* Steel: brushed blue-grey metal with a safety-orange Roll button, for the workshop. */
+:root[data-theme="steel"] {
+  --bg: #101317; --surface: #161a20; --surface-2: #1c2129; --line: #303844;
+  --ink: #e8edf3; --muted: #b3bcc8; --faint: #97a1ae; --cell: #090b0e; --cell-ink: #e8edf3; --cell-lead: #66707e;
+  --accent: #ff7a1a; --accent-ink: #1a0b00; --focus: #ffa25e;
+}
+/* Ledger: an accounts book, pale green paper with dark green ink and red for the Roll button. */
+:root[data-theme="ledger"] {
+  --bg: #eef3ea; --surface: #f9fbf6; --surface-2: #e7eee2; --line: #c4d2bc;
+  --ink: #183020; --muted: #3c5444; --faint: #4a6352; --cell: #183020; --cell-ink: #f4f8f0; --cell-lead: #7a9282;
+  --accent: #b3261e; --accent-ink: #ffffff; --focus: #183020;
+}
+[data-swatch="steel"] { background: linear-gradient(135deg, #101317 55%, #ff7a1a 55%); }
+[data-swatch="ledger"] { background: linear-gradient(135deg, #eef3ea 55%, #b3261e 55%); }
+/* A folded section: the summary is the heading, with a turning marker so it reads as openable. */
+.fold { margin: 0 0 10px; }
+.fold summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-height: 44px; padding: 8px 0; cursor: pointer; list-style: none; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary h2 { margin: 0; font-size: 17px; }
+.fold summary h2::before { content: "▸"; display: inline-block; width: 1em; color: var(--muted); transition: transform .15s; }
+.fold[open] summary h2::before { transform: rotate(90deg); }
+.fold summary .muted { font-size: 14px; }
+
+/* v3.7 */
+.streak .coins-in-hand .num { color: var(--accent); }
+.streak p { margin: 6px 0; }
+.quests .item-actions { flex-wrap: nowrap; }
+/* Sakura: cherry-blossom paper for a week-long streak, with deep cherry ink. */
+:root[data-theme="sakura"] {
+  --bg: #fbf3f5; --surface: #ffffff; --surface-2: #f8eaee; --line: #e7cdd5;
+  --ink: #3a1f2b; --muted: #6b4655; --faint: #7a5463; --cell: #3a1f2b; --cell-ink: #fff5f7; --cell-lead: #a48593;
+  --accent: #c2185b; --accent-ink: #ffffff; --focus: #3a1f2b;
+}
+/* Glacier: pale ice blue for a clean sweep of the weekly quests, with deep sea-blue ink. */
+:root[data-theme="glacier"] {
+  --bg: #eef5f9; --surface: #fbfdfe; --surface-2: #e4eff5; --line: #c3d7e2;
+  --ink: #10293a; --muted: #3a566a; --faint: #4a6679; --cell: #10293a; --cell-ink: #eef8ff; --cell-lead: #7f9cb0;
+  --accent: #0b6fa4; --accent-ink: #ffffff; --focus: #10293a;
+}
+[data-swatch="sakura"] { background: linear-gradient(135deg, #fbf3f5 55%, #c2185b 55%); }
+[data-swatch="glacier"] { background: linear-gradient(135deg, #eef5f9 55%, #0b6fa4 55%); }
+.book li > .item-actions, .quests li > .item-actions { flex: none; }
+@media (max-width: 560px) { .items li > .item-actions { flex-basis: 100%; } }
+
+/* v3.8: bingo card, bounty board, also-hunt chips */
+.goals { margin-bottom: 8px; }
+.bingo { display: grid; gap: 4px; margin-bottom: 8px; }
+.bingo [role="row"] { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.bingo .cell {
+  min-height: 56px; padding: 4px; border-radius: 4px; border: 1px solid var(--line); border-top: 3px solid var(--rc, var(--line));
+  background: var(--surface); color: var(--muted); font: 600 11px/1.2 system-ui, sans-serif; text-align: center;
+  display: grid; place-items: center; overflow-wrap: break-word; hyphens: auto; -webkit-hyphens: auto;
+}
+.bingo button.cell:hover { border-color: var(--faint); border-top-color: var(--rc); }
+/* A marked cell is filled in, like a dauber on paper: ink on the cell, so it reads at a glance. */
+.bingo .cell.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.bingo .cell.free { font-size: 13px; }
+@media (min-width: 600px) { .bingo .cell { min-height: 64px; font-size: 12px; } }
+.also-hunt { flex-basis: 100%; display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 0 0 0 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; color: var(--muted); }
+.bounties li.none { opacity: 0.62; }
+.opts .check-row { flex-basis: 100%; justify-content: center; padding: 0; }
+/* Bingo Hall: cream card stock and red dauber ink, for a first bingo line. */
+:root[data-theme="bingo"] {
+  --bg: #fdf6e4; --surface: #fffcf3; --surface-2: #f7eed5; --line: #e2d3a8;
+  --ink: #2a1d0e; --muted: #5c4a33; --faint: #6b5940; --cell: #2a1d0e; --cell-ink: #fff8e7; --cell-lead: #9a8566;
+  --accent: #c81d3a; --accent-ink: #ffffff; --focus: #2a1d0e;
+}
+/* Punch Card: manila card stock and the deep blue of a tabulating machine, for the tenth bounty. */
+:root[data-theme="punch"] {
+  --bg: #f7efd8; --surface: #fcf8ec; --surface-2: #f4ebd0; --line: #d6c49a;
+  --ink: #2b2618; --muted: #504731; --faint: #5c533b; --cell: #2b2618; --cell-ink: #f8f0dc; --cell-lead: #8c8064;
+  --accent: #1f4e79; --accent-ink: #ffffff; --focus: #2b2618;
+}
+[data-swatch="bingo"] { background: linear-gradient(135deg, #fdf6e4 55%, #c81d3a 55%); }
+[data-swatch="punch"] { background: linear-gradient(135deg, #f7efd8 55%, #1f4e79 55%); }
+
+/* v3.9 */
+/* Spreadsheet: a plain sheet. White cells on grey gridlines, lettered columns and numbered rows,
+   a formula bar, and sheet tabs along the bottom. One teal for the selected tab and the focus. */
+.sheet { flex-direction: column; background: #ffffff; color: #1f2328; font: 14px/1.4 system-ui, sans-serif; }
+.sh-top { display: flex; align-items: center; gap: 12px; padding: 6px 12px; background: #f3f4f6; border-bottom: 1px solid #d4d7dc; }
+.sh-title { font-weight: 700; }
+.sh-status { color: #57606a; font-size: 13px; margin-right: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sh-leave { min-height: 44px; padding: 0 14px; border: 1px solid #c5c9cf; border-radius: 4px; background: #ffffff; color: #1f2328; font: inherit; cursor: pointer; }
+.sh-bar { display: flex; align-items: center; border-bottom: 1px solid #d4d7dc; }
+.sh-fx { padding: 0 12px; color: #57606a; font: italic 600 14px Georgia, serif; border-right: 1px solid #d4d7dc; align-self: stretch; display: grid; place-items: center; }
+.sh-bar input { flex: 1; min-width: 0; min-height: 44px; padding: 0 10px; border: 0; background: #ffffff; color: #1f2328; font: 14px ui-monospace, Consolas, monospace; }
+.sh-out { margin: 0; padding: 4px 12px; min-height: 28px; font: 13px ui-monospace, Consolas, monospace; color: #1f2328; background: #fafbfc; border-bottom: 1px solid #d4d7dc; overflow-wrap: anywhere; }
+.sh-wrap { flex: 1; overflow: auto; }
+.sh-grid { border-collapse: collapse; font: 13px ui-monospace, Consolas, monospace; min-width: 100%; }
+.sh-grid th, .sh-grid td { border: 1px solid #d4d7dc; padding: 3px 8px; white-space: nowrap; text-align: left; }
+.sh-grid thead th { position: sticky; top: 0; z-index: 1; background: #f3f4f6; color: #57606a; font-weight: 600; text-align: center; }
+.sh-grid tbody th { position: sticky; left: 0; background: #f3f4f6; color: #57606a; font-weight: 600; text-align: right; min-width: 3em; }
+.sh-grid .corner { left: 0; z-index: 2; }
+.sh-grid .names td { font-weight: 700; background: #fafbfc; }
+.sh-grid td.tier { color: var(--tc); font-weight: 700; }
+.sh-grid td.empty { color: #57606a; white-space: normal; }
+.sh-tabs { display: flex; gap: 2px; padding: 0 8px; background: #f3f4f6; border-top: 1px solid #d4d7dc; overflow-x: auto; }
+.sh-tabs button { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #1f2328; font: inherit; cursor: pointer; }
+.sh-tabs button[aria-selected="true"] { background: #ffffff; border-bottom-color: #0f766e; font-weight: 700; }
+.sheet :focus-visible { outline: 2px solid #0f766e; outline-offset: -2px; }
+[data-swatch="sheet"] { background: linear-gradient(135deg, #ffffff 55%, #0f766e 55%); }
+/* Mastery: four small reel cells under a badge's odds, filled up to the level reached. */
+.mastery { display: inline-flex; gap: 2px; margin-top: 4px; }
+.mastery i { width: 7px; height: 10px; border-radius: 2px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.mastery i.on { background: var(--rc); box-shadow: none; }
+.skins li { display: grid; gap: 4px; }
+.buy-skin { width: 100%; }
+/* Olive: olive-drab and khaki with a chartreuse Roll button. Bought for coins. */
+:root[data-theme="olive"] {
+  --bg: #121309; --surface: #18190e; --surface-2: #1e2012; --line: #3a3d24;
+  --ink: #f1f2e2; --muted: #c6c9a8; --faint: #abae8c; --cell: #0b0c05; --cell-ink: #e9edc0; --cell-lead: #6b6f48;
+  --accent: #b9cc3a; --accent-ink: #151807; --focus: #d6e46a;
+}
+[data-swatch="olive"] { background: linear-gradient(135deg, #121309 55%, #b9cc3a 55%); }
+
+/* v4.0: the Arcade tab */
+.arcade-intro { margin: 0 0 18px; max-width: 760px; }
+.cabinet.game { margin-bottom: 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.game-label { margin: 0; color: var(--muted); font-size: 14px; }
+.mini-reels { display: flex; gap: 3px; flex-wrap: nowrap; }
+.mini-reels .mini-cell { width: clamp(22px, 6vw, 30px); height: clamp(32px, 8vw, 42px); font-size: clamp(16px, 4.4vw, 22px); }
+.mini-reels .mini-cell.lead { color: var(--cell-lead); }
+/* In Digit pick the cells showing your digit light in the accent: they are the result. */
+.mini-reels .mini-cell.mark { background: var(--accent); color: var(--accent-ink); }
+.hl-now { margin: 0; font-size: 16px; }
+.hl-now b { font-size: 22px; }
+.bet-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.game-out { margin: 0; min-height: 21px; font-size: 14px; }
+.game .luck.odds { margin-top: 4px; }
+.digit-seg button { min-width: 44px; padding: 8px 0; font-family: ui-monospace, monospace; font-size: 16px; }
+.wheel-box { position: relative; width: min(260px, 70vw); aspect-ratio: 1; }
+.wheel { width: 100%; height: 100%; display: block; }
+#wheelSpinGroup { transition: transform 3s cubic-bezier(.12, .7, .2, 1); }
+.wheel .seg { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+.wheel .seg.alt { fill: var(--cell); }
+.wheel .seg.won { fill: var(--accent); }
+.wheel text { fill: var(--ink); font: 600 9px system-ui, sans-serif; pointer-events: none; }
+.wheel .alt + text { fill: var(--cell-ink); }
+.wheel .hub { fill: var(--surface); stroke: var(--line); }
+/* The pointer at the top, in the accent: the one thing that decides the prize. */
+.wheel-pin { position: absolute; top: -6px; left: 50%; width: 0; height: 0; transform: translateX(-50%); border: 10px solid transparent; border-top: 18px solid var(--accent); }
+.scratch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: min(300px, 100%); }
+.scratch .empty-state { grid-column: 1 / -1; }
+.scr { min-height: 56px; border-radius: 8px; border: 1px dashed var(--faint); background: repeating-linear-gradient(45deg, var(--surface-2) 0 6px, var(--line) 6px 8px); color: var(--ink); font-weight: 700; cursor: pointer; }
+.scr.shown { background: var(--surface); border-style: solid; border-color: var(--line); cursor: default; }
+/* Casino: deep roulette red felt with a gold Roll button, for five right calls in a row. */
+:root[data-theme="casino"] {
+  --bg: #170607; --surface: #1f0a0b; --surface-2: #260d0f; --line: #4a1d20;
+  --ink: #fbeeea; --muted: #dfb9b2; --faint: #c69f98; --cell: #0e0304; --cell-ink: #f8e7b5; --cell-lead: #8c5a55;
+  --accent: #e2b545; --accent-ink: #1a1203; --focus: #f2d48a;
+}
+/* Marquee: a dark theatre front with warm bulb-white digits, for a week of daily wheel spins. */
+:root[data-theme="marquee"] {
+  --bg: #0f0d0b; --surface: #171411; --surface-2: #1d1915; --line: #3a332a;
+  --ink: #fff6e6; --muted: #d9ccb4; --faint: #bfb197; --cell: #080706; --cell-ink: #fff2cc; --cell-lead: #6f6352;
+  --accent: #ffd27a; --accent-ink: #1a1305; --focus: #fff2cc;
+}
+[data-swatch="casino"] { background: linear-gradient(135deg, #170607 55%, #e2b545 55%); }
+[data-swatch="marquee"] { background: linear-gradient(135deg, #0f0d0b 55%, #ffd27a 55%); }
+.wheel .seg.won + text { fill: var(--accent-ink); }
+.game .luck { text-align: left; }
+.game .luck td:first-child { text-align: left; }
+
+/* v4.2 */
+/* Receipt: a till roll of thermal paper on a dark counter, printed in a narrow monospace column. */
+.receipt { justify-content: center; align-items: flex-start; overflow-y: auto; padding: 16px; background: #2b2a2e; }
+.rc-body { width: min(380px, 100%); display: flex; flex-direction: column; gap: 12px; }
+.rc-paper { height: min(62vh, 560px); overflow-y: auto; padding: 14px 16px 20px; background: #fbfaf5; color: #232220; box-shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6); }
+.rc-paper pre { margin: 0; font: 13px/1.45 ui-monospace, "Cascadia Mono", Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere; }
+.rc-keys { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.rc-keys button { min-height: 48px; border: 0; border-radius: 8px; background: #47464c; color: #ffffff; font: 700 14px system-ui, sans-serif; cursor: pointer; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.3); }
+.rc-keys [data-rc="print"] { background: #e6e3d6; color: #232220; }
+.rc-keys button:active { transform: translateY(2px); box-shadow: none; }
+.rc-help { margin: 0; color: #d4d2d8; font: 12px/1.4 system-ui, sans-serif; text-align: center; }
+.receipt :focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; }
+[data-swatch="receipt"] { background: linear-gradient(135deg, #fbfaf5 55%, #47464c 55%); }
+/* Profile */
+.profile-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 10px; }
+.profile-name { font-size: 22px; }
+.profile-title { color: var(--accent); font-weight: 700; }
+.profile .facts-grid { margin-bottom: 12px; }
+.backups { margin-top: 6px; }
+.backups summary h2 { font-size: 15px; }
+/* Newsprint: grey newsprint and black ink, with a deep red Roll button, for your first front page. */
+:root[data-theme="news"] {
+  --bg: #f2f1ec; --surface: #faf9f6; --surface-2: #eeece6; --line: #c9c6bc;
+  --ink: #161616; --muted: #45443f; --faint: #55534d; --cell: #161616; --cell-ink: #efeee9; --cell-lead: #8a877e;
+  --accent: #9d1c1c; --accent-ink: #ffffff; --focus: #161616;
+}
+[data-swatch="news"] { background: linear-gradient(135deg, #f2f1ec 55%, #9d1c1c 55%); }
+
+/* v4.4 */
+.sound-row { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; }
+.sound-row input[type="range"] { width: 140px; min-height: 44px; accent-color: var(--accent); }
+/* Abacus: dark polished wood with a bead-red Roll button, for coming back to rolls made while away. */
+:root[data-theme="abacus"] {
+  --bg: #17100a; --surface: #1f160e; --surface-2: #261b11; --line: #4a3622;
+  --ink: #f6ebdc; --muted: #d6c2a8; --faint: #bca78c; --cell: #0d0805; --cell-ink: #f3e1c4; --cell-lead: #7d6248;
+  --accent: #e05a3a; --accent-ink: #1c0802; --focus: #f3a58f;
+}
+/* Royal: deep navy and gold, for the third prestige. */
+:root[data-theme="royal"] {
+  --bg: #070b1c; --surface: #0c1228; --surface-2: #111833; --line: #26315c;
+  --ink: #eef1ff; --muted: #b9c0e0; --faint: #9da6cb; --cell: #04060f; --cell-ink: #f5d77a; --cell-lead: #5c6690;
+  --accent: #e6c35c; --accent-ink: #140f00; --focus: #f5d77a;
+}
+[data-swatch="abacus"] { background: linear-gradient(135deg, #17100a 55%, #e05a3a 55%); }
+[data-swatch="royal"] { background: linear-gradient(135deg, #070b1c 55%, #e6c35c 55%); }
+
+/* v4.6 */
+/* Ticker: a market board. Near-black, one amber for prices and symbols, green and red only for up
+   and down, and a line chart in amber. */
+.ticker { flex-direction: column; overflow-y: auto; background: #0b0d10; color: #e8e6df; font: 14px/1.4 system-ui, sans-serif; }
+.tk-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 10px 16px; border-bottom: 1px solid #262a31; }
+.tk-sym { color: #f5b942; font: 800 20px ui-monospace, monospace; }
+.tk-last { font-size: 28px; font-weight: 700; }
+.tk-change.up { color: #4cc38a; }
+.tk-change.down { color: #ff7b72; }
+.tk-top .tk-btn { margin-left: auto; }
+.tk-tape { overflow: hidden; border-bottom: 1px solid #262a31; background: #111419; }
+.tk-tape-in { display: flex; gap: 22px; padding: 8px 16px; white-space: nowrap; font: 13px ui-monospace, monospace; }
+.tk-tape-in b { color: #f5b942; }
+.tk-tape-in i { font-style: normal; }
+.tk-main { display: grid; gap: 14px; padding: 14px 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .tk-main { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+.tk-chart { margin: 0; padding: 10px; border: 1px solid #262a31; border-radius: 8px; }
+.tk-chart figcaption { color: #a7a9b0; font-size: 13px; margin-bottom: 6px; }
+.tk-chart svg { display: block; width: 100%; height: auto; }
+.tk-chart polyline { fill: none; stroke: #f5b942; stroke-width: 2; stroke-linejoin: round; }
+.tk-chart .grid { stroke: #262a31; }
+.tk-chart text { fill: #a7a9b0; font-size: 11px; }
+.tk-quotes { width: 100%; border-collapse: collapse; font-size: 14px; align-self: start; }
+.tk-quotes th { text-align: left; color: #a7a9b0; font-weight: 600; padding: 6px 4px; border-bottom: 1px solid #262a31; }
+.tk-quotes td { padding: 7px 4px; border-bottom: 1px solid #1c1f25; }
+.tk-quotes td:not(:first-child), .tk-quotes th:not(:first-child) { text-align: right; }
+.tk-quotes b { color: #f5b942; font-family: ui-monospace, monospace; }
+.tk-quotes tr.on td { background: #161a20; }
+.tk-keys { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px; }
+.tk-btn { min-height: 44px; padding: 0 14px; border: 1px solid #3a3f48; border-radius: 6px; background: #161a20; color: #e8e6df; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.tk-btn kbd { background: #0b0d10; border-color: #3a3f48; color: #a7a9b0; margin-left: 4px; }
+.tk-note { margin: 10px 16px 16px; color: #a7a9b0; font-size: 13px; }
+.ticker :focus-visible { outline: 2px solid #f5b942; outline-offset: 2px; }
+[data-swatch="ticker"] { background: linear-gradient(135deg, #0b0d10 55%, #f5b942 55%); }
+.hof-picks { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.perks li { align-items: flex-start; }
+.perks li > div:first-child { flex: 1; min-width: 0; }
+/* Prestige skins, in the order of the metals: Bronze for the first prestige, Silver for the second,
+   Platinum (light, like polished metal) for the fifth. */
+:root[data-theme="bronze"] {
+  --bg: #130d08; --surface: #1b130c; --surface-2: #221810; --line: #463220;
+  --ink: #f7ece0; --muted: #d8c2aa; --faint: #bea68d; --cell: #0b0704; --cell-ink: #f0c89a; --cell-lead: #7c5f45;
+  --accent: #d08a4a; --accent-ink: #1a0d02; --focus: #f0c89a;
+}
+:root[data-theme="silver"] {
+  --bg: #0e1013; --surface: #15181c; --surface-2: #1b1f24; --line: #343a43;
+  --ink: #f2f4f7; --muted: #c2c8d0; --faint: #a6adb7; --cell: #08090b; --cell-ink: #e6eaf0; --cell-lead: #66707c;
+  --accent: #c9d1dc; --accent-ink: #12151a; --focus: #e6eaf0;
+}
+:root[data-theme="platinum"] {
+  --bg: #f1f3f6; --surface: #fbfcfd; --surface-2: #edf0f4; --line: #cdd3db;
+  --ink: #1b1f25; --muted: #444b55; --faint: #535b66; --cell: #1b1f25; --cell-ink: #f1f3f6; --cell-lead: #858e9a;
+  --accent: #4f5b6b; --accent-ink: #ffffff; --focus: #1b1f25;
+}
+[data-swatch="bronze"] { background: linear-gradient(135deg, #130d08 55%, #d08a4a 55%); }
+[data-swatch="silver"] { background: linear-gradient(135deg, #0e1013 55%, #c9d1dc 55%); }
+[data-swatch="platinum"] { background: linear-gradient(135deg, #f1f3f6 55%, #4f5b6b 55%); }
+
+/* v4.8 */
+.challenges li { align-items: flex-start; }
+.challenges li > div:first-child { flex: 1; min-width: 0; }
+.challenges .progress { margin: 8px 0 0; height: 6px; }
+/* Smartwatch: a round black face in a steel case, with a crown and a side button on the right. */
+.watch { flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px; background: #1d1f23; overflow-y: auto; }
+.w-body { position: relative; width: min(300px, 78vw); aspect-ratio: 1; border-radius: 50%; background: #8d939b; padding: 14px; box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.35); }
+.w-face { width: 100%; height: 100%; border: 0; border-radius: 50%; background: #000000; color: #f2f2f2; cursor: pointer; padding: 0; display: grid; place-items: center; }
+.w-screen { display: flex; flex-direction: column; align-items: center; gap: 4px; font: 14px/1.2 system-ui, sans-serif; text-align: center; }
+.w-time { color: #b9bcc2; font-size: 13px; }
+.w-num { font-size: clamp(22px, 7vw, 30px); font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
+.w-tier { font-size: 18px; }
+.w-label { color: #b9bcc2; font-size: 13px; }
+.w-big { font-size: clamp(34px, 11vw, 48px); line-height: 1; }
+.w-dots { display: flex; gap: 5px; margin-top: 4px; }
+.w-dots i { width: 6px; height: 6px; border-radius: 50%; background: #55585e; }
+.w-dots i.on { background: #f2f2f2; }
+.w-run { color: #8fd18f; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+.w-crown { position: absolute; right: -16px; top: 28%; width: 22px; height: 52px; border: 0; border-radius: 6px; background: repeating-linear-gradient(#b5bac1 0 3px, #7d828a 3px 5px); cursor: pointer; }
+.w-side { position: absolute; right: -10px; top: 58%; width: 14px; height: 44px; border: 0; border-radius: 5px; background: #7d828a; cursor: pointer; }
+.w-crown::after, .w-side::after { content: ""; position: absolute; inset: -12px -12px -12px -4px; } /* a 44px target around a slim control */
+.w-help { margin: 0; max-width: 320px; color: #c9ccd2; font: 13px/1.4 system-ui, sans-serif; text-align: center; }
+.w-off { min-height: 44px; padding: 0 16px; border: 1px solid #55585e; border-radius: 22px; background: transparent; color: #f2f2f2; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.watch :focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+[data-swatch="watch"] { background: linear-gradient(135deg, #000000 55%, #8d939b 55%); }
+/* Compact: tighter spacing everywhere, the same 44px controls. */
+:root[data-density="compact"] .tabs { margin-bottom: 12px; }
+:root[data-density="compact"] .result { margin: 14px 0 10px; }
+:root[data-density="compact"] .controls { gap: 8px; margin: 12px 0 4px; }
+:root[data-density="compact"] .cabinet { padding: 12px 10px 10px; }
+:root[data-density="compact"] .modes { gap: 4px; margin-bottom: 10px; }
+:root[data-density="compact"] .mode-desc { min-height: 0; }
+:root[data-density="compact"] .two-col { gap: 18px; }
+:root[data-density="compact"] .cat, :root[data-density="compact"] .coins-panel, :root[data-density="compact"] .luck, :root[data-density="compact"] .list { margin-bottom: 14px; }
+:root[data-density="compact"] .card, :root[data-density="compact"] .items li { padding-top: 6px; padding-bottom: 6px; }
+:root[data-density="compact"] .keys { display: none; }
+/* Sunset: dusk over brick, with a coral Roll button, for a first challenge won. */
+:root[data-theme="sunset"] {
+  --bg: #170d0b; --surface: #1f1310; --surface-2: #261814; --line: #4a2f27;
+  --ink: #fff0ea; --muted: #e2c1b6; --faint: #c8a69a; --cell: #0d0706; --cell-ink: #ffd0b8; --cell-lead: #84594c;
+  --accent: #ff8a5b; --accent-ink: #210a02; --focus: #ffb59a;
+}
+/* Lagoon: shallow tropical water on white sand, light, with deep teal ink, for four challenges won. */
+:root[data-theme="lagoon"] {
+  --bg: #eef8f6; --surface: #fbfefd; --surface-2: #e5f3f0; --line: #bfdcd6;
+  --ink: #0b302d; --muted: #2f5752; --faint: #3f6762; --cell: #0b302d; --cell-ink: #eafaf7; --cell-lead: #78a39d;
+  --accent: #00777f; --accent-ink: #ffffff; --focus: #0b302d;
+}
+[data-swatch="sunset"] { background: linear-gradient(135deg, #170d0b 55%, #ff8a5b 55%); }
+[data-swatch="lagoon"] { background: linear-gradient(135deg, #eef8f6 55%, #00777f 55%); }
+
+/* v5.0 */
+.season .coins-in-hand .num { color: var(--accent); }
+.season .progress { margin: 8px 0; height: 8px; }
+/* The season track: thirty small reel cells, filled as levels are reached; the last is the accent. */
+.season-track { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
+.season-track li { display: grid; place-items: center; height: 26px; border-radius: 4px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); color: var(--faint); font-size: 11px; }
+.season-track li.got { background: var(--cell); color: var(--cell-ink); box-shadow: none; }
+.season-track li.last { box-shadow: inset 0 0 0 2px var(--accent); }
+.season-track li.last.got { background: var(--accent); color: var(--accent-ink); }
+#skinMode { margin: 10px 0 6px; }
+/* Void: nothing but black and white, the reward for a Rare roll on Oblivion. */
+:root[data-theme="void"] {
+  --bg: #030304; --surface: #08080a; --surface-2: #0e0e11; --line: #24242a;
+  --ink: #f4f4f6; --muted: #c4c4cc; --faint: #a8a8b2; --cell: #000000; --cell-ink: #ffffff; --cell-lead: #5d5d66;
+  --accent: #ececf0; --accent-ink: #050506; --focus: #ffffff;
+}
+/* Diamond: ice-blue light on near-black, the reward for completing a season. */
+:root[data-theme="diamond"] {
+  --bg: #061015; --surface: #0b171d; --surface-2: #101e25; --line: #24414d;
+  --ink: #ecfaff; --muted: #b5d5e0; --faint: #98bccb; --cell: #03090c; --cell-ink: #c9f2ff; --cell-lead: #4f7684;
+  --accent: #8fdcff; --accent-ink: #04141c; --focus: #c9f2ff;
+}
+[data-swatch="void"] { background: linear-gradient(135deg, #030304 55%, #ececf0 55%); }
+[data-swatch="diamond"] { background: linear-gradient(135deg, #061015 55%, #8fdcff 55%); }

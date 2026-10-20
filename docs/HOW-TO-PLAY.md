@@ -46,12 +46,17 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 ## Rolling a lot
 
 - **Roll** (or Space) rolls once and shows the result at once.
-- **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up.
-- **Endless** (or E) never stops on its own.
-- **Batch ×100, ×1,000, ×5,000** does that many rolls at once and shows the best roll and how many landed in each tier. The batch is counted rather than played roll by roll, so it takes a few milliseconds at any size. Its best roll is a real roll, recorded like any other (the best of 5,000 rolls with luck ×L is one roll with luck ×5,000L). The other rolls are drawn from the same odds and count fully toward tiers, item drops, coins, lucky tokens, totals and quests, but they do not collect badges or enter the roll log. A charm, lens or drop booster that runs out partway through still covers exactly the rolls it has left. During a hunt a batch plays every roll, so the hunt can find its target.
+- **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up, or (if you tick it in Auto settings) any badge you did not have. You can hunt up to three things at once: Also hunt in a badge's details adds a second and third.
+- **Endless** (or E) never stops on its own, unless you set it to stop after a number of rolls or minutes in Auto settings.
+- **Batch ×100 up to ×100,000** does that many rolls at once and shows the best roll and how many landed in each tier. The batch is counted rather than played roll by roll, so it takes a few milliseconds at any size. Its best roll is a real roll, recorded like any other (the best of 5,000 rolls with luck ×L is one roll with luck ×5,000L). The other rolls are drawn from the same odds and count fully toward tiers, item drops, coins, lucky tokens, totals and quests, but they do not collect badges or enter the roll log. A charm, lens or drop booster that runs out partway through still covers exactly the rolls it has left. During a hunt a batch plays every roll, so the hunt can find its target; it stops as soon as it does, and Stop batch ends it early.
 - **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll one batch like that every second: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons. Stop ends it at once. A background tab catches up on the batches it missed, up to a minute's worth.
 - **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
 - Your best rolls of the session and of all time stay beside the reels.
+- **Keys:** press ? for the full list. Space rolls, A and E start Auto and Endless, B batches ×1,000, T changes speed, M changes mode, S stars the roll shown, and 1 to 6 switch tabs.
+
+## While you are away
+
+When you open the game again, the time it was closed is rolled for you: one roll a second, for up to eight hours, as counted rolls like a batch (its best roll is real and recorded, the rest bring tiers, items, coins, tokens and quest progress). No charm, lens or booster is used, so nothing you saved for active play is spent; permanent luck, the workshop and prestige still count. Night shift in the token workshop raises the rate by one roll a second per level, and an Hourglass rolls an hour's worth at once. Switch it off in Settings if you prefer.
 
 ## Items
 
@@ -62,7 +67,14 @@ Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use it
 - **Lenses** spin the multiplier reel 2, 10 or 100 times and keep the biggest.
 - **Overclocks** make Turbo 2, 4 or 8 times as fast for 3 minutes.
 
-Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
+Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. Tick **Keep boosts going** and a charm, lens or drop booster that runs out is followed by the next one of the same item. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
+
+## The token workshop and the coin shop
+
+- **Token workshop:** spend lucky tokens on four lasting upgrades, kept through prestige: Coin sense and Item sense (coins or items drop 10% more often per level, up to ×3), Token sense (10% more tokens per level, up to ×3) and Quest sense (quests pay 25% more coins per level, up to ×3).
+- **Coin shop:** buy an item outright for coins. Each costs more than the slot needs on average to pay it out, so the slot is the better deal and the shop the sure one.
+- **Coin Magnet** (coins ×5 for 500 plain rolls) and **Token Charm** (tokens ×3 for 500 rolls) drop from rare rolls, come from the slot and sell in the shop.
+- **Quick use:** pin up to four items and use them from buttons under the Roll button. **Auto-fuse** runs Fuse everything whenever items come in.
 
 ## Coins and the slot machine
 
@@ -70,24 +82,54 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 
 ## Collecting
 
-- **Collection:** every badge and multiplier, with search and filters. Select one for its exact count and how often you have found it against the expectation.
+- **Collection:** every badge and multiplier, with search, filters and five orders. Select one for its exact count and how often you have found it against the expectation.
+- **Mastery:** each badge has four levels, for earning it 1, 10, 100 and 1,000 times, drawn as four small cells on its card.
+- **Bingo:** a new 5 × 5 card of badges every Monday. A badge marks its cell when a roll earns it; each line pays coins and a charm, and a full card a Diamond Goose.
+- **Bounty board:** three badges or multipliers that change every six hours. Land one before it changes for coins and lucky tokens, more for rarer ones.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
-- **Achievements:** 108 of them, each with an item reward.
-- **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
+- **Achievements:** 153 of them, each with an item reward. Some also come with a skin.
+- **Hall of fame:** your ten best rolls per mode, kept forever and filterable by difficulty, plus any rolls you star.
+- **Profile:** your save at a glance, with a title from any achievement you have earned, and a card to save as an image.
+
+## Your numbers
+
+The Log tab keeps the numbers of your play:
+
+- **How lucky you have been:** your best plain roll in each mode, against everyone with as many plain rolls. If your best is 1/N after R rolls, the share of players who do at least that well is exactly 1 - (1 - 1/N)^R.
+- **Odds calculator:** the chance of at least one roll of a tier or rarer in any number of rolls, in your current mode and difficulty and with your current luck. One roll with luck L reaches a tier its plain odds q would reach with chance 1 - (1 - q)^L.
+- **Records** that only go up, and **milestones**: the first time you reached each tier.
+- **Recent rolls**, filtered by mode and tier, and exported as a CSV file.
+
+## Seasons
+
+Every calendar month is a season of 30 levels. Every roll earns season XP by its tier: 1 for Trash or Common, 2 for Uncommon, 3 for Rare and one more for each tier above, counted batch rolls and away rolls included. Each level pays an item once, and level 30 pays a Charm of a Million and the Diamond skin. A new season starts on the first of the month.
 
 ## Daily things
 
 - **Daily gift:** a Charm of Ten every day, per save file.
-- **Daily quests:** three a day, like "Roll Epic or rarer 3 times". Each pays coins and an item, and finishing all three pays a bonus.
+- **Daily quests:** three a day, like "Roll Epic or rarer 3 times". Each pays coins and an item, and finishing all three pays a bonus. Swap one you have not finished with Reroll: once a day for free, then with a Quest Ticket.
+- **Weekly quests:** three bigger ones from Monday to Sunday. Finishing all three pays a Diamond Goose.
+- **Daily streak:** days in a row with at least one roll. Days 3, 7, 14, 30, 60, 100 and 365 pay rewards, and every seventh day brings a Streak Freeze, which covers one missed day on its own.
+- **Lucky hour:** one hour a day (Trophies says which) when drops and coins come twice as often. On Saturdays and Sundays coins come twice as often all day.
+
+## The arcade
+
+Four games in the Arcade tab. Each shows its exact chances and its payback (what it returns on average for each coin or token played), and arcade rolls are never recorded.
+
+- **Higher or lower:** will the next roll be rarer or commoner than this one? A roll that a share q of rolls beat is beaten by the next with chance exactly q, and a right call pays 95% of the fair price for that chance.
+- **Digit pick:** pick a digit and bet coins. Ten cells are drawn; you are paid by how many show your digit. Payback 90.8%.
+- **Daily wheel:** one free spin a day. Each segment is drawn at the size of its chance.
+- **Scratch card:** 300 lucky tokens for three rows of three cells; three matching symbols in a row pay that symbol's prize.
+- **Challenges:** a goal within a fixed number of real rolls, such as Mythic in 5,000 or five primes in 100. The chance shown is exact for your mode, difficulty and luck; each challenge can be won once a day.
 
 ## Prestige
 
-After 100,000 rolls (then 200,000 more for the second, and so on) you can prestige. It clears your coins, items and active effects. In return every drop and coin chance is multiplied for good: ×1.5 after the first, ×2 after the second, and half again for each one after. Rolls, badges, skins, achievements and the hall of fame stay.
+After 100,000 rolls (then 200,000 more for the second, and so on) you can prestige. It clears your coins, items and active effects. In return every drop and coin chance is multiplied for good: ×1.5 after the first, ×2 after the second, and half again for each one after. Rolls, badges, skins, achievements and the hall of fame stay. Each prestige also earns a perk point for one of six lasting perks: start every later prestige with 50 coins and three Charms of a Hundred, 25% more coins, items or tokens, bounties paying double, or a second free quest reroll a day.
 
 ## Skins
 
-Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Four of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console and a calculator. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
+Skins change how the whole game looks, and some change how you play it. In Settings you can keep the one you pick, follow your system's light or dark mode with a light and a dark skin of your choice, or wear a different one each day. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Eight of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet, a till roll, a market board and a smartwatch. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
 
 ## Your saves
 
-Everything is saved in your browser and nothing is sent anywhere. Settings > Save files holds up to ten save files, each with its own rolls, items and skins. Export a save to back it up or share it; importing always adds a new save file, so it can never overwrite yours.
+Everything is saved in your browser and nothing is sent anywhere. Settings > Save files holds up to ten save files, each with its own rolls, items and skins. Each keeps its newest three backups, made every 30 minutes of play and before a prestige or a restore, and you can restore any of them. Export a save to back it up or share it; importing always adds a new save file, so it can never overwrite yours.
