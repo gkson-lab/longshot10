@@ -1,10 +1,6 @@
 # Long Shot 10 design
 
-Reading this as: an arcade number game for people who roll many times in a sitting, in a lit-reel slot cabinet style, dial ENERGY 3 / RHYTHM 2 / MOTION 3.
 
-Direction from the owner: "sleek and flashy", cleaned up with the antislop rules.
-
-Dial: ENERGY 3 / RHYTHM 2 / MOTION 3
 
 ## Decisions and reasons
 
