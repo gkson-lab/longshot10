@@ -18,6 +18,7 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Chat | Type **hello** into any command line | The whole game as a chat with Tenny, a bot. |
 | Handheld | Type the old cheat code anywhere: **↑ ↑ ↓ ↓ ← → ← → B A** | The whole game on a pocket console. |
 | Calculator | Look up **07734** in the Collection's number lookup (it says hELLO upside down) | The whole game on a calculator. |
+| Spreadsheet | Type a formula, like **=ROLL(3)**, into any command line | The whole game as a spreadsheet. |
 | Gold, Ruby, Aurora | Buy the bundle for 500 coins in Settings | Three rich palettes. |
 | Graph Paper | Complete the Math page of the badge book | Red ink on squared paper. |
 | Golden Spiral | Complete the Sequences page | Gold on slate. |
@@ -32,9 +33,10 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Glacier | Earn Clean sweep (all three weekly quests of a week) | Pale ice blue with sea-blue ink. |
 | Bingo Hall | Earn Bingo (a line on the bingo card) | Cream card stock and red dauber ink. |
 | Punch Card | Earn Most wanted (10 bounties) | Manila card and tabulator blue. |
+| Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
 | Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
-To leave a full-screen skin, use its Leave chat, Power off or OFF button, or type GUI in Console. You go back to the skin you wore before.
+To leave a full-screen skin, use its Leave chat, Power off, OFF or Close sheet button, or type GUI in Console. You go back to the skin you wore before.
 
 ## Console and the Settings command line
 
@@ -107,3 +109,15 @@ The display holds ten digits, exactly one roll.
 | SPIN | s | Spin the slot (type a number first to spin that many) |
 | C | Escape or c | Clear, and stop rolling |
 | OFF | | Leave the calculator |
+
+## Spreadsheet
+
+Every roll is a row: time, number, mode, tier, 1/N, score, multiplier and badges. During Auto and Endless only Rare or rarer rolls land, at most twenty a second.
+
+| Formula | What it does |
+| --- | --- |
+| `=ROLL(100)` | Roll 100 times. Any command works as a formula: `=AUTO("mythic")`, `=USE("goose", "ALL")`, `=SPIN(10)` |
+| `roll 100` | Plain commands work too |
+| `=SUM(1, 2, 3)`, `=AVERAGE(...)`, `=MIN(...)`, `=MAX(...)` | Plain arithmetic on numbers |
+
+The tabs along the bottom (Rolls, Stats, Luck, Items, Quests, Best, Records, Help) show each as a table; the left and right arrow keys move between them.

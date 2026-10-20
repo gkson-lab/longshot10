@@ -395,7 +395,13 @@
   const allBadges = () => BADGES.concat(modeBadges(), G.datedBadges(dayKey()));
   const findBadge = id => allBadges().find(b => b.id === id);
 
-  function card({ title, desc, rarity, right, odd, locked = false, delay = null, isNew = false, onOpen }) {
+  // Badge mastery: four levels, for earning a badge 1, 10, 100 and 1,000 times. Drawn as four small
+  // reel cells, filled up to the level reached.
+  const MASTERY = [1, 10, 100, 1000];
+  const masteryOf = k => MASTERY.filter(t => (k || 0) >= t).length;
+  const masteryTotal = () => collectable().reduce((t, b) => t + masteryOf(state.counts[b.id]), 0);
+  const masteryCells = lv => `<span class="mastery" role="img" aria-label="Mastery ${lv} of ${MASTERY.length}">${MASTERY.map((_, i) => `<i${i < lv ? ' class="on"' : ''}></i>`).join('')}</span>`;
+  function card({ title, desc, rarity, right, odd, locked = false, delay = null, isNew = false, onOpen, mastery = null }) {
     const r = RARITIES[rarity];
     const li = document.createElement('li');
     const btn = document.createElement('button');
@@ -410,13 +416,14 @@
     btn.querySelector('.rar').textContent = r.name;
     btn.querySelector('.pts').textContent = right;
     btn.querySelector('.odds').textContent = odd;
+    if (mastery !== null) btn.querySelector('.right').insertAdjacentHTML('beforeend', masteryCells(mastery));
     btn.addEventListener('click', onOpen);
     li.appendChild(btn);
     return li;
   }
   const badgeCard = (b, o = {}) => card({
     title: b.name, desc: b.desc, rarity: b.rarity, right: (b.factor ? '×' : '+') + fmt(b.ep),
-    odd: o.times ? `${odds(b.p)}, earned ${fmt(o.times)}×` : odds(b.p), onOpen: () => openBadge(b), ...o,
+    odd: o.times ? `${odds(b.p)}, earned ${fmt(o.times)}×` : odds(b.p), onOpen: () => openBadge(b), mastery: b.cat === 'Daily' ? null : masteryOf(state.counts[b.id]), ...o,
   });
   const multCard = (m, o = {}) => card({
     title: `${m.symbol}  ${m.name}`, desc: `×${multValue(m)}`, rarity: m.rarity, right: '',
@@ -448,6 +455,7 @@
         b.mode ? ['Chance', `${odds(b.p)} per ${MODE_BY_ID[b.mode].name} roll`] : ['Qualifying numbers', `${fmt(b.count)} of ${fmt(G.SPACE)}`],
         ['Worth', b.factor ? `×${fmt(b.ep)}, applied after the exponent` : `${fmt(b.ep)} EP`],
         ['You earned it', `${fmt(have)} ${have === 1 ? 'time' : 'times'}`],
+        ['Mastery', `level ${masteryOf(have)} of ${MASTERY.length}${masteryOf(have) < MASTERY.length ? `, next at ${fmt(MASTERY[masteryOf(have)])} ${MASTERY[masteryOf(have)] === 1 ? 'time' : 'times'}` : ''}`],
         [`Expected in your ${fmt(rolls)} ${b.mode ? MODE_BY_ID[b.mode].name + ' ' : ''}rolls`, (rolls * b.p).toFixed(rolls * b.p < 10 ? 2 : 0)],
         ['Chance in your next 1,000 plain rolls', chanceText(-Math.expm1(1000 * Math.log1p(-b.p)))],
       ],
@@ -771,7 +779,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -1274,6 +1282,7 @@
       state.effects[which] = Math.max(0, state.effects[which] - 1);
     }
     const rec = record(x);
+    if (auto && (!run.best || rec.entry.oneInLog > run.best.oneInLog)) run.best = rec.entry;
     if (!charmed && !x.lens) rollDrops(rec.entry.oneInLog); // charm and lens rolls never drop items, so boosts cannot feed themselves
     const tk = tokenActive();
     if (tk > 1) state.effects.token.left--;
@@ -1604,7 +1613,11 @@
   }
   $('batchRow').addEventListener('click', ev => { const b = ev.target.closest('[data-batch]'); if (b) batchRoll(+b.dataset.batch); });
   function setAuto(kind) {
-    if (kind !== auto) { run.start = performance.now(); run.rolls = 0; }
+    if (kind !== auto) {
+      if (auto && !kind) showRunSummary();
+      run.start = performance.now(); run.rolls = 0; run.best = null;
+      if (kind) run.snap = snapRun();
+    }
     auto = kind;
     if (!kind) releaseResultHeight();
     if (!kind && saveTimer) writeSave();
@@ -1613,6 +1626,24 @@
     paintRollButton();
     paintStatus();
     if (kind && !busy) autoLoop();
+  }
+  // Run summary: when Auto or Endless stops after 100 rolls or more, what the run brought, shown
+  // where batch results go.
+  const itemCount = () => Object.values(state.inv).reduce((a, b) => a + (b > 0 ? b : 0), 0);
+  const snapRun = () => ({ coins: state.coins, items: itemCount(), tokens: state.tokens || 0, badges: collected(), mults: multsFound() });
+  function showRunSummary() {
+    if (run.rolls < 100 || !run.snap) return;
+    const secs = (performance.now() - run.start) / 1000, s0 = run.snap;
+    const time = secs >= 60 ? `${Math.floor(secs / 60)} min ${Math.round(secs % 60)} s` : `${secs.toFixed(1)} s`;
+    const gained = [[collected() - s0.badges, 'new badge'], [multsFound() - s0.mults, 'new multiplier'], [state.coins - s0.coins, 'coin'], [itemCount() - s0.items, 'item'], [(state.tokens || 0) - s0.tokens, 'lucky token']]
+      .filter(([k]) => k > 0).map(([k, w]) => `${fmt(k)} ${w}${k === 1 ? '' : 's'}`);
+    const b = run.best;
+    const html = `<b>Run over:</b> ${rollsText(run.rolls)} in ${time}, about ${fmt(run.rolls / Math.max(secs, 0.001))} a second.`
+      + (b ? ` Best <b style="color:${tierVar(b.tier)}">${ROLL_TIERS[T(b.tier)].name}</b> ${esc(oneText(b))}.` : '')
+      + (gained.length ? ` Brought ${gained.join(', ')}.` : '') + ' Coins and items spent during the run count against these.';
+    if (fullSkin()) { fullNotice(plain(html)); return; }
+    $('batchResult').hidden = false;
+    $('batchResult').innerHTML = html;
   }
   async function autoLoop() {
     busy = true;
@@ -1969,6 +2000,9 @@
     { id: 'bingoFull', name: 'Full house', desc: 'Mark every cell of a bingo card', test: () => (state.bingoFull || 0) >= 1 },
     { id: 'bounty1', name: 'Bounty hunter', desc: 'Collect a bounty', test: () => (state.bountiesDone || 0) >= 1 },
     { id: 'bounty10', name: 'Most wanted', desc: 'Collect 10 bounties', test: () => (state.bountiesDone || 0) >= 10 },
+    { id: 'mastery100', name: 'Practised', desc: 'Reach 100 levels of badge mastery', test: () => masteryTotal() >= 100 },
+    { id: 'mastery400', name: 'Virtuoso', desc: 'Reach 400 levels of badge mastery', test: () => masteryTotal() >= 400 },
+    { id: 'sheetRoll', name: 'Spreadsheet wizard', desc: 'Roll from a formula', test: () => !!state.formula },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2020,11 +2054,24 @@
 
   // Collection
   RARITIES.forEach((r, i) => $('collRarity').appendChild(new Option(r.name, String(i))));
+  // Collection order: likeliest or rarest first, most earned, most recently found, or by name.
+  // `times` and `first` read how often an entry was earned and the roll that first earned it.
+  function sorter(times, first) {
+    const when = x => { const f = first(x); return f && typeof f === 'object' ? f.t || 0 : 0; };
+    const by = {
+      likely: (a, b) => b.p - a.p,
+      rare: (a, b) => a.p - b.p,
+      most: (a, b) => (times(b) || 0) - (times(a) || 0) || b.p - a.p,
+      recent: (a, b) => when(b) - when(a) || b.p - a.p,
+      name: (a, b) => a.name.localeCompare(b.name),
+    };
+    return by[$('collSort').value] || by.likely;
+  }
   function renderCollection() {
     const all = allBadges();
     const haveB = all.filter(b => state.counts[b.id]).length, haveM = multsFound();
     const total = all.length + MULTS.length;
-    $('collCount').textContent = `${haveB + haveM} of ${total} collected`;
+    $('collCount').textContent = `${haveB + haveM} of ${total} collected · mastery ${fmt(masteryTotal())} of ${fmt(collectable().length * MASTERY.length)}`;
     $('collBar').style.width = (100 * (haveB + haveM) / total) + '%';
     const q = $('collSearch').value.trim().toLowerCase();
     const status = $('collStatus').value, rarity = $('collRarity').value;
@@ -2046,11 +2093,11 @@
       root.appendChild(sec);
     };
     const multItems = MULTS.filter(m => keep(`${m.name} ${m.symbol}`, m.rarity, state.mults[m.id]))
-      .sort((a, b) => b.p - a.p).map(m => multCard(m, { locked: !state.mults[m.id], times: state.mults[m.id] || 0 }));
+      .sort(sorter(m => state.mults[m.id], m => state.firstMult[m.id])).map(m => multCard(m, { locked: !state.mults[m.id], times: state.mults[m.id] || 0 }));
     section('Multipliers', `${haveM} of ${MULTS.length} landed`, multItems);
     for (const cat of CATEGORIES) {
       const inCat = all.filter(b => b.cat === cat);
-      const list = inCat.filter(b => keep(`${b.name} ${b.desc}`, b.rarity, state.counts[b.id])).sort((a, b) => b.p - a.p);
+      const list = inCat.filter(b => keep(`${b.name} ${b.desc}`, b.rarity, state.counts[b.id])).sort(sorter(b => state.counts[b.id], b => state.first[b.id]));
       const mode = inCat[0] && inCat[0].mode;
       const note = `${inCat.filter(b => state.counts[b.id]).length} of ${inCat.length}${mode ? `, ${MODE_BY_ID[mode].name} mode only` : cat === 'Daily' ? ', change with the date' : ''}`;
       section(cat, note, list.map(b => badgeCard(b, { locked: !state.counts[b.id], times: state.counts[b.id] || 0 })));
@@ -2060,7 +2107,7 @@
       $('clearFilters').addEventListener('click', () => { $('collSearch').value = ''; $('collStatus').value = 'all'; $('collRarity').value = ''; renderCollection(); });
     }
   }
-  for (const id of ['collSearch', 'collStatus', 'collRarity']) $(id).addEventListener('input', renderCollection);
+  for (const id of ['collSearch', 'collStatus', 'collRarity', 'collSort']) $(id).addEventListener('input', renderCollection);
 
   // Log: stats, luck against the tier shares, recent rolls
   function renderLog() {
@@ -2459,6 +2506,7 @@
     { id: 'chat', name: 'Chat', how: 'secret', hint: 'Say hello to a command line.' },
     { id: 'handheld', name: 'Handheld', how: 'secret', hint: 'An old cheat code still works.' },
     { id: 'calc', name: 'Calculator', how: 'secret', hint: 'Say hello the calculator way, in the number lookup.' },
+    { id: 'sheet', name: 'Spreadsheet', how: 'secret', hint: 'A command line that is spoken to in formulas.', light: true },
     { id: 'gold', name: 'Gold', how: 'bundle' },
     { id: 'ruby', name: 'Ruby', how: 'bundle' },
     { id: 'aurora', name: 'Aurora', how: 'bundle' },
@@ -2477,6 +2525,8 @@
     { id: 'glacier', name: 'Glacier', how: 'reward', ach: 'weeklyAll', light: true },
     { id: 'bingo', name: 'Bingo Hall', how: 'reward', ach: 'bingo1', light: true },
     { id: 'punch', name: 'Punch Card', how: 'reward', ach: 'bounty10', light: true },
+    // Coin skins: bought one at a time for coins, in Settings.
+    { id: 'olive', name: 'Olive', how: 'coins', price: 2000 },
   ];
   const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
   const BUNDLE_PRICE = 500;
@@ -2506,22 +2556,32 @@
     return `Earn ${a.name}: ${a.desc.charAt(0).toLowerCase()}${a.desc.slice(1)}`;
   }
   function renderSkins() {
-    const groups = [['free', 'Free'], ['secret', 'Secret'], ['bundle', `Bundle, ${BUNDLE_PRICE} coins`], ['book', 'Badge book'], ['reward', 'Achievement rewards']];
+    const groups = [['free', 'Free'], ['secret', 'Secret'], ['bundle', `Bundle, ${BUNDLE_PRICE} coins`], ['coins', 'For coins'], ['book', 'Badge book'], ['reward', 'Achievement rewards']];
     $('skinList').innerHTML = groups.map(([how, title]) => `<li class="skin-group"><b>${title}</b></li>` + SKINS.filter(s => s.how === how).map(s => {
       const own = ownsSkin(s.id), on = state.settings.theme === s.id;
       const page = BOOK.find(p => p.skin === s.id);
       const note = own ? '' : how === 'secret' ? s.hint : how === 'book' ? `Complete the ${page.cat} page`
-        : how === 'reward' ? rewardNote(s) : `${BUNDLE_PRICE} coins`;
+        : how === 'reward' ? rewardNote(s) : how === 'coins' ? `${fmt(s.price)} coins` : `${BUNDLE_PRICE} coins`;
       return `<li><button class="skin${on ? ' on' : ''}" type="button" data-skin="${s.id}" aria-pressed="${on}" ${own ? '' : 'disabled'}>`
         + `<span class="swatch" data-swatch="${s.id}" aria-hidden="true"></span><span><b>${own || how !== 'secret' ? esc(s.name) : '???'}</b>`
-        + `${note ? `<br><span class="muted">${esc(note)}</span>` : ''}</span></button></li>`;
+        + `${note ? `<br><span class="muted">${esc(note)}</span>` : ''}</span></button>`
+        + (how === 'coins' && !own ? `<button class="btn buy-skin" type="button" data-buyskin="${s.id}" ${state.coins >= s.price ? '' : 'disabled'} aria-label="Buy the ${esc(s.name)} skin for ${fmt(s.price)} coins">Buy for ${fmt(s.price)} coins</button>` : '') + '</li>';
     }).join('')).join('');
     const bundleOwned = SKINS.filter(s => s.how === 'bundle').every(s => ownsSkin(s.id));
     $('buyBundle').hidden = bundleOwned;
     $('buyBundle').disabled = state.coins < BUNDLE_PRICE;
     $('buyBundle').textContent = `Buy Gold, Ruby and Aurora for ${BUNDLE_PRICE} coins (you have ${fmt(state.coins)})`;
   }
+  function buySkin(id) {
+    const s = SKIN_BY_ID[id];
+    if (!s || s.how !== 'coins' || ownsSkin(id) || state.coins < s.price) return false;
+    state.coins -= s.price;
+    unlockSkin(id, `Bought for ${fmt(s.price)} coins`);
+    return true;
+  }
   $('skinList').addEventListener('click', ev => {
+    const buy = ev.target.closest('[data-buyskin]');
+    if (buy) { if (buySkin(buy.dataset.buyskin)) wearSkin(buy.dataset.buyskin); renderSkins(); return; }
     const b = ev.target.closest('[data-skin]');
     if (b) { wearSkin(b.dataset.skin); renderSkins(); }
   });
@@ -2601,8 +2661,16 @@
     'VER, CLS, GUI          Version, clear the screen, back to the clickable look.',
   ];
   function shell(line, print) {
-    const cmd = line.trim();
+    let cmd = line.trim();
     if (!cmd) return;
+    if (cmd.startsWith('=')) { // a formula: unlocks the Spreadsheet skin, then runs as its command
+      if (unlockSkin('sheet', 'Formula entered')) print('Formulas work here. SKIN sheet opens the Spreadsheet skin.');
+      const f = formulaToCommand(cmd);
+      if (f.value !== undefined) { print(`${cmd} = ${+f.value.toPrecision(12)}`, ''); return; }
+      cmd = f.cmd;
+      if (/^roll\b/i.test(cmd)) state.formula = true;
+      if (!cmd) return;
+    }
     if (cmd === TERMINAL_CODE) {
       const fresh = unlockSkin('terminal', 'Code accepted');
       unlockSkin('console', 'Code accepted');
@@ -2870,7 +2938,8 @@
         if (a && ownsSkin(a)) { wearSkin(a); print(`Now wearing ${SKIN_BY_ID[a].name}.`, ''); } else print('The system cannot find the skin specified.', '');
         break;
       case 'buy':
-        if (a !== 'bundle') { print('BUY BUNDLE buys Gold, Ruby and Aurora.'); break; }
+        if (SKIN_BY_ID[a] && SKIN_BY_ID[a].how === 'coins') { print(buySkin(a) ? `Bought the ${SKIN_BY_ID[a].name} skin. SKIN ${a} wears it.` : ownsSkin(a) ? 'You already own it.' : `It costs ${fmt(SKIN_BY_ID[a].price)} coins; you have ${fmt(state.coins)}.`); break; }
+        if (a !== 'bundle') { print(`BUY BUNDLE buys Gold, Ruby and Aurora. ${SKINS.filter(x => x.how === 'coins').map(x => `BUY ${x.id.toUpperCase()} buys ${x.name} for ${fmt(x.price)} coins.`).join(' ')}`); break; }
         print(buyBundle() ? 'Bought the bundle: Gold, Ruby and Aurora.' : SKINS.filter(s => s.how === 'bundle').every(s => ownsSkin(s.id)) ? 'You already own it.' : `It costs ${BUNDLE_PRICE} coins; you have ${fmt(state.coins)}.`);
         break;
       case 'sound':
@@ -2946,7 +3015,7 @@
   // Full-screen skins: Console, Chat, Handheld and Calculator each replace the page with their own
   // way to play. They all drive the same game through the same functions; Leave returns to the skin
   // worn before.
-  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc'];
+  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet'];
   const fullSkin = () => (FULL_SKINS.includes(state.settings.theme) ? state.settings.theme : null);
   function leaveFull() {
     const back = state.settings.prevSkin;
@@ -2959,6 +3028,7 @@
     if (f === 'chat') chatRoll(entry, manual);
     if (f === 'handheld') { hh.last = entry; hhPaintSoon(); }
     if (f === 'calc') { calc.last = entry; calcPaintSoon(); }
+    if (f === 'sheet') sheetRoll(entry);
   }
   function fullNotice(text) {
     const f = fullSkin();
@@ -2966,6 +3036,7 @@
     if (f === 'chat') addBubble('note', text);
     if (f === 'handheld') { hh.note = text; hh.noteAt = performance.now(); hhPaintSoon(); }
     if (f === 'calc') { calc.note = text; calc.noteAt = performance.now(); calcPaintSoon(); }
+    if (f === 'sheet') $('shOut').textContent = text;
   }
   function paintFull() {
     const f = fullSkin();
@@ -2973,6 +3044,8 @@
     $('chat').hidden = f !== 'chat';
     $('handheld').hidden = f !== 'handheld';
     $('calc').hidden = f !== 'calc';
+    $('sheet').hidden = f !== 'sheet';
+    if (f === 'sheet') { sheetPaint(); setTimeout(() => $('shInput').focus(), 0); }
     if (f === 'chat') {
       if (!$('chatLog').children.length) {
         addBubble('bot', `Hi, I'm Tenny. I roll the numbers around here.`);
@@ -3157,6 +3230,89 @@
   }
   $('calc').addEventListener('click', ev => { const b = ev.target.closest('[data-key]'); if (b) calcKey(b.dataset.key); });
   const CALC_KEYS = { Enter: '=', '=': '=', '+': '+', '-': '−', '*': '×', x: '×', '/': '÷', Escape: 'C', Delete: 'C', c: 'C', m: 'MODE', s: 'SPIN' };
+
+  // Spreadsheet: the game as a sheet. Every roll is a row; the formula bar takes =ROLL(100) and every
+  // other command as a formula (or typed plain); the tabs along the bottom turn command output into
+  // tables, one column per field.
+  const SHEET_COLS = ['Time', 'Number', 'Mode', 'Tier', '1/N', 'Score', 'Multiplier', 'Badges'];
+  const SHEET_TABS = [['Rolls', ''], ['Stats', 'stats'], ['Luck', 'luck'], ['Items', 'inv'], ['Quests', 'quests'], ['Best', 'best'], ['Records', 'records'], ['Help', 'help']];
+  const sheet = { tab: 'Rolls', rows: [], at: 0 };
+  // =ROLL(100) → "roll 100", =USE("goose", "ALL") → "use goose all"; SUM, AVERAGE, MIN and MAX of
+  // plain numbers work as they would in any sheet.
+  function formulaToCommand(text) {
+    const m = text.trim().match(/^=\s*([A-Za-z]+)\s*(?:\((.*)\))?\s*$/);
+    if (!m) return { cmd: text.replace(/^=\s*/, '') };
+    const name = m[1].toLowerCase(), args = (m[2] || '').split(',').map(a => a.trim().replace(/^"(.*)"$/, '$1')).filter(Boolean);
+    const nums = args.map(a => +a.replace(/,/g, ''));
+    const math = { sum: v => v.reduce((a, b) => a + b, 0), average: v => v.reduce((a, b) => a + b, 0) / v.length, min: v => Math.min(...v), max: v => Math.max(...v) };
+    if (math[name] && nums.length && nums.every(Number.isFinite)) return { value: math[name](nums) };
+    return { cmd: [name, ...args].join(' ') };
+  }
+  function sheetRow(e) {
+    return [new Date(e.t).toLocaleTimeString(), fmt(e.n) + (e.e > 1 ? sup(e.e) : ''), MODE_BY_ID[e.mode].name, ROLL_TIERS[T(e.tier)].name, oneText(e),
+      bigText(e.log), e.x && e.x !== 'unity' ? `× ${MULT_BY_ID[e.x].symbol}` : '', String(scoreOf(e).badges.length)];
+  }
+  function sheetRoll(entry) {
+    // While Auto or Endless runs, only Rare or rarer rows land, at most twenty a second, so the sheet stays readable.
+    if (auto) {
+      if (T(entry.tier) < T('rare')) return;
+      const now = performance.now();
+      if (now - sheet.at < 50) return;
+      sheet.at = now;
+    }
+    sheet.rows.unshift({ cells: sheetRow(entry), tier: entry.tier });
+    if (sheet.rows.length > 200) sheet.rows.length = 200;
+    if (sheet.tab === 'Rolls') sheetPaintSoon();
+  }
+  let sheetFrame = 0;
+  const sheetPaintSoon = () => { if (!sheetFrame) sheetFrame = requestAnimationFrame(() => { sheetFrame = 0; sheetPaint(); }); };
+  const colName = i => String.fromCharCode(65 + i);
+  function sheetPaint() {
+    if (fullSkin() !== 'sheet') return;
+    let head, rows;
+    if (sheet.tab === 'Rolls') {
+      if (!sheet.rows.length) sheet.rows = state.log.slice(0, 50).map(entryFor).map(e => ({ cells: sheetRow(e), tier: e.tier }));
+      head = SHEET_COLS;
+      rows = sheet.rows;
+    } else {
+      const lines = hhCapture(SHEET_TABS.find(t => t[0] === sheet.tab)[1]);
+      rows = lines.map(l => ({ cells: l.trim().split(/\s{2,}/) }));
+      head = Array.from({ length: Math.max(1, ...rows.map(r => r.cells.length)) }, () => '');
+    }
+    const width = head.length;
+    const th = `<tr><th class="corner" scope="col"></th>${head.map((_, i) => `<th scope="col">${colName(i)}</th>`).join('')}</tr>`;
+    const titles = sheet.tab === 'Rolls' ? `<tr class="names"><th scope="row">1</th>${head.map(h => `<td>${esc(h)}</td>`).join('')}</tr>` : '';
+    const first = sheet.tab === 'Rolls' ? 2 : 1;
+    const body = rows.length ? rows.map((r, k) => `<tr${r.tier ? ` style="--tc:${tierVar(r.tier)}"` : ''}><th scope="row">${k + first}</th>${Array.from({ length: width }, (_, i) => `<td${r.tier && i === 3 ? ' class="tier"' : ''}>${esc(r.cells[i] || '')}</td>`).join('')}</tr>`).join('')
+      : `<tr><th scope="row">${first}</th><td colspan="${width}" class="empty">${sheet.tab === 'Rolls' ? 'Type =ROLL() in the formula bar, or =ROLL(1000) for a thousand.' : 'Nothing here yet.'}</td></tr>`;
+    $('shGrid').innerHTML = `<thead>${th}</thead><tbody>${titles}${body}</tbody>`;
+    $('shStatus').textContent = `${MODE_BY_ID[state.mode].name} · ${fmt(state.coins)} coins${auto ? ` · ${auto}` : ''}`;
+    $('shTabs').innerHTML = SHEET_TABS.map(([name]) => `<button type="button" role="tab" aria-selected="${name === sheet.tab}" data-sheet="${name}">${name}</button>`).join('');
+  }
+  const shPrint = (...lines) => { const t = lines.filter(l => l !== '').join('  ·  '); if (t) $('shOut').textContent = t; };
+  shPrint.clear = () => { sheet.rows = []; sheetPaint(); };
+  shPrint.exit = leaveFull;
+  $('shForm').addEventListener('submit', ev => {
+    ev.preventDefault();
+    const text = $('shInput').value;
+    if (!text.trim()) return;
+    $('shInput').value = '';
+    state.cmds = (state.cmds || 0) + 1;
+    const f = formulaToCommand(text);
+    if (f.value !== undefined) $('shOut').textContent = `${text.trim()} = ${+f.value.toPrecision(12)}`;
+    else { $('shOut').textContent = ''; if (/^=/.test(text.trim()) && /^roll\b/i.test(f.cmd)) state.formula = true; shell(f.cmd, shPrint); }
+    checkAchievements();
+    save();
+    sheetPaint();
+  });
+  $('shTabs').addEventListener('click', ev => { const b = ev.target.closest('[data-sheet]'); if (b) { sheet.tab = b.dataset.sheet; sheetPaint(); } });
+  $('shTabs').addEventListener('keydown', ev => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(ev.key)) return;
+    const i = SHEET_TABS.findIndex(t => t[0] === sheet.tab), next = SHEET_TABS[(i + (ev.key === 'ArrowRight' ? 1 : SHEET_TABS.length - 1)) % SHEET_TABS.length][0];
+    sheet.tab = next;
+    sheetPaint();
+    $('shTabs').querySelector(`[data-sheet="${next}"]`).focus();
+  });
 
   // Keys for the handheld and calculator, and the Konami code that unlocks the handheld.
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
@@ -3551,6 +3707,13 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v3.9', at: '2026-10-20 03:47', title: 'Spreadsheet', items: [
+      'Spreadsheet, a full-screen secret skin: every roll is a row, the formula bar takes =ROLL(100), =USE("goose") and every other command, and sheet tabs turn your stats, luck, items, quests, best rolls and records into tables. SUM, AVERAGE, MIN and MAX work too. Its hint is in Settings.',
+      'Run summary: when Auto or Endless stops after 100 rolls or more, you see how long it ran, how fast, its best roll, and the badges, coins, items and tokens it brought.',
+      'Sort the Collection by likeliest, rarest, earned most, found most recently, or name.',
+      'Badge mastery: four levels per badge, for earning it 1, 10, 100 and 1,000 times, shown as four small cells on its card. The Collection counts your total.',
+      'Olive, a skin you buy for 2,000 coins in Settings (or BUY OLIVE). Three new achievements.',
+    ] },
     { v: 'v3.8', at: '2026-10-20 03:37', title: 'Bingo and bounties', items: [
       'Bingo (Collection): a new 5 × 5 card of badges every Monday. Each line pays 15 coins and a Charm of a Hundred, a full card 100 coins and a Diamond Goose.',
       'Bounty board (Collection): three badges or multipliers that change every six hours. Land one in time for coins and lucky tokens, more for rarer ones. Hunt sets it as your target.',

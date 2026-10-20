@@ -104,6 +104,18 @@
   </div>
 </div>
 
+<div class="sheet" id="sheet" hidden>
+  <header class="sh-top">
+    <span class="sh-title">rolls.sheet</span>
+    <span class="sh-status" id="shStatus"></span>
+    <button class="sh-leave" type="button" data-leave>Close sheet</button>
+  </header>
+  <form class="sh-bar" id="shForm"><label for="shInput" class="sh-fx">fx</label><input id="shInput" autocomplete="off" spellcheck="false" placeholder="=ROLL(100)" aria-describedby="shOut"></form>
+  <p class="sh-out" id="shOut" aria-live="polite"></p>
+  <div class="sh-wrap" id="shWrap"><table class="sh-grid" id="shGrid"></table></div>
+  <div class="sh-tabs" role="tablist" aria-label="Sheets" id="shTabs"></div>
+</div>
+
 <div class="wrap">
   <header class="top">
     <h1 class="mark">Long Shot <span class="cells" aria-label="10"><span class="mini-cell num">1</span><span class="mini-cell num">0</span></span><span class="prestige-mark num" id="prestigeMark" hidden></span></h1>
@@ -324,6 +336,13 @@
           <option value="missing">Missing</option>
         </select>
         <select id="collRarity" aria-label="Rarity"><option value="">Any rarity</option></select>
+        <select id="collSort" aria-label="Sort">
+          <option value="likely">Likeliest first</option>
+          <option value="rare">Rarest first</option>
+          <option value="most">Earned most</option>
+          <option value="recent">Found most recently</option>
+          <option value="name">A to Z</option>
+        </select>
       </div>
       <div id="collection"></div>
     </section>
@@ -407,7 +426,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.8</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v3.9</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

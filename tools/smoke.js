@@ -282,11 +282,54 @@ const STEPS = [
     await click('[data-speed="1"]');
     await click('#optsBtn');
   }],
+  // v3.9
+  ['a formula unlocks Spreadsheet, which rolls, sums and shows tables', async ({ page, click, overflow, shot }) => {
+    const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
+    await click('#settingsBtn');
+    if (await page.isHidden('#terminal')) await click('#termToggle');
+    await type('#termInput', '=ROLL(3)');
+    await type('#termInput', 'SKIN sheet');
+    if (!(await page.isVisible('#sheet'))) throw new Error('Spreadsheet did not open');
+    await type('#shInput', '=ROLL(50)');
+    if ((await page.$$('#shGrid tbody tr')).length < 3) throw new Error('no roll rows');
+    await type('#shInput', '=SUM(1, 2, 3.5)');
+    if (!/= 6\.5/.test(await page.textContent('#shOut'))) throw new Error(`SUM gave "${await page.textContent('#shOut')}"`);
+    await click('#shTabs [data-sheet="Stats"]');
+    if (!/Rolls/.test(await page.textContent('#shGrid'))) throw new Error('the Stats sheet is empty');
+    await overflow('spreadsheet');
+    await shot('sheet');
+    await click('#sheet [data-leave]');
+    if (await page.isVisible('#sheet')) throw new Error('Close sheet did not leave');
+    await page.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); });
+    await click('#settingsBtn');
+    await click('#skinList [data-skin="midnight"]');
+    if (!(await page.locator('[data-buyskin="olive"]').count())) throw new Error('no way to buy Olive');
+    await page.keyboard.press('Escape');
+  }],
+  ['collection sorts, badges show mastery, and a run gets a summary', async ({ page, click }) => {
+    await click('[data-tab="collection"]');
+    const first = async () => page.textContent('#collection .cat:nth-child(2) .card .name');
+    const likely = await first();
+    await page.selectOption('#collSort', 'rare');
+    if (likely === (await first())) throw new Error('sorting rarest first changed nothing');
+    await page.selectOption('#collSort', 'likely');
+    if (!(await page.locator('#collection .mastery').count())) throw new Error('no mastery cells');
+    await click('[data-tab="roll"]');
+    await click('#optsBtn');
+    await page.selectOption('#endlessLimit', 'r1000');
+    await click('[data-speed="3"]');
+    await click('#endlessBtn');
+    await page.waitForFunction(() => document.getElementById('endlessBtn').getAttribute('aria-pressed') === 'false', null, { timeout: 20000 });
+    if (!/Run over/.test(await page.textContent('#batchResult'))) throw new Error('no run summary');
+    await page.selectOption('#endlessLimit', '');
+    await click('[data-speed="1"]');
+    await click('#optsBtn');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
-    await click('#termToggle');
+    if (await page.isHidden('#terminal')) await click('#termToggle');
     for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);

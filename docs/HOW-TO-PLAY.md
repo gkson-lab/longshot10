@@ -78,7 +78,8 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 
 ## Collecting
 
-- **Collection:** every badge and multiplier, with search and filters. Select one for its exact count and how often you have found it against the expectation.
+- **Collection:** every badge and multiplier, with search, filters and five orders. Select one for its exact count and how often you have found it against the expectation.
+- **Mastery:** each badge has four levels, for earning it 1, 10, 100 and 1,000 times, drawn as four small cells on its card.
 - **Bingo:** a new 5 × 5 card of badges every Monday. A badge marks its cell when a roll earns it; each line pays coins and a charm, and a full card a Diamond Goose.
 - **Bounty board:** three badges or multipliers that change every six hours. Land one before it changes for coins and lucky tokens, more for rarer ones.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
@@ -108,7 +109,7 @@ After 100,000 rolls (then 200,000 more for the second, and so on) you can presti
 
 ## Skins
 
-Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Four of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console and a calculator. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
+Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Five of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator and a spreadsheet. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
 
 ## Your saves
 

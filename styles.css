@@ -555,10 +555,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 :root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }
 
 /* Full-screen skins: each replaces the page with its own way to play, in its own fixed colours. */
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"]) body { overflow: hidden; }
-:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc { display: flex; }
-.chat, .handheld, .calc { position: fixed; inset: 0; z-index: 40; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"]) body { overflow: hidden; }
+:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet { display: flex; }
+.chat, .handheld, .calc, .sheet { position: fixed; inset: 0; z-index: 40; }
 
 /* Chat: a messaging app with Tenny. */
 .chat { flex-direction: column; background: #eef1f5; color: #1b1f24; font: 15px/1.4 system-ui, sans-serif; }
@@ -804,3 +804,43 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 }
 [data-swatch="bingo"] { background: linear-gradient(135deg, #fdf6e4 55%, #c81d3a 55%); }
 [data-swatch="punch"] { background: linear-gradient(135deg, #f7efd8 55%, #1f4e79 55%); }
+
+/* v3.9 */
+/* Spreadsheet: a plain sheet. White cells on grey gridlines, lettered columns and numbered rows,
+   a formula bar, and sheet tabs along the bottom. One teal for the selected tab and the focus. */
+.sheet { flex-direction: column; background: #ffffff; color: #1f2328; font: 14px/1.4 system-ui, sans-serif; }
+.sh-top { display: flex; align-items: center; gap: 12px; padding: 6px 12px; background: #f3f4f6; border-bottom: 1px solid #d4d7dc; }
+.sh-title { font-weight: 700; }
+.sh-status { color: #57606a; font-size: 13px; margin-right: auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.sh-leave { min-height: 44px; padding: 0 14px; border: 1px solid #c5c9cf; border-radius: 4px; background: #ffffff; color: #1f2328; font: inherit; cursor: pointer; }
+.sh-bar { display: flex; align-items: center; border-bottom: 1px solid #d4d7dc; }
+.sh-fx { padding: 0 12px; color: #57606a; font: italic 600 14px Georgia, serif; border-right: 1px solid #d4d7dc; align-self: stretch; display: grid; place-items: center; }
+.sh-bar input { flex: 1; min-width: 0; min-height: 44px; padding: 0 10px; border: 0; background: #ffffff; color: #1f2328; font: 14px ui-monospace, Consolas, monospace; }
+.sh-out { margin: 0; padding: 4px 12px; min-height: 28px; font: 13px ui-monospace, Consolas, monospace; color: #1f2328; background: #fafbfc; border-bottom: 1px solid #d4d7dc; overflow-wrap: anywhere; }
+.sh-wrap { flex: 1; overflow: auto; }
+.sh-grid { border-collapse: collapse; font: 13px ui-monospace, Consolas, monospace; min-width: 100%; }
+.sh-grid th, .sh-grid td { border: 1px solid #d4d7dc; padding: 3px 8px; white-space: nowrap; text-align: left; }
+.sh-grid thead th { position: sticky; top: 0; z-index: 1; background: #f3f4f6; color: #57606a; font-weight: 600; text-align: center; }
+.sh-grid tbody th { position: sticky; left: 0; background: #f3f4f6; color: #57606a; font-weight: 600; text-align: right; min-width: 3em; }
+.sh-grid .corner { left: 0; z-index: 2; }
+.sh-grid .names td { font-weight: 700; background: #fafbfc; }
+.sh-grid td.tier { color: var(--tc); font-weight: 700; }
+.sh-grid td.empty { color: #57606a; white-space: normal; }
+.sh-tabs { display: flex; gap: 2px; padding: 0 8px; background: #f3f4f6; border-top: 1px solid #d4d7dc; overflow-x: auto; }
+.sh-tabs button { flex: none; min-height: 44px; padding: 0 14px; border: 0; border-bottom: 3px solid transparent; background: transparent; color: #1f2328; font: inherit; cursor: pointer; }
+.sh-tabs button[aria-selected="true"] { background: #ffffff; border-bottom-color: #0f766e; font-weight: 700; }
+.sheet :focus-visible { outline: 2px solid #0f766e; outline-offset: -2px; }
+[data-swatch="sheet"] { background: linear-gradient(135deg, #ffffff 55%, #0f766e 55%); }
+/* Mastery: four small reel cells under a badge's odds, filled up to the level reached. */
+.mastery { display: inline-flex; gap: 2px; margin-top: 4px; }
+.mastery i { width: 7px; height: 10px; border-radius: 2px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); }
+.mastery i.on { background: var(--rc); box-shadow: none; }
+.skins li { display: grid; gap: 4px; }
+.buy-skin { width: 100%; }
+/* Olive: olive-drab and khaki with a chartreuse Roll button. Bought for coins. */
+:root[data-theme="olive"] {
+  --bg: #121309; --surface: #18190e; --surface-2: #1e2012; --line: #3a3d24;
+  --ink: #f1f2e2; --muted: #c6c9a8; --faint: #abae8c; --cell: #0b0c05; --cell-ink: #e9edc0; --cell-lead: #6b6f48;
+  --accent: #b9cc3a; --accent-ink: #151807; --focus: #d6e46a;
+}
+[data-swatch="olive"] { background: linear-gradient(135deg, #121309 55%, #b9cc3a 55%); }
