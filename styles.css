@@ -844,3 +844,51 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
   --accent: #b9cc3a; --accent-ink: #151807; --focus: #d6e46a;
 }
 [data-swatch="olive"] { background: linear-gradient(135deg, #121309 55%, #b9cc3a 55%); }
+
+/* v4.0: the Arcade tab */
+.arcade-intro { margin: 0 0 18px; max-width: 760px; }
+.cabinet.game { margin-bottom: 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.game-label { margin: 0; color: var(--muted); font-size: 14px; }
+.mini-reels { display: flex; gap: 3px; flex-wrap: nowrap; }
+.mini-reels .mini-cell { width: clamp(22px, 6vw, 30px); height: clamp(32px, 8vw, 42px); font-size: clamp(16px, 4.4vw, 22px); }
+.mini-reels .mini-cell.lead { color: var(--cell-lead); }
+/* In Digit pick the cells showing your digit light in the accent: they are the result. */
+.mini-reels .mini-cell.mark { background: var(--accent); color: var(--accent-ink); }
+.hl-now { margin: 0; font-size: 16px; }
+.hl-now b { font-size: 22px; }
+.bet-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
+.game-out { margin: 0; min-height: 21px; font-size: 14px; }
+.game .luck.odds { margin-top: 4px; }
+.digit-seg button { min-width: 44px; padding: 8px 0; font-family: ui-monospace, monospace; font-size: 16px; }
+.wheel-box { position: relative; width: min(260px, 70vw); aspect-ratio: 1; }
+.wheel { width: 100%; height: 100%; display: block; }
+#wheelSpinGroup { transition: transform 3s cubic-bezier(.12, .7, .2, 1); }
+.wheel .seg { fill: var(--surface-2); stroke: var(--line); stroke-width: 1; }
+.wheel .seg.alt { fill: var(--cell); }
+.wheel .seg.won { fill: var(--accent); }
+.wheel text { fill: var(--ink); font: 600 9px system-ui, sans-serif; pointer-events: none; }
+.wheel .alt + text { fill: var(--cell-ink); }
+.wheel .hub { fill: var(--surface); stroke: var(--line); }
+/* The pointer at the top, in the accent: the one thing that decides the prize. */
+.wheel-pin { position: absolute; top: -6px; left: 50%; width: 0; height: 0; transform: translateX(-50%); border: 10px solid transparent; border-top: 18px solid var(--accent); }
+.scratch { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; width: min(300px, 100%); }
+.scratch .empty-state { grid-column: 1 / -1; }
+.scr { min-height: 56px; border-radius: 8px; border: 1px dashed var(--faint); background: repeating-linear-gradient(45deg, var(--surface-2) 0 6px, var(--line) 6px 8px); color: var(--ink); font-weight: 700; cursor: pointer; }
+.scr.shown { background: var(--surface); border-style: solid; border-color: var(--line); cursor: default; }
+/* Casino: deep roulette red felt with a gold Roll button, for five right calls in a row. */
+:root[data-theme="casino"] {
+  --bg: #170607; --surface: #1f0a0b; --surface-2: #260d0f; --line: #4a1d20;
+  --ink: #fbeeea; --muted: #dfb9b2; --faint: #c69f98; --cell: #0e0304; --cell-ink: #f8e7b5; --cell-lead: #8c5a55;
+  --accent: #e2b545; --accent-ink: #1a1203; --focus: #f2d48a;
+}
+/* Marquee: a dark theatre front with warm bulb-white digits, for a week of daily wheel spins. */
+:root[data-theme="marquee"] {
+  --bg: #0f0d0b; --surface: #171411; --surface-2: #1d1915; --line: #3a332a;
+  --ink: #fff6e6; --muted: #d9ccb4; --faint: #bfb197; --cell: #080706; --cell-ink: #fff2cc; --cell-lead: #6f6352;
+  --accent: #ffd27a; --accent-ink: #1a1305; --focus: #fff2cc;
+}
+[data-swatch="casino"] { background: linear-gradient(135deg, #170607 55%, #e2b545 55%); }
+[data-swatch="marquee"] { background: linear-gradient(135deg, #0f0d0b 55%, #ffd27a 55%); }
+.wheel .seg.won + text { fill: var(--accent-ink); }
+.game .luck { text-align: left; }
+.game .luck td:first-child { text-align: left; }

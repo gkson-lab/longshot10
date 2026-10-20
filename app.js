@@ -779,7 +779,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -1699,7 +1699,7 @@
     ['T', 'Next speed: 1×, 2×, Turbo', true],
     ['M', 'Next mode', true],
     ['S', 'Star or unstar the roll shown', true],
-    ['1 to 5', 'Roll, Inventory, Collection, Trophies, Log'],
+    ['1 to 6', 'Roll, Inventory, Collection, Trophies, Arcade, Log'],
     ['← →', 'Next tab, when a tab has focus'],
     ['?', 'This list'],
     ['Esc', 'Close a dialog'],
@@ -1710,7 +1710,7 @@
     const t = ev.target.closest ? ev.target : document.body;
     if (t.closest('input, select, textarea')) return;
     if (ev.key === '?') { $('keysDialog').showModal(); return; }
-    if (/^Digit[1-5]$/.test(ev.code)) { selectTab(TABS[+ev.code.slice(5) - 1]); return; }
+    if (/^Digit[1-6]$/.test(ev.code)) { selectTab(TABS[+ev.code.slice(5) - 1]); return; }
     if ($('tab-roll').hidden) return;
     if (ev.code === 'Space') {
       if (t.closest('button, a')) return; // the focused control handles Space itself
@@ -2003,6 +2003,15 @@
     { id: 'mastery100', name: 'Practised', desc: 'Reach 100 levels of badge mastery', test: () => masteryTotal() >= 100 },
     { id: 'mastery400', name: 'Virtuoso', desc: 'Reach 400 levels of badge mastery', test: () => masteryTotal() >= 400 },
     { id: 'sheetRoll', name: 'Spreadsheet wizard', desc: 'Roll from a formula', test: () => !!state.formula },
+    // v4.0
+    { id: 'arcade1', name: 'Pocket change', desc: 'Play a game in the arcade', test: () => (arc().played || 0) >= 1 },
+    { id: 'hl5', name: 'Called it', desc: 'Call higher or lower right 5 times in a row', test: () => (arc().hlBest || 0) >= 5 },
+    { id: 'hl10', name: 'Psychic', desc: 'Call higher or lower right 10 times in a row', test: () => (arc().hlBest || 0) >= 10 },
+    { id: 'digit5', name: 'Lucky digit', desc: 'Draw five or more of your digit in Digit pick', test: () => (arc().digitBest || 0) >= 5 },
+    { id: 'wheel7', name: 'Wheel regular', desc: 'Spin the daily wheel on 7 days', test: () => (arc().wheelDays || 0) >= 7 },
+    { id: 'wheelTop', name: 'Top of the wheel', desc: 'Land the Charm of Ten Thousand on the daily wheel', test: () => !!arc().wheelJackpot },
+    { id: 'scratchWin', name: 'Scratch and win', desc: 'Win on a scratch card', test: () => (arc().scratchWins || 0) >= 1 },
+    { id: 'sevens', name: 'Lucky sevens', desc: 'Scratch a row of three Sevens', test: () => !!arc().sevens },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2290,8 +2299,214 @@
     box.addEventListener('pointerleave', () => { chartTip.hidden = true; });
   }
 
+  // Arcade: four games, each with its exact odds and its payback (what it returns on average for
+  // each coin or token played) printed beside it. Arcade rolls are drawn like any roll of your mode
+  // but are not recorded: they count for nothing outside the arcade.
+  const arc = () => state.arcade || (state.arcade = { played: 0, coinsIn: 0, coinsOut: 0, hlBest: 0, wheelDay: '', wheelDays: 0 });
+  function arcadeRoll() {
+    const mode = ready[state.mode] ? state.mode : 'classic';
+    const roll = G.randomParams(mode), n = G.randomRoll(), r = G.score(n, dayKey(), roll), t = G.rollTier(r.rank, mode);
+    const p = Math.min(1, Math.max(1 - G.percentile(r.rank, mode) / 100, 1e-300)); // the true chance to do at least this well
+    return { n, mode, rank: r.rank, p, tier: t.tier.id, oneInLog: t.oneInLog, estimated: t.estimated, x: roll.mult, e: roll.e };
+  }
+  // Ten small reel cells, leading zeros dimmed; `mark` lights every cell showing that digit.
+  function miniReels(id, n, mark = null) {
+    const s = String(n).padStart(G.DIGITS, '0'), lead = leadCount(n);
+    $(id).innerHTML = [...s].map((d, i) => `<span class="mini-cell num${i < lead ? ' lead' : ''}${mark !== null && +d === mark ? ' mark' : ''}">${d}</span>`).join('');
+    $(id).setAttribute('aria-label', s.split('').join(' '));
+  }
+  function payPrize(kind, amount, why) {
+    if (kind === 'coins') { state.coins += amount; toast(`${esc(why)}: <b>${fmt(amount)} coins</b>`, 'mythic', 'item'); }
+    else if (kind === 'tokens') { addTokens(amount); toast(`${esc(why)}: <b>${fmt(amount)} lucky tokens</b>`, 'uncommon', 'item'); }
+    else grant(kind, why, amount);
+  }
+  const prizeName = (kind, amount) => (kind === 'coins' ? `${fmt(amount)} coins` : kind === 'tokens' ? `${fmt(amount)} lucky tokens` : `${ITEM_BY_ID[kind].name}${amount > 1 ? ` ×${amount}` : ''}`);
+  function renderArcadeIntro() {
+    const a = arc();
+    $('arcadeIntro').textContent = `Arcade rolls are drawn like real rolls of your mode, but they are not recorded. Every game shows its exact chances and its payback: what it returns on average for each coin or token played.${a.coinsIn ? ` You have played ${fmt(a.coinsIn)} coins here and won ${fmt(a.coinsOut)} back.` : ''}`;
+  }
+
+  // Higher or lower: is the next roll rarer or commoner than this one? A roll of 1/N is beaten by
+  // the next with chance exactly 1/N (the true chance, not the 1/2 floor shown for ordinary rolls),
+  // so each call pays 95% of the fair price.
+  const HL_RETURN = 0.95;
+  const hl = { cur: null, streak: 0 };
+  const hlPays = q => Math.floor((HL_RETURN / q) * 100) / 100;
+  function paintHl() {
+    if (!hl.cur) hl.cur = arcadeRoll();
+    const c = hl.cur, bet = +$('hlBet').value;
+    miniReels('hlReels', c.n);
+    $('hlNow').innerHTML = `<b style="color:${tierVar(c.tier)}">${ROLL_TIERS[T(c.tier)].name}</b> <span class="num">${esc(oneText(c))}</span> <span class="muted">· beaten by ${chanceText(c.p)} of rolls</span>`;
+    $('hlRarer').textContent = `Rarer: pays ${hlPays(c.p)}×`;
+    $('hlCommoner').textContent = `Commoner: pays ${hlPays(1 - c.p)}×`;
+    $('hlRarer').setAttribute('aria-label', `Rarer, a ${chanceText(c.p)} chance, pays ${hlPays(c.p)} times the bet`);
+    $('hlCommoner').setAttribute('aria-label', `Commoner, a ${chanceText(1 - c.p)} chance, pays ${hlPays(1 - c.p)} times the bet`);
+    $('hlRarer').disabled = $('hlCommoner').disabled = state.coins < bet;
+    $('hlStreak').textContent = hl.streak ? `${hl.streak} right in a row` : arc().hlBest ? `best ${arc().hlBest} in a row` : '';
+  }
+  function playHl(rarer) {
+    const bet = +$('hlBet').value, a = arc();
+    if (state.coins < bet) { $('hlOut').textContent = `That bet needs ${bet} coins; you have ${fmt(state.coins)}.`; return null; }
+    const c = hl.cur || arcadeRoll(), next = arcadeRoll(), q = rarer ? c.p : 1 - c.p;
+    const won = rarer ? next.rank > c.rank : next.rank < c.rank;
+    state.coins -= bet;
+    a.coinsIn += bet;
+    a.played++;
+    let pay = 0;
+    if (won) { pay = Math.floor(bet * hlPays(q)); state.coins += pay; a.coinsOut += pay; hl.streak++; a.hlBest = Math.max(a.hlBest, hl.streak); } else hl.streak = 0;
+    const text = `Next roll: ${ROLL_TIERS[T(next.tier)].name} ${oneText(next)}. ${won ? `Right, ${fmt(pay)} coins back.` : `Wrong, the ${fmt(bet)} ${bet === 1 ? 'coin is' : 'coins are'} gone.`}`;
+    $('hlOut').innerHTML = `<b style="color:${tierVar(next.tier)}">${esc(text.split('.')[0])}</b>${esc(text.slice(text.indexOf('.')))}`;
+    hl.cur = next;
+    checkAchievements();
+    save();
+    paintHl();
+    renderArcadeIntro();
+    return text;
+  }
+  $('hlRarer').addEventListener('click', () => playHl(true));
+  $('hlCommoner').addEventListener('click', () => playHl(false));
+  $('hlBet').addEventListener('change', paintHl);
+
+  // Digit pick: choose a digit; a ten-digit number is drawn (leading zeros included, every cell
+  // uniform and independent), and you are paid by how many cells show your digit, a binomial count.
+  const DIGIT_PAYS = [0, 0, 1, 5, 15, 80, 500, 5000, 50000, 1e6, 1e7]; // bet multiplier by cells matched
+  const binom10 = k => { let c = 1; for (let i = 0; i < k; i++) c = (c * (10 - i)) / (i + 1); return c * 0.1 ** k * 0.9 ** (10 - k); };
+  const DIGIT_RETURN = DIGIT_PAYS.reduce((t, m, k) => t + m * binom10(k), 0);
+  for (let d = 0; d <= 9; d++) $('digitSeg').insertAdjacentHTML('beforeend', `<button type="button" data-digit="${d}" aria-pressed="false">${d}</button>`);
+  function paintDigit() {
+    const d = state.settings.digit ?? 7;
+    $('digitSeg').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.digit === d)));
+    $('digitDraw').disabled = state.coins < +$('digitBet').value;
+    $('digitTable').innerHTML = `<thead><tr><th>Cells showing ${d}</th><th>Chance</th><th>Pays</th></tr></thead><tbody>`
+      + DIGIT_PAYS.map((m, k) => `<tr><td>${k}</td><td class="num">${chanceText(binom10(k))}</td><td class="num">${m ? `${fmt(m)}×` : 'nothing'}</td></tr>`).join('')
+      + `<tr><td><b>Payback</b></td><td></td><td class="num"><b>${(100 * DIGIT_RETURN).toFixed(1)}%</b></td></tr></tbody>`;
+  }
+  function playDigit() {
+    const bet = +$('digitBet').value, d = state.settings.digit ?? 7, a = arc();
+    if (state.coins < bet) { $('digitOut').textContent = `That bet needs ${bet} coins; you have ${fmt(state.coins)}.`; return null; }
+    const n = G.randomRoll(), k = [...String(n).padStart(G.DIGITS, '0')].filter(c => +c === d).length, pay = bet * DIGIT_PAYS[k];
+    state.coins -= bet - pay;
+    a.coinsIn += bet;
+    a.coinsOut += pay;
+    a.played++;
+    a.digitBest = Math.max(a.digitBest || 0, k);
+    miniReels('digitReels', n, d);
+    const text = `${k} ${k === 1 ? 'cell shows' : 'cells show'} ${d}: ${pay ? `${fmt(pay)} ${pay === 1 ? 'coin' : 'coins'} back` : `the ${fmt(bet)} ${bet === 1 ? 'coin is' : 'coins are'} gone`}.`;
+    $('digitOut').textContent = text;
+    checkAchievements();
+    save();
+    paintDigit();
+    renderArcadeIntro();
+    return text;
+  }
+  $('digitSeg').addEventListener('click', ev => { const b = ev.target.closest('[data-digit]'); if (b) { state.settings.digit = +b.dataset.digit; save(); paintDigit(); } });
+  $('digitDraw').addEventListener('click', playDigit);
+  $('digitBet').addEventListener('change', paintDigit);
+
+  // Daily wheel: one free spin a day. Each segment's size is its true chance, so the wheel shows the
+  // odds as they are; the table lists them exactly. [prize, amount, parts of 1,000]
+  const WHEEL = [['luck10', 1, 300], ['coins', 5, 250], ['tokens', 500, 200], ['lens', 1, 120], ['luck100', 1, 80], ['horn', 1, 35], ['goose', 1, 12], ['luck10k', 1, 3]];
+  if (WHEEL.reduce((t, w) => t + w[2], 0) !== 1000) throw new Error('wheel table does not add up');
+  let wheelTurn = 0;
+  function drawWheel() {
+    let a0 = 0, svg = '<g id="wheelSpinGroup">';
+    const pt = (deg, r) => { const t = (deg - 90) * Math.PI / 180; return `${(r * Math.cos(t)).toFixed(2)} ${(r * Math.sin(t)).toFixed(2)}`; };
+    WHEEL.forEach(([kind, amount, parts], i) => {
+      const a1 = a0 + parts * 0.36, mid = (a0 + a1) / 2, big = a1 - a0 > 180 ? 1 : 0;
+      svg += `<path class="seg${i % 2 ? ' alt' : ''}" data-seg="${i}" d="M0 0L${pt(a0, 100)}A100 100 0 ${big} 1 ${pt(a1, 100)}Z"/>`;
+      if (parts >= 80) svg += `<text transform="rotate(${mid.toFixed(1)}) translate(0 -62) rotate(${mid > 90 && mid < 270 ? 180 : 0})" text-anchor="middle" dominant-baseline="middle">${esc(kind === 'coins' ? `${amount} coins` : kind === 'tokens' ? `${amount} tokens` : ITEM_BY_ID[kind].name.replace('Charm of ', '×').replace('a Hundred', '100').replace('Ten', '10').replace('Multiplier ', ''))}</text>`;
+      a0 = a1;
+    });
+    $('wheel').innerHTML = svg + '</g><circle r="12" class="hub"/>';
+  }
+  function paintWheel() {
+    const a = arc(), done = a.wheelDay === dayKey();
+    $('wheelSpin').disabled = done;
+    $('wheelSpin').textContent = done ? 'Spun today' : 'Spin';
+    $('wheelSub').textContent = done ? 'next free spin tomorrow' : 'one free spin a day';
+    $('wheelTable').innerHTML = '<thead><tr><th>Prize</th><th>Chance</th></tr></thead><tbody>'
+      + WHEEL.map(([kind, amount, parts]) => `<tr><td>${esc(prizeName(kind, amount))}</td><td class="num">${(parts / 10).toFixed(1)}%</td></tr>`).join('') + '</tbody>';
+  }
+  async function spinWheel() {
+    const a = arc();
+    if (a.wheelDay === dayKey()) return null;
+    a.wheelDay = dayKey();
+    a.wheelDays = (a.wheelDays || 0) + 1;
+    let u = randInt(1000), i = 0;
+    while (u >= WHEEL[i][2]) { u -= WHEEL[i][2]; i++; }
+    const [kind, amount] = WHEEL[i];
+    const start = WHEEL.slice(0, i).reduce((t, w) => t + w[2], 0) * 0.36, mid = start + WHEEL[i][2] * 0.18;
+    save();
+    paintWheel();
+    const g = $('wheelSpinGroup');
+    wheelTurn += 360 * 5 + ((360 - mid) - (wheelTurn % 360) + 360) % 360;
+    if (effects() !== 'off' && g) { g.style.transform = `rotate(${wheelTurn}deg)`; await sleep(3200); }
+    else if (g) g.style.transform = `rotate(${wheelTurn}deg)`;
+    payPrize(kind, amount, 'Daily wheel');
+    if (kind === 'luck10k') a.wheelJackpot = true;
+    const text = `The wheel stops on ${prizeName(kind, amount)}.`;
+    $('wheelOut').textContent = text;
+    $('wheel').querySelectorAll('.seg').forEach(p => p.classList.toggle('won', +p.dataset.seg === i));
+    autoFuse();
+    checkAchievements();
+    save();
+    return text;
+  }
+  $('wheelSpin').addEventListener('click', spinWheel);
+
+  // Scratch card: three rows of three cells. A row of three matching symbols pays that symbol's
+  // prize, so each row wins with the sum of each symbol's chance cubed. [symbol, parts of 1,000, prize]
+  const SCRATCH_COST = 300; // lucky tokens
+  const SCRATCH = [['Coin', 400, 'coins', 10], ['Clover', 300, 'tokens', 1000], ['Charm', 200, 'luck100', 1], ['Goose', 80, 'goose', 1], ['Seven', 20, 'luck10k', 1]];
+  const rowChance = parts => (parts / 1000) ** 3;
+  const SCRATCH_ANY = 1 - (1 - SCRATCH.reduce((t, s) => t + rowChance(s[1]), 0)) ** 3;
+  let scratchCard = null;
+  function paintScratch() {
+    $('scratchBuy').textContent = `Buy a card for ${SCRATCH_COST} tokens`;
+    $('scratchBuy').disabled = (state.tokens || 0) < SCRATCH_COST;
+    $('scratchSub').textContent = `${fmt(state.tokens || 0)} tokens`;
+    $('scratchAll').disabled = !scratchCard || scratchCard.shown.every(Boolean);
+    $('scratch').innerHTML = scratchCard ? scratchCard.cells.map((s, i) => `<button class="scr${scratchCard.shown[i] ? ' shown' : ''}" type="button" data-scr="${i}" ${scratchCard.shown[i] ? 'disabled' : ''} aria-label="${scratchCard.shown[i] ? s : `Cell ${i + 1}, not scratched`}">${scratchCard.shown[i] ? esc(s) : ''}</button>`).join('')
+      : '<p class="empty-state">Buy a card to scratch it.</p>';
+    $('scratchTable').innerHTML = '<thead><tr><th>Row of three</th><th>Chance per row</th><th>Pays</th></tr></thead><tbody>'
+      + SCRATCH.map(([sym, parts, kind, amount]) => `<tr><td>${sym}</td><td class="num">${chanceText(rowChance(parts))}</td><td>${esc(prizeName(kind, amount))}</td></tr>`).join('')
+      + `<tr><td><b>Any win on a card</b></td><td class="num"><b>${chanceText(SCRATCH_ANY)}</b></td><td></td></tr></tbody>`;
+  }
+  // The card is drawn and paid when bought; scratching only uncovers it.
+  function buyScratch() {
+    if ((state.tokens || 0) < SCRATCH_COST) return null;
+    state.tokens -= SCRATCH_COST;
+    arc().played++;
+    const pick = () => { let u = randInt(1000), i = 0; while (u >= SCRATCH[i][1]) { u -= SCRATCH[i][1]; i++; } return SCRATCH[i][0]; };
+    const cells = Array.from({ length: 9 }, pick), wins = [];
+    for (let r = 0; r < 3; r++) { const row = cells.slice(r * 3, r * 3 + 3); if (row.every(x => x === row[0])) wins.push(SCRATCH.find(s => s[0] === row[0])); }
+    scratchCard = { cells, shown: cells.map(() => false), wins, told: false };
+    for (const [sym, , kind, amount] of wins) payPrize(kind, amount, `Scratch card, three ${sym}s`);
+    if (wins.length) arc().scratchWins = (arc().scratchWins || 0) + 1;
+    if (wins.some(w => w[0] === 'Seven')) arc().sevens = true;
+    $('scratchOut').textContent = '';
+    checkAchievements();
+    save();
+    paintScratch();
+    return wins.length ? `Won ${wins.map(w => prizeName(w[2], w[3])).join(' and ')}.` : 'No row of three this time.';
+  }
+  function scratchCell(i) {
+    if (!scratchCard) return;
+    scratchCard.shown[i] = true;
+    if (scratchCard.shown.every(Boolean) && !scratchCard.told) {
+      scratchCard.told = true;
+      $('scratchOut').textContent = scratchCard.wins.length ? `Won ${scratchCard.wins.map(w => prizeName(w[2], w[3])).join(' and ')}.` : 'No row of three this time.';
+    }
+    paintScratch();
+  }
+  $('scratchBuy').addEventListener('click', buyScratch);
+  $('scratchAll').addEventListener('click', () => { if (scratchCard) scratchCard.shown.forEach((_, i) => { scratchCard.shown[i] = i === 8 ? scratchCard.shown[i] : true; }); scratchCell(8); });
+  $('scratch').addEventListener('click', ev => { const b = ev.target.closest('[data-scr]'); if (b) scratchCell(+b.dataset.scr); });
+  function renderArcade() { renderArcadeIntro(); paintHl(); paintDigit(); paintWheel(); paintScratch(); }
+  drawWheel();
+
   // Tabs, with arrow-key movement between them
-  const TABS = ['roll', 'inventory', 'collection', 'trophies', 'log'];
+  const TABS = ['roll', 'inventory', 'collection', 'trophies', 'arcade', 'log'];
   function selectTab(name) {
     document.querySelectorAll('.tabs [role="tab"]').forEach(b => {
       const on = b.dataset.tab === name;
@@ -2302,6 +2517,7 @@
     if (name === 'collection') { renderBingo(); renderBounties(); renderBook(); renderCollection(); }
     if (name === 'trophies') { renderQuests(); renderPrestige(); renderTrophies(); }
     if (name === 'log') renderLog();
+    if (name === 'arcade') renderArcade();
     if (name === 'inventory') { renderInventory(); renderSlot(); }
   }
   const tabBar = document.querySelector('.tabs');
@@ -2525,6 +2741,8 @@
     { id: 'glacier', name: 'Glacier', how: 'reward', ach: 'weeklyAll', light: true },
     { id: 'bingo', name: 'Bingo Hall', how: 'reward', ach: 'bingo1', light: true },
     { id: 'punch', name: 'Punch Card', how: 'reward', ach: 'bounty10', light: true },
+    { id: 'casino', name: 'Casino', how: 'reward', ach: 'hl5' },
+    { id: 'marquee', name: 'Marquee', how: 'reward', ach: 'wheel7' },
     // Coin skins: bought one at a time for coins, in Settings.
     { id: 'olive', name: 'Olive', how: 'coins', price: 2000 },
   ];
@@ -2651,6 +2869,10 @@
     'ACH                    Achievements.',
     'RECORDS                Records and how lucky you have been.',
     'BINGO                  This week\'s bingo card.',
+    'HL RARER|COMMONER [bet]  Higher or lower in the arcade.',
+    'DIGIT d [bet]          Digit pick: bet on how many of ten cells show d.',
+    'WHEEL                  Spin the daily wheel.',
+    'SCRATCH                Buy and scratch a scratch card.',
     'BOUNTIES               The bounty board.',
     'WORKSHOP [BUY id]      Token workshop upgrades, or buy the next level of one.',
     'SHOP [BUY item [n]]    The coin shop, or buy from it, e.g. SHOP BUY luck100 10.',
@@ -2885,6 +3107,38 @@
           break;
         }
         print(`Coins: ${fmt(state.coins)}`, ...SHOP.map(([id, price]) => `${pad(id, 12)}${pad(fmt(price) + ' coins', 14)}${ITEM_BY_ID[id].name}`), '');
+        break;
+      }
+      case 'hl': {
+        const pick = (rest[0] || '').toLowerCase();
+        if (!hl.cur) hl.cur = arcadeRoll();
+        if (!['rarer', 'commoner', 'higher', 'lower'].includes(pick)) {
+          print(`This roll: ${ROLL_TIERS[T(hl.cur.tier)].name} ${oneText(hl.cur)}. Rarer pays ${hlPays(hl.cur.p)}× (${chanceText(hl.cur.p)}), commoner ${hlPays(1 - hl.cur.p)}× (${chanceText(1 - hl.cur.p)}).`, 'HL RARER [bet] or HL COMMONER [bet]; bets are 1, 5, 25 or 100 coins.', '');
+          break;
+        }
+        const bet = [1, 5, 25, 100].includes(+rest[1]) ? +rest[1] : 1;
+        $('hlBet').value = String(bet);
+        print(playHl(pick === 'rarer' || pick === 'higher') || $('hlOut').textContent, '');
+        break;
+      }
+      case 'digit': {
+        const d = +rest[0];
+        if (!/^\d$/.test(rest[0] || '')) { print(`DIGIT d [bet]: pays by how many of ten cells show d. Payback ${(100 * DIGIT_RETURN).toFixed(1)}%.`, ...DIGIT_PAYS.map((m, k) => `${pad(k + ' cells', 10)}${pad(chanceText(binom10(k)), 22)}${m ? fmt(m) + '×' : 'nothing'}`), ''); break; }
+        state.settings.digit = d;
+        $('digitBet').value = String([1, 5, 25, 100].includes(+rest[1]) ? +rest[1] : 1);
+        print(playDigit() || $('digitOut').textContent, '');
+        break;
+      }
+      case 'wheel':
+        if (arc().wheelDay === dayKey()) { print('The wheel has been spun today. A new free spin comes tomorrow.'); break; }
+        spinWheel().then(t => print(t || 'The wheel has been spun today.', ''));
+        break;
+      case 'scratch': {
+        const r = buyScratch();
+        if (!r) { print(`A card costs ${SCRATCH_COST} lucky tokens; you have ${fmt(state.tokens || 0)}.`); break; }
+        print(...[0, 1, 2].map(i => scratchCard.cells.slice(i * 3, i * 3 + 3).map(c => pad(c, 8)).join('')), r, '');
+        scratchCard.shown = scratchCard.cells.map(() => true);
+        scratchCard.told = true;
         break;
       }
       case 'bingo': {
@@ -3707,6 +3961,15 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v4.0', at: '2026-10-20 03:55', title: 'The arcade (major update)', items: [
+      'A new Arcade tab with four games. Each shows its exact chances and its payback, and arcade rolls never touch your records.',
+      'Higher or lower: will the next roll be rarer or commoner? The chance is exact (a roll beaten by a share q of rolls is beaten next time with chance q), and a right call pays 95% of the fair price.',
+      'Digit pick: pick a digit, bet coins, and draw ten cells. Pays by how many show your digit, from your bet back for two up to ×10,000,000 for all ten. Payback 90.8%.',
+      'Daily wheel: one free spin a day, with every segment drawn at the size of its true chance.',
+      'Scratch card: 300 lucky tokens for three rows of three. A row of three matching symbols pays, up to a Charm of Ten Thousand for three Sevens.',
+      'HL, DIGIT, WHEEL and SCRATCH in the command line. 1 to 6 now switch tabs.',
+      'Two skins: Casino, the reward for Called it (five right calls in a row), and Marquee, the reward for a week of wheel spins. Eight new achievements.',
+    ] },
     { v: 'v3.9', at: '2026-10-20 03:47', title: 'Spreadsheet', items: [
       'Spreadsheet, a full-screen secret skin: every roll is a row, the formula bar takes =ROLL(100), =USE("goose") and every other command, and sheet tabs turn your stats, luck, items, quests, best rolls and records into tables. SUM, AVERAGE, MIN and MAX work too. Its hint is in Settings.',
       'Run summary: when Auto or Endless stops after 100 rolls or more, you see how long it ran, how fast, its best roll, and the badges, coins, items and tokens it brought.',

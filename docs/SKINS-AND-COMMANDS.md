@@ -33,6 +33,8 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Glacier | Earn Clean sweep (all three weekly quests of a week) | Pale ice blue with sea-blue ink. |
 | Bingo Hall | Earn Bingo (a line on the bingo card) | Cream card stock and red dauber ink. |
 | Punch Card | Earn Most wanted (10 bounties) | Manila card and tabulator blue. |
+| Casino | Earn Called it (five right calls in a row at higher or lower) | Roulette-red felt and gold. |
+| Marquee | Earn Wheel regular (spin the daily wheel on 7 days) | A dark theatre front with bulb-white digits. |
 | Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
 | Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
@@ -65,6 +67,10 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `ACH` | Achievements |
 | `RECORDS` | Records, and how lucky you have been |
 | `BINGO` | This week's bingo card |
+| `HL`, `HL RARER [bet]`, `HL COMMONER [bet]` | Higher or lower |
+| `DIGIT d [bet]` | Digit pick on digit d |
+| `WHEEL` | Spin the daily wheel |
+| `SCRATCH` | Buy and scratch a scratch card |
 | `BOUNTIES` | The bounty board |
 | `WORKSHOP`, `WORKSHOP BUY id` | Token workshop upgrades, or buy a level |
 | `SHOP`, `SHOP BUY item [n]` | The coin shop, or buy from it |

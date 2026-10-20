@@ -132,6 +132,7 @@
     <button role="tab" id="tab-btn-inventory" aria-controls="tab-inventory" data-tab="inventory" aria-selected="false" tabindex="-1">Inventory</button>
     <button role="tab" id="tab-btn-collection" aria-controls="tab-collection" data-tab="collection" aria-selected="false" tabindex="-1">Collection</button>
     <button role="tab" id="tab-btn-trophies" aria-controls="tab-trophies" data-tab="trophies" aria-selected="false" tabindex="-1">Trophies</button>
+    <button role="tab" id="tab-btn-arcade" aria-controls="tab-arcade" data-tab="arcade" aria-selected="false" tabindex="-1">Arcade</button>
     <button role="tab" id="tab-btn-log" aria-controls="tab-log" data-tab="log" aria-selected="false" tabindex="-1">Log</button>
   </nav>
 
@@ -377,6 +378,57 @@
       </div>
     </section>
 
+    <section id="tab-arcade" role="tabpanel" aria-labelledby="tab-btn-arcade" hidden>
+      <p class="arcade-intro muted" id="arcadeIntro"></p>
+      <div class="two-col arcade">
+        <div>
+          <div class="section-head"><h2>Higher or lower</h2><span id="hlStreak"></span></div>
+          <div class="cabinet game" id="hlGame">
+            <p class="game-label">This roll</p>
+            <div class="mini-reels" id="hlReels" role="img"></div>
+            <p class="hl-now" id="hlNow"></p>
+            <p class="game-label">Will the next roll be rarer or commoner?</p>
+            <div class="bet-row">
+              <label class="field">Bet <select id="hlBet"><option value="1">1 coin</option><option value="5">5 coins</option><option value="25">25 coins</option><option value="100">100 coins</option></select></label>
+              <button class="btn" type="button" id="hlRarer"></button>
+              <button class="btn" type="button" id="hlCommoner"></button>
+            </div>
+            <p class="game-out" id="hlOut" role="status"></p>
+          </div>
+          <div class="section-head"><h2>Digit pick</h2><span>pick a digit, draw ten</span></div>
+          <div class="cabinet game" id="digitGame">
+            <div class="seg digit-seg" id="digitSeg" role="group" aria-label="Your digit"></div>
+            <div class="mini-reels" id="digitReels" role="img" aria-label="No draw yet"></div>
+            <div class="bet-row">
+              <label class="field">Bet <select id="digitBet"><option value="1">1 coin</option><option value="5">5 coins</option><option value="25">25 coins</option><option value="100">100 coins</option></select></label>
+              <button class="btn" type="button" id="digitDraw">Draw</button>
+            </div>
+            <p class="game-out" id="digitOut" role="status"></p>
+            <table class="luck odds" id="digitTable"></table>
+          </div>
+        </div>
+        <div>
+          <div class="section-head"><h2>Daily wheel</h2><span id="wheelSub"></span></div>
+          <div class="cabinet game wheel-game">
+            <div class="wheel-box"><svg class="wheel" id="wheel" viewBox="-110 -110 220 220" role="img" aria-label="The daily wheel"></svg><span class="wheel-pin" aria-hidden="true"></span></div>
+            <button class="roll" type="button" id="wheelSpin">Spin</button>
+            <p class="game-out" id="wheelOut" role="status"></p>
+            <table class="luck odds" id="wheelTable"></table>
+          </div>
+          <div class="section-head"><h2>Scratch card</h2><span id="scratchSub"></span></div>
+          <div class="cabinet game">
+            <div class="scratch" id="scratch" role="group" aria-label="Scratch card"></div>
+            <div class="bet-row">
+              <button class="btn" type="button" id="scratchBuy"></button>
+              <button class="btn" type="button" id="scratchAll" disabled>Scratch all</button>
+            </div>
+            <p class="game-out" id="scratchOut" role="status"></p>
+            <table class="luck odds" id="scratchTable"></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <section id="tab-log" role="tabpanel" aria-labelledby="tab-btn-log" hidden>
       <div class="stats" id="stats"></div>
       <div class="two-col charts">
@@ -426,7 +478,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.9</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v4.0</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

@@ -52,7 +52,7 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 - **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll one batch like that every second: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons. Stop ends it at once. A background tab catches up on the batches it missed, up to a minute's worth.
 - **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
 - Your best rolls of the session and of all time stay beside the reels.
-- **Keys:** press ? for the full list. Space rolls, A and E start Auto and Endless, B batches ×1,000, T changes speed, M changes mode, S stars the roll shown, and 1 to 5 switch tabs.
+- **Keys:** press ? for the full list. Space rolls, A and E start Auto and Endless, B batches ×1,000, T changes speed, M changes mode, S stars the roll shown, and 1 to 6 switch tabs.
 
 ## Items
 
@@ -102,6 +102,15 @@ The Log tab keeps the numbers of your play:
 - **Weekly quests:** three bigger ones from Monday to Sunday. Finishing all three pays a Diamond Goose.
 - **Daily streak:** days in a row with at least one roll. Days 3, 7, 14, 30, 60, 100 and 365 pay rewards, and every seventh day brings a Streak Freeze, which covers one missed day on its own.
 - **Lucky hour:** one hour a day (Trophies says which) when drops and coins come twice as often. On Saturdays and Sundays coins come twice as often all day.
+
+## The arcade
+
+Four games in the Arcade tab. Each shows its exact chances and its payback (what it returns on average for each coin or token played), and arcade rolls are never recorded.
+
+- **Higher or lower:** will the next roll be rarer or commoner than this one? A roll that a share q of rolls beat is beaten by the next with chance exactly q, and a right call pays 95% of the fair price for that chance.
+- **Digit pick:** pick a digit and bet coins. Ten cells are drawn; you are paid by how many show your digit. Payback 90.8%.
+- **Daily wheel:** one free spin a day. Each segment is drawn at the size of its chance.
+- **Scratch card:** 300 lucky tokens for three rows of three cells; three matching symbols in a row pay that symbol's prize.
 
 ## Prestige
 

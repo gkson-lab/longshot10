@@ -325,12 +325,33 @@ const STEPS = [
     await click('[data-speed="1"]');
     await click('#optsBtn');
   }],
+  // v4.0
+  ['arcade: higher or lower, digit pick, daily wheel, scratch card', async ({ page, click, overflow, shot }) => {
+    await click('[data-tab="arcade"]');
+    await click('#hlRarer');
+    if (!/Next roll/.test(await page.textContent('#hlOut'))) throw new Error('higher or lower gave no result');
+    await click('#hlCommoner');
+    await click('#digitSeg [data-digit="3"]');
+    await click('#digitDraw');
+    if (!/cells? shows? 3/.test(await page.textContent('#digitOut'))) throw new Error(`digit pick said "${await page.textContent('#digitOut')}"`);
+    if (!/Payback/.test(await page.textContent('#digitTable'))) throw new Error('no payback in the digit table');
+    await click('#wheelSpin');
+    await page.waitForFunction(() => /stops on/.test(document.getElementById('wheelOut').textContent), null, { timeout: 8000 });
+    if (!(await page.isDisabled('#wheelSpin'))) throw new Error('the wheel can be spun twice in a day');
+    await click('#scratchBuy');
+    await click('#scratch [data-scr="0"]');
+    await click('#scratchAll');
+    if (!/Won|No row/.test(await page.textContent('#scratchOut'))) throw new Error('the scratch card gave no result');
+    await overflow('arcade');
+    await shot('arcade');
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     if (await page.isHidden('#terminal')) await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

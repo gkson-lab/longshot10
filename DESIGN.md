@@ -36,6 +36,8 @@ Dial: ENERGY 3 / RHYTHM 2 / MOTION 3
 - **The coin shop is folded away.** It is a fallback for a sure item, so it opens on request and the slot keeps the top of the Inventory. Folded sections show a turning marker so they read as openable.
 - **Quick use sits under the roll buttons and only appears when something is pinned.** Its buttons are rebuilt only when the pins change, so a click during Turbo never lands on a button that was just replaced.
 - **Bingo cells fill with ink when marked.** A filled cell is how a dauber marks paper, and it reads at arm's length without colour. The thin top edge of each cell is its badge's rarity colour, the same encoding as the card stripe elsewhere.
+- **The arcade prints its odds on every game.** Each game shows its exact chances and its payback next to the controls, never behind a link, because a game of chance that hides its odds is the opposite of what this game is about. The wheel's segments are drawn at the size of their chances for the same reason, even though real wheels use equal slices.
+- **Arcade games reuse the cabinet and the reel cells.** Higher or lower and Digit pick draw their numbers in the same small cells as the wordmark, and the wheel's pointer is the one accent on it, since it decides the prize.
 - **Type: the system UI font for text, the system monospace font for digits only.** No web fonts, because the game runs fully offline. Monospace keeps every digit the same width, so reels and number columns line up.
 - **Headings in sentence case, with no wide-tracked capitals.** Rarity names are set in weight, not in tracking.
 - **Radius scale: 4 / 8 / 12, plus one full pill on the Roll button.** Chips, controls and panels each get their own radius, and the primary action is the only round shape.
