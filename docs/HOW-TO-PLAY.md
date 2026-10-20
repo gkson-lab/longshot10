@@ -88,7 +88,7 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 - **Bounty board:** three badges or multipliers that change every six hours. Land one before it changes for coins and lucky tokens, more for rarer ones.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
 - **Achievements:** 108 of them, each with an item reward.
-- **Hall of fame:** your ten best rolls per mode, kept forever, plus any rolls you star.
+- **Hall of fame:** your ten best rolls per mode, kept forever and filterable by difficulty, plus any rolls you star.
 - **Profile:** your save at a glance, with a title from any achievement you have earned, and a card to save as an image.
 
 ## Your numbers
@@ -119,11 +119,11 @@ Four games in the Arcade tab. Each shows its exact chances and its payback (what
 
 ## Prestige
 
-After 100,000 rolls (then 200,000 more for the second, and so on) you can prestige. It clears your coins, items and active effects. In return every drop and coin chance is multiplied for good: ×1.5 after the first, ×2 after the second, and half again for each one after. Rolls, badges, skins, achievements and the hall of fame stay.
+After 100,000 rolls (then 200,000 more for the second, and so on) you can prestige. It clears your coins, items and active effects. In return every drop and coin chance is multiplied for good: ×1.5 after the first, ×2 after the second, and half again for each one after. Rolls, badges, skins, achievements and the hall of fame stay. Each prestige also earns a perk point for one of six lasting perks: start every later prestige with 50 coins and three Charms of a Hundred, 25% more coins, items or tokens, bounties paying double, or a second free quest reroll a day.
 
 ## Skins
 
-Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Six of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet and a till roll. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
+Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Seven of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet, a till roll and a market board. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
 
 ## Your saves
 

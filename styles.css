@@ -555,10 +555,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 :root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }
 
 /* Full-screen skins: each replaces the page with its own way to play, in its own fixed colours. */
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"]) body { overflow: hidden; }
-:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet, :root[data-theme="receipt"] .receipt { display: flex; }
-.chat, .handheld, .calc, .sheet, .receipt { position: fixed; inset: 0; z-index: 40; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"]) body { overflow: hidden; }
+:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet, :root[data-theme="receipt"] .receipt, :root[data-theme="ticker"] .ticker { display: flex; }
+.chat, .handheld, .calc, .sheet, .receipt, .ticker { position: fixed; inset: 0; z-index: 40; }
 
 /* Chat: a messaging app with Tenny. */
 .chat { flex-direction: column; background: #eef1f5; color: #1b1f24; font: 15px/1.4 system-ui, sans-serif; }
@@ -938,3 +938,61 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 }
 [data-swatch="abacus"] { background: linear-gradient(135deg, #17100a 55%, #e05a3a 55%); }
 [data-swatch="royal"] { background: linear-gradient(135deg, #070b1c 55%, #e6c35c 55%); }
+
+/* v4.6 */
+/* Ticker: a market board. Near-black, one amber for prices and symbols, green and red only for up
+   and down, and a line chart in amber. */
+.ticker { flex-direction: column; overflow-y: auto; background: #0b0d10; color: #e8e6df; font: 14px/1.4 system-ui, sans-serif; }
+.tk-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; padding: 10px 16px; border-bottom: 1px solid #262a31; }
+.tk-sym { color: #f5b942; font: 800 20px ui-monospace, monospace; }
+.tk-last { font-size: 28px; font-weight: 700; }
+.tk-change.up { color: #4cc38a; }
+.tk-change.down { color: #ff7b72; }
+.tk-top .tk-btn { margin-left: auto; }
+.tk-tape { overflow: hidden; border-bottom: 1px solid #262a31; background: #111419; }
+.tk-tape-in { display: flex; gap: 22px; padding: 8px 16px; white-space: nowrap; font: 13px ui-monospace, monospace; }
+.tk-tape-in b { color: #f5b942; }
+.tk-tape-in i { font-style: normal; }
+.tk-main { display: grid; gap: 14px; padding: 14px 16px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .tk-main { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); } }
+.tk-chart { margin: 0; padding: 10px; border: 1px solid #262a31; border-radius: 8px; }
+.tk-chart figcaption { color: #a7a9b0; font-size: 13px; margin-bottom: 6px; }
+.tk-chart svg { display: block; width: 100%; height: auto; }
+.tk-chart polyline { fill: none; stroke: #f5b942; stroke-width: 2; stroke-linejoin: round; }
+.tk-chart .grid { stroke: #262a31; }
+.tk-chart text { fill: #a7a9b0; font-size: 11px; }
+.tk-quotes { width: 100%; border-collapse: collapse; font-size: 14px; align-self: start; }
+.tk-quotes th { text-align: left; color: #a7a9b0; font-weight: 600; padding: 6px 4px; border-bottom: 1px solid #262a31; }
+.tk-quotes td { padding: 7px 4px; border-bottom: 1px solid #1c1f25; }
+.tk-quotes td:not(:first-child), .tk-quotes th:not(:first-child) { text-align: right; }
+.tk-quotes b { color: #f5b942; font-family: ui-monospace, monospace; }
+.tk-quotes tr.on td { background: #161a20; }
+.tk-keys { display: flex; flex-wrap: wrap; gap: 8px; padding: 0 16px; }
+.tk-btn { min-height: 44px; padding: 0 14px; border: 1px solid #3a3f48; border-radius: 6px; background: #161a20; color: #e8e6df; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.tk-btn kbd { background: #0b0d10; border-color: #3a3f48; color: #a7a9b0; margin-left: 4px; }
+.tk-note { margin: 10px 16px 16px; color: #a7a9b0; font-size: 13px; }
+.ticker :focus-visible { outline: 2px solid #f5b942; outline-offset: 2px; }
+[data-swatch="ticker"] { background: linear-gradient(135deg, #0b0d10 55%, #f5b942 55%); }
+.hof-picks { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.perks li { align-items: flex-start; }
+.perks li > div:first-child { flex: 1; min-width: 0; }
+/* Prestige skins, in the order of the metals: Bronze for the first prestige, Silver for the second,
+   Platinum (light, like polished metal) for the fifth. */
+:root[data-theme="bronze"] {
+  --bg: #130d08; --surface: #1b130c; --surface-2: #221810; --line: #463220;
+  --ink: #f7ece0; --muted: #d8c2aa; --faint: #bea68d; --cell: #0b0704; --cell-ink: #f0c89a; --cell-lead: #7c5f45;
+  --accent: #d08a4a; --accent-ink: #1a0d02; --focus: #f0c89a;
+}
+:root[data-theme="silver"] {
+  --bg: #0e1013; --surface: #15181c; --surface-2: #1b1f24; --line: #343a43;
+  --ink: #f2f4f7; --muted: #c2c8d0; --faint: #a6adb7; --cell: #08090b; --cell-ink: #e6eaf0; --cell-lead: #66707c;
+  --accent: #c9d1dc; --accent-ink: #12151a; --focus: #e6eaf0;
+}
+:root[data-theme="platinum"] {
+  --bg: #f1f3f6; --surface: #fbfcfd; --surface-2: #edf0f4; --line: #cdd3db;
+  --ink: #1b1f25; --muted: #444b55; --faint: #535b66; --cell: #1b1f25; --cell-ink: #f1f3f6; --cell-lead: #858e9a;
+  --accent: #4f5b6b; --accent-ink: #ffffff; --focus: #1b1f25;
+}
+[data-swatch="bronze"] { background: linear-gradient(135deg, #130d08 55%, #d08a4a 55%); }
+[data-swatch="silver"] { background: linear-gradient(135deg, #0e1013 55%, #c9d1dc 55%); }
+[data-swatch="platinum"] { background: linear-gradient(135deg, #f1f3f6 55%, #4f5b6b 55%); }

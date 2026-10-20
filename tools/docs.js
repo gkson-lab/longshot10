@@ -54,6 +54,7 @@ const DIGIT_PAYS = run(grab('const DIGIT_PAYS ='));
 const WHEEL = run(grab('const WHEEL ='));
 const SCRATCH = run(grab('const SCRATCH ='));
 const SCRATCH_COST = run(grab('const SCRATCH_COST ='));
+const PERKS = run(grab('const PERKS ='));
 const BOOK = run(grab('const BOOK ='));
 const PRESTIGE_STEP = run(grab('const PRESTIGE_STEP ='));
 const BUNDLE_PRICE = run(grab('const BUNDLE_PRICE ='));
@@ -211,6 +212,8 @@ table(['Page', 'Badges needed', 'Rarest needed', 'Reward'], BOOK.map(b => {
 p('## Prestige', '',
   `Prestige k needs ${fmt(PRESTIGE_STEP)} × k rolls since the previous one (${fmt(PRESTIGE_STEP)}, then ${fmt(2 * PRESTIGE_STEP)}, …). It clears coins, items and active effects, and multiplies every drop and coin chance by 1 + 0.5 × k for good: ×1.5 at prestige 1, ×2 at 2, ×3.5 at 5.`, '',
   `The skin bundle (Gold, Ruby and Aurora) costs ${BUNDLE_PRICE} coins.`, '');
+p('### Prestige perks', '', 'Each prestige earns one perk point; each perk costs one and lasts for good.', '');
+table(['Perk', 'What it does'], PERKS.map(x => [x.name, x.desc]));
 
 fs.mkdirSync(path.join(__dirname, '..', 'docs'), { recursive: true });
 fs.writeFileSync(path.join(__dirname, '..', 'docs', 'ODDS.md'), out.join('\n'));

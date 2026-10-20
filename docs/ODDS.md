@@ -613,11 +613,11 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 1.04% | 1 in 10.0 | 1 in 101 | 1 in 993 | 1 in 10,000 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.52% | 1 in 16 | 1 in 342 | 1 in 3,030 | 1 in 80,000 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.42% | 1 in 714 | 1 in 30,769 | 0 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 44,444 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
-| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.3% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 0.991% | 1 in 10 | 1 in 102 | 1 in 941 | 1 in 12,903 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.48% | 1 in 16 | 1 in 342 | 1 in 2,857 | 1 in 44,444 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.4% | 1 in 760 | 1 in 40,000 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.2% | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels
 
@@ -911,3 +911,16 @@ A page is complete when you own every badge of its category with a chance of at 
 Prestige k needs 100,000 × k rolls since the previous one (100,000, then 200,000, …). It clears coins, items and active effects, and multiplies every drop and coin chance by 1 + 0.5 × k for good: ×1.5 at prestige 1, ×2 at 2, ×3.5 at 5.
 
 The skin bundle (Gold, Ruby and Aurora) costs 500 coins.
+
+### Prestige perks
+
+Each prestige earns one perk point; each perk costs one and lasts for good.
+
+| Perk | What it does |
+| --- | --- |
+| Head start | Every prestige after this one starts you with 50 coins and three Charms of a Hundred. |
+| Deep pockets | Coins drop 25% more often. |
+| Collector's eye | Items drop 25% more often. |
+| Quick study | 25% more lucky tokens. |
+| Keen hunter | Bounties pay twice the coins and tokens. |
+| Spare tickets | Two free quest rerolls a day instead of one. |

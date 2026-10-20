@@ -77,7 +77,7 @@
     inv: {}, effects: {}, boosted: 0, lastGift: '', coins: 0, spins: 0, pity: {},
     skins: [], book: {}, quests: {}, prestige: 0, prestigeAt: 0, daily: {},
     difficulty: 'standard', tokens: 0, luckLevel: 0,
-    bestPlain: {}, rec: {},
+    bestPlain: {}, rec: {}, hofDiff: {},
   });
   function upgradeEntry(x) { // v2/v3 entries had no mode or multiplier
     return { ...x, mode: x.mode || (x.e ? 'exp' : 'classic'), x: x.x || 'unity' };
@@ -94,6 +94,9 @@
         for (const id of MODE_IDS) st.hof[id] = st.hof[id].map(upgradeEntry);
         if (!MODE_BY_ID[st.mode]) st.mode = 'classic';
         if (!(s.v >= 4)) rescale(st);
+        if (!s.hofDiff) { // saves from before v4.6: the hall of fame already holds some harder rolls
+          for (const id of MODE_IDS) for (const x of st.hof[id]) if (x.d) { const k = `${id}:${x.d}`; st.hofDiff[k] = st.hofDiff[k] || []; insertTop(st.hofDiff[k], x); }
+        }
         if (!s.bestPlain) { // saves from before v3.5: the hall of fame holds the best plain rolls it kept
           for (const id of MODE_IDS) {
             const e = st.hof[id].find(x => !x.b && !x.lens && !x.d && x.oneInLog !== undefined);
@@ -205,6 +208,7 @@
     rc.streak = tier.id === 'trash' ? 0 : (rc.streak || 0) + 1; // played rolls in a row without Trash
     rc.streakBest = Math.max(rc.streakBest || 0, rc.streak);
     const madeHof = insertTop(state.hof[x.mode], entry);
+    if (x.d) { const k = `${x.mode}:${x.d}`; state.hofDiff[k] = state.hofDiff[k] || []; insertTop(state.hofDiff[k], entry); } // per difficulty
     const madeSession = insertTop(session.best[x.mode], entry);
     session.rolls++;
     noteRecords();
@@ -807,7 +811,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', p2: 'luck100k', perk1: 'goose', perkAll: 'luck10m', hardHof: 'goose2', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -820,7 +824,7 @@
     if (boost > 1) fx.drop.left--;
     if (magnet > 1) fx.coin.left--;
     const bag = {}, P = boost * prestigeBonus();
-    dropsInto(bag, 10 ** oneInLog, P * wsBonus('itemSense') * eventDrops(), P * wsBonus('coinSense') * magnet * eventCoins());
+    dropsInto(bag, 10 ** oneInLog, P * wsBonus('itemSense') * eventDrops() * perkMult('eye'), P * wsBonus('coinSense') * magnet * eventCoins() * perkMult('pockets'));
     payDrops(bag);
   }
   // What one plain roll of 1 in n drops with item boost D and coin boost C, added to `bag`
@@ -1330,7 +1334,7 @@
     if (!charmed && !x.lens) rollDrops(rec.entry.oneInLog); // charm and lens rolls never drop items, so boosts cannot feed themselves
     const tk = tokenActive();
     if (tk > 1) state.effects.token.left--;
-    if (randInt(2) === 0) addTokens(TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense')); // lucky tokens: 1 in 2 rolls, any tier
+    if (randInt(2) === 0) addTokens(TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense') * perkMult('study')); // lucky tokens: 1 in 2 rolls, any tier
     renewBoosts();
     save();
     run.rolls++;
@@ -1555,7 +1559,7 @@
       if (magnet > 1) fx.coin.left = Math.max(0, fx.coin.left - r);
       if (tk > 1) fx.token.left = Math.max(0, fx.token.left - r);
       renewBoosts(); // the next part of the batch rolls with the renewed boost
-      const D = boost * prestigeBonus() * wsBonus('itemSense') * eventDrops(), C = boost * prestigeBonus() * wsBonus('coinSense') * magnet * eventCoins();
+      const D = boost * prestigeBonus() * wsBonus('itemSense') * eventDrops() * perkMult('eye'), C = boost * prestigeBonus() * wsBonus('coinSense') * magnet * eventCoins() * perkMult('pockets');
       counts.forEach((c, k) => {
         if (!c) return;
         const id = k ? BAND_TIER[k - 1] : 'trash';
@@ -1564,7 +1568,7 @@
         questEvent('tier', c, q => T(id) >= T(q.tier));
         if (plain && k && BAND_FROM[k - 1] >= COIN_FROM) for (let i = 0; i < c; i++) dropsInto(bag, BAND_FROM[k - 1], D, C);
       });
-      addTokens(heads(r) * TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense'));
+      addTokens(heads(r) * TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense') * perkMult('study'));
       questEvent('roll', r);
       questEvent('mode', r, q => q.mode === mode);
     }
@@ -1595,7 +1599,7 @@
     state.awayRolls = Math.max(state.awayRolls || 0, n);
     state.awayTimes = (state.awayTimes || 0) + 1;
     const h = Math.floor(gone / 3600e3), m = Math.floor(gone / 60000) % 60;
-    const html = `<b>Welcome back.</b> You were away ${h ? `${h} h ` : ''}${m} min${gone > AWAY_MAX ? ' (8 hours count at most)' : ''}, so ${rollsText(n)} were rolled at ${fmt(awayRate())} a second${r.best ? `, best <b style="color:${tierVar(r.best.rec.tier.id)}">${r.best.rec.tier.name}</b> ${esc(oneText(r.best.rec.entry))}` : ''}. ${tierList(r.tiers)}`;
+    const html = `<b>Welcome back.</b> You were away ${h ? `${h} h ` : ''}${m} min${gone > AWAY_MAX ? ' (8 hours count at most)' : ''}, so ${rollsText(n)} were made for you at ${fmt(awayRate())} a second${r.best ? `, best <b style="color:${tierVar(r.best.rec.tier.id)}">${r.best.rec.tier.name}</b> ${esc(oneText(r.best.rec.entry))}` : ''}. ${tierList(r.tiers)}`;
     checkAchievements();
     save();
     if (fullSkin()) { fullNotice(plain(html)); return; }
@@ -2093,6 +2097,11 @@
     { id: 'away1', name: 'Night shift', desc: 'Come back to rolls made while you were away', test: () => (state.awayTimes || 0) >= 1 },
     { id: 'away25k', name: 'Sleep roller', desc: 'Come back to 25,000 or more rolls made while away', test: () => (state.awayRolls || 0) >= 25000 },
     { id: 'hourglass1', name: 'Time in a bottle', desc: 'Use an Hourglass', test: () => (state.hourglasses || 0) >= 1 },
+    // v4.6
+    { id: 'p2', name: 'Twice born', desc: 'Reach prestige 2', test: () => (state.prestige || 0) >= 2 },
+    { id: 'perk1', name: 'Perks of the job', desc: 'Take a prestige perk', test: () => Object.keys(state.perks || {}).length >= 1 },
+    { id: 'perkAll', name: 'Fully loaded', desc: 'Take every prestige perk', test: () => PERKS.every(p => hasPerk(p.id)) },
+    { id: 'hardHof', name: 'Hard earned', desc: 'Fill a hall of fame for a harder difficulty with ten rolls', test: () => Object.values(state.hofDiff || {}).some(l => l.length >= 10) },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2123,15 +2132,19 @@
       const when = state.ach[a.id];
       return `<li class="${when ? 'got' : ''}"><span class="tick" aria-hidden="true">${when ? '✓' : ''}</span><b>${esc(a.name)}</b><span>${esc(a.desc)}${when ? ` <span class="when">· ${new Date(when).toLocaleDateString()}</span>` : ''}</span></li>`;
     }).join('');
-    const mode = $('hofMode').value;
-    const hof = state.hof[mode];
+    const mode = $('hofMode').value, diff = $('hofDiff').value;
+    // Standard is the main list without the harder difficulties; each harder one keeps its own ten.
+    const hof = !diff ? state.hof[mode] : diff === 'standard' ? state.hof[mode].filter(x => !x.d) : state.hofDiff[`${mode}:${diff}`] || [];
+    const where = `${diff ? `${G.DIFF_BY_ID[diff].name} ` : ''}${MODE_BY_ID[mode].name}`;
     $('hofList').innerHTML = hof.length ? hof.map(x => rowHtml(x, false)).join('')
-      : `<li class="empty-state">No ${esc(MODE_BY_ID[mode].name)} rolls yet. Your ten best stay here even after the log moves on.</li>`;
+      : `<li class="empty-state">No ${esc(where)} rolls yet. Your ten best stay here even after the log moves on.</li>`;
     $('favCount').textContent = state.favs.length ? `${state.favs.length}` : '';
     $('favList').innerHTML = state.favs.length ? state.favs.map(f => rowHtml(entryFor(f), true)).join('')
       : '<li class="empty-state">Star a roll on the Roll tab to keep it here. Starred rolls never drop off.</li>';
   }
   $('hofMode').addEventListener('change', renderTrophies);
+  for (const d of G.DIFFICULTIES) $('hofDiff').appendChild(new Option(d.name, d.id));
+  $('hofDiff').addEventListener('change', renderTrophies);
   $('favList').addEventListener('click', ev => {
     const b = ev.target.closest('[data-unstar]');
     if (!b) return;
@@ -2596,7 +2609,7 @@
     });
     for (const t of TABS) $('tab-' + t).hidden = t !== name;
     if (name === 'collection') { renderBingo(); renderBounties(); renderBook(); renderCollection(); }
-    if (name === 'trophies') { renderProfile(); renderQuests(); renderPrestige(); renderTrophies(); }
+    if (name === 'trophies') { renderProfile(); renderQuests(); renderPrestige(); renderPerks(); renderTrophies(); }
     if (name === 'log') renderLog();
     if (name === 'arcade') renderArcade();
     if (name === 'inventory') { renderInventory(); renderSlot(); }
@@ -2805,6 +2818,7 @@
     { id: 'calc', name: 'Calculator', how: 'secret', hint: 'Say hello the calculator way, in the number lookup.' },
     { id: 'sheet', name: 'Spreadsheet', how: 'secret', hint: 'A command line that is spoken to in formulas.', light: true },
     { id: 'receipt', name: 'Receipt', how: 'secret', hint: 'Ask any command line for a receipt.', light: true },
+    { id: 'ticker', name: 'Ticker', how: 'secret', hint: 'Every market has a symbol. Type this game\'s into a command line, with a dollar sign.' },
     { id: 'gold', name: 'Gold', how: 'bundle' },
     { id: 'ruby', name: 'Ruby', how: 'bundle' },
     { id: 'aurora', name: 'Aurora', how: 'bundle' },
@@ -2827,6 +2841,9 @@
     { id: 'news', name: 'Newsprint', how: 'reward', ach: 'profileCard', light: true },
     { id: 'abacus', name: 'Abacus', how: 'reward', ach: 'away1' },
     { id: 'royal', name: 'Royal', how: 'reward', ach: 'p3' },
+    { id: 'bronze', name: 'Bronze', how: 'reward', ach: 'p1' },
+    { id: 'silver', name: 'Silver', how: 'reward', ach: 'p2' },
+    { id: 'platinum', name: 'Platinum', how: 'reward', ach: 'p5', light: true },
     { id: 'marquee', name: 'Marquee', how: 'reward', ach: 'wheel7' },
     // Coin skins: bought one at a time for coins, in Settings.
     { id: 'olive', name: 'Olive', how: 'coins', price: 2000 },
@@ -2955,6 +2972,7 @@
     'RECORDS                Records and how lucky you have been.',
     'BINGO                  This week\'s bingo card.',
     'PROFILE [TITLE name]   Your profile, or wear a title from an achievement.',
+    'PERKS [TAKE id]        Prestige perks, or take one with a point.',
     'HL RARER|COMMONER [bet]  Higher or lower in the arcade.',
     'DIGIT d [bet]          Digit pick: bet on how many of ten cells show d.',
     'WHEEL                  Spin the daily wheel.',
@@ -2995,6 +3013,9 @@
       case 'cls': case 'clear': print.clear(); break;
       case 'exit': if (print.exit) print.exit(); else print('Type GUI to leave the Console skin.'); break;
       case 'gui': leaveFull(); break;
+      case '$ls10':
+        print(unlockSkin('ticker', 'Market open') ? 'Market open: the Ticker skin is unlocked. SKIN ticker trades every roll.' : 'You already have the Ticker skin. SKIN ticker wears it.', '');
+        break;
       case 'receipt':
         print(unlockSkin('receipt', 'Receipt asked for') ? 'Here you go: the Receipt skin is unlocked. SKIN receipt prints every roll on a till roll.' : 'You already have the Receipt skin. SKIN receipt wears it.', '');
         break;
@@ -3230,6 +3251,16 @@
         scratchCard.told = true;
         break;
       }
+      case 'perks': case 'perk': {
+        if ((rest[0] || '').toLowerCase() === 'take') {
+          const p = PERKS.find(x => x.id.toLowerCase() === (rest[1] || '').toLowerCase() || x.name.toLowerCase().startsWith(rest.slice(1).join(' ').toLowerCase() || '-'));
+          if (!p) { print(`PERKS TAKE ${PERKS.map(x => x.id).join('|')}`); break; }
+          print(takePerk(p.id) ? `${p.name} is yours.` : hasPerk(p.id) ? 'You already have it.' : 'No perk points: each prestige brings one.', '');
+          break;
+        }
+        print(`Perk points: ${perkPoints()}`, ...PERKS.map(p => `${hasPerk(p.id) ? '[x]' : '[ ]'} ${pad(p.id, 11)}${pad(p.name, 18)}${p.desc}`), '');
+        break;
+      }
       case 'profile': {
         if ((rest[0] || '').toLowerCase() === 'title') {
           const want = rest.slice(1).join(' ').toLowerCase();
@@ -3372,7 +3403,7 @@
   // Full-screen skins: Console, Chat, Handheld and Calculator each replace the page with their own
   // way to play. They all drive the same game through the same functions; Leave returns to the skin
   // worn before.
-  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet', 'receipt'];
+  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet', 'receipt', 'ticker'];
   const fullSkin = () => (FULL_SKINS.includes(state.settings.theme) ? state.settings.theme : null);
   function leaveFull() {
     const back = state.settings.prevSkin;
@@ -3387,6 +3418,7 @@
     if (f === 'calc') { calc.last = entry; calcPaintSoon(); }
     if (f === 'sheet') sheetRoll(entry);
     if (f === 'receipt') receiptRoll(entry);
+    if (f === 'ticker') tickerRoll(entry);
   }
   function fullNotice(text) {
     const f = fullSkin();
@@ -3396,6 +3428,7 @@
     if (f === 'calc') { calc.note = text; calc.noteAt = performance.now(); calcPaintSoon(); }
     if (f === 'sheet') $('shOut').textContent = text;
     if (f === 'receipt') rcPrint(`* ${text}`);
+    if (f === 'ticker') $('tkNote').textContent = text;
   }
   function paintFull() {
     const f = fullSkin();
@@ -3405,6 +3438,8 @@
     $('calc').hidden = f !== 'calc';
     $('sheet').hidden = f !== 'sheet';
     $('receipt').hidden = f !== 'receipt';
+    $('ticker').hidden = f !== 'ticker';
+    if (f === 'ticker') tkPaint();
     if (f === 'receipt' && !$('rcOut').textContent) rcHeader();
     if (f === 'sheet') { sheetPaint(); setTimeout(() => $('shInput').focus(), 0); }
     if (f === 'chat') {
@@ -3816,6 +3851,61 @@
     location.reload();
   });
 
+  // Ticker: the game as a market board. The last roll's 1/N is the price, a line chart follows the
+  // last 100 rolls on a log scale, a tape carries the latest rolls, and each mode has a quote with
+  // its session high. While Auto or Endless runs only Rare or rarer rolls reach the tape.
+  const TK_SYM = { classic: 'CLSC', exp: 'EXPO', mod: 'MODU', target: 'TRGT', radar: 'RADR' };
+  const tk = { points: [], tape: [], at: 0, prev: null };
+  let tkFrame = 0;
+  const tkPaintSoon = () => { if (!tkFrame) tkFrame = requestAnimationFrame(() => { tkFrame = 0; tkPaint(); }); };
+  function tickerRoll(entry) {
+    tk.points.push(entry.oneInLog);
+    if (tk.points.length > 100) tk.points.shift();
+    if (!auto || T(entry.tier) >= T('rare')) {
+      const now = performance.now();
+      if (!auto || now - tk.at > 100) {
+        tk.at = now;
+        tk.tape.unshift(entry);
+        if (tk.tape.length > 12) tk.tape.length = 12;
+      }
+    }
+    tk.prev = tk.last;
+    tk.last = entry;
+    tkPaintSoon();
+  }
+  function tkPaint() {
+    if (fullSkin() !== 'ticker') return;
+    if (!tk.last && state.log[0]) { tk.last = entryFor(state.log[0]); tk.points = state.log.slice(0, 100).reverse().map(x => entryFor(x).oneInLog); }
+    const e = tk.last;
+    $('tkLast').textContent = e ? oneText(e) : '1/2';
+    const ch = e && tk.prev ? e.oneInLog - tk.prev.oneInLog : 0;
+    $('tkChange').textContent = e && tk.prev ? `${ch >= 0 ? '▲' : '▼'} ${Math.abs(ch).toFixed(2)} decades` : '';
+    $('tkChange').className = `tk-change num ${ch >= 0 ? 'up' : 'down'}`;
+    $('tkTape').innerHTML = tk.tape.map(x => `<span><b>${TK_SYM[x.mode]}</b> ${esc(fmt(x.n))} <i style="color:${tierVar(x.tier)}">${esc(ROLL_TIERS[T(x.tier)].name)} ${esc(oneText(x))}</i></span>`).join('');
+    const W = 600, H = 200, P = tk.points, max = Math.max(2, ...P) + 0.2, min = Math.log10(2) - 0.1;
+    const y = v => H - 16 - (H - 28) * (v - min) / (max - min), x = i => 34 + (W - 40) * (P.length < 2 ? 0 : i / (P.length - 1));
+    let svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="1/N of the last ${P.length} rolls, from 1/2 to 1/${fmt(10 ** Math.max(...P, 0.3))}">`;
+    for (let g = 1; g <= Math.floor(max); g++) svg += `<line x1="34" x2="${W}" y1="${y(g)}" y2="${y(g)}" class="grid"/><text x="30" y="${y(g) + 4}" text-anchor="end">10${sup(g)}</text>`;
+    if (P.length > 1) svg += `<polyline points="${P.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}"/>`;
+    $('tkChart').innerHTML = svg + '</svg>';
+    $('tkQuotes').innerHTML = '<thead><tr><th>Symbol</th><th>Rolls</th><th>Session high</th></tr></thead><tbody>'
+      + MODES.map(m => { const b = session.best[m.id][0]; return `<tr${m.id === state.mode ? ' class="on"' : ''}><td><b>${TK_SYM[m.id]}</b> ${esc(m.name)}</td><td class="num">${fmt(state.totals[m.id])}</td><td class="num"${b ? ` style="color:${tierVar(b.tier)}"` : ''}>${b ? esc(oneText(b)) : 'none'}</td></tr>`; }).join('') + '</tbody>';
+    $('tkNote').textContent = auto ? `${auto === 'endless' ? 'Endless' : 'Auto'} is running: Rare or rarer rolls reach the tape.` : `${MODE_BY_ID[state.mode].name} · ${fmt(state.coins)} coins`;
+    $('ticker').querySelector('[data-tk="endless"]').firstChild.textContent = auto ? 'Stop ' : 'Endless ';
+  }
+  function tkPress(k) {
+    if (fullSkin() !== 'ticker') return;
+    if (k === 'roll') shell('roll', () => {});
+    if (k === 'roll100') shell('roll 100', () => {});
+    if (k === 'endless') shell(auto ? 'stop' : 'endless', () => {});
+    if (k === 'mode') setMode(MODE_IDS[(MODE_IDS.indexOf(state.mode) + 1) % MODE_IDS.length]);
+    checkAchievements();
+    save();
+    tkPaint();
+  }
+  $('ticker').addEventListener('click', ev => { const b = ev.target.closest('[data-tk]'); if (b) tkPress(b.dataset.tk); });
+  const TK_KEYS = { r: 'roll', h: 'roll100', e: 'endless', m: 'mode' };
+
   // Keys for the handheld and calculator, and the Konami code that unlocks the handheld.
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let konami = 0;
@@ -3826,6 +3916,7 @@
     if (ev.ctrlKey || ev.metaKey || ev.altKey || document.querySelector('dialog[open]')) return;
     const f = fullSkin();
     if (f === 'handheld' && HH_KEYS[ev.key]) { ev.preventDefault(); hhPress(HH_KEYS[ev.key]); }
+    if (f === 'ticker' && TK_KEYS[ev.key.toLowerCase()] && !ev.target.closest('button')) { ev.preventDefault(); tkPress(TK_KEYS[ev.key.toLowerCase()]); }
     if (f === 'receipt' && RC_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key] && !ev.target.closest('button')) { ev.preventDefault(); rcPress(RC_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key]); }
     if (f === 'calc') {
       if (ev.key === 'Backspace') { calc.entry = calc.entry.slice(0, -1); calcPaint(); ev.preventDefault(); return; }
@@ -3949,7 +4040,7 @@
   // Bounty board: three targets, badges or multipliers from 1 in 500 to 1 in 200,000, that change
   // every six hours. Landing one before it changes pays coins and lucky tokens, more for rarer ones.
   const BOUNTY_EVERY = 6 * 3600e3;
-  const bountyReward = id => { const p = huntP(id); return { coins: Math.ceil(Math.log10(1 / p) ** 2), tokens: Math.round(1 / p / 20) }; };
+  const bountyReward = id => { const p = huntP(id), k = hasPerk('hunter') ? 2 : 1; return { coins: k * Math.ceil(Math.log10(1 / p) ** 2), tokens: k * Math.round(1 / p / 20) }; };
   function bounties() {
     const at = Math.floor(Date.now() / BOUNTY_EVERY);
     if (!state.bounty || state.bounty.at !== at) {
@@ -4062,7 +4153,7 @@
     }
   }
   // One free reroll a day; after that each reroll costs a Quest Ticket. Claimed quests stay put.
-  const freeRerolls = () => Math.max(0, 1 - (todaysQuests().rerolls || 0));
+  const freeRerolls = () => Math.max(0, (hasPerk('spare') ? 2 : 1) - (todaysQuests().rerolls || 0));
   function rerollQuest(i) {
     const qs = todaysQuests(), q = qs.list[i];
     if (!q || q.claimed) return false;
@@ -4090,7 +4181,7 @@
     const qs = todaysQuests(), wk = weeksQuests();
     $('quests').innerHTML = qs.list.map((q, i) => questRow(q, i, false)).join('')
       + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[QUEST_BONUS].name)}${qs.bonus ? ' (paid)' : ''}. New quests every day at midnight.</li>`;
-    $('rerollNote').textContent = freeRerolls() ? '1 free reroll today' : state.inv.ticket > 0 ? `${fmt(state.inv.ticket)} Quest ${state.inv.ticket === 1 ? 'Ticket' : 'Tickets'} for rerolls` : 'no rerolls left today';
+    $('rerollNote').textContent = freeRerolls() ? `${freeRerolls()} free ${freeRerolls() === 1 ? 'reroll' : 'rerolls'} today` : state.inv.ticket > 0 ? `${fmt(state.inv.ticket)} Quest ${state.inv.ticket === 1 ? 'Ticket' : 'Tickets'} for rerolls` : 'no rerolls left today';
     $('weekly').innerHTML = wk.list.map((q, i) => questRow(q, i, true)).join('')
       + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[WEEKLY_BONUS].name)}${wk.bonus ? ' (paid)' : ''}. New weekly quests every Monday.</li>`;
     const ends = new Date(wk.week + 'T00:00'); ends.setDate(ends.getDate() + 7);
@@ -4168,6 +4259,36 @@
       + `<p class="muted">Today's lucky hour: ${hourText(luckyHour())} to ${hourText(luckyHour() + 1)}, when drops and coins come twice as often.${weekend() ? ' It is the weekend, so coins come twice as often all day.' : ' Coins come twice as often on Saturdays and Sundays.'}</p>`;
   }
 
+  // Prestige perks: each prestige earns one point, spent on a perk that lasts for good.
+  const PERKS = [
+    { id: 'headStart', name: 'Head start', desc: 'Every prestige after this one starts you with 50 coins and three Charms of a Hundred.' },
+    { id: 'pockets', name: 'Deep pockets', desc: 'Coins drop 25% more often.' },
+    { id: 'eye', name: 'Collector\'s eye', desc: 'Items drop 25% more often.' },
+    { id: 'study', name: 'Quick study', desc: '25% more lucky tokens.' },
+    { id: 'hunter', name: 'Keen hunter', desc: 'Bounties pay twice the coins and tokens.' },
+    { id: 'spare', name: 'Spare tickets', desc: 'Two free quest rerolls a day instead of one.' },
+  ];
+  const hasPerk = id => !!(state.perks && state.perks[id]);
+  const perkPoints = () => (state.prestige || 0) - Object.keys(state.perks || {}).length;
+  const perkMult = id => (hasPerk(id) ? 1.25 : 1);
+  function takePerk(id) {
+    if (hasPerk(id) || perkPoints() < 1 || !PERKS.some(p => p.id === id)) return false;
+    state.perks = { ...state.perks, [id]: Date.now() };
+    toast(`Perk taken: <b>${esc(PERKS.find(p => p.id === id).name)}</b>`, 'mythic');
+    checkAchievements();
+    save();
+    if (!$('tab-trophies').hidden) renderPerks();
+    paintStatus();
+    return true;
+  }
+  function renderPerks() {
+    const pts = perkPoints();
+    $('perkSub').textContent = pts ? `${pts} ${pts === 1 ? 'point' : 'points'} to spend` : state.prestige ? 'every point spent' : 'one point per prestige';
+    $('perks').innerHTML = PERKS.map(p => `<li style="--rc:${tierVar(hasPerk(p.id) ? 'mythic' : 'common')}"${hasPerk(p.id) ? '' : ' class="none"'}><div><b>${esc(p.name)}</b><br><span class="muted">${esc(p.desc)}</span></div>`
+      + `<div class="item-actions">${hasPerk(p.id) ? '<span class="muted">Yours</span>' : `<button class="btn" type="button" data-perk="${p.id}" ${pts > 0 ? '' : 'disabled'}>Take</button>`}</div></li>`).join('');
+  }
+  $('perks').addEventListener('click', ev => { const b = ev.target.closest('[data-perk]'); if (b) takePerk(b.dataset.perk); });
+
   // Prestige: once enough rolls have passed since the last one, trade in coins, items and active
   // effects for a permanent bonus: every drop and coin chance is multiplied by 1 + 0.5 per prestige.
   const PRESTIGE_STEP = 1e5;
@@ -4201,16 +4322,25 @@
     state.prestige = (state.prestige || 0) + 1;
     state.prestigeAt = state.total;
     Object.assign(state, { coins: 0, inv: {}, effects: {} });
+    if (hasPerk('headStart')) { state.coins = 50; state.inv.luck100 = 3; }
     toast(`Prestige ${state.prestige}: drops and coins ×${prestigeBonus()}`, 'mythic');
     checkAchievements();
     writeSave();
     renderPrestige();
+    renderPerks(); // the new perk point can be spent at once
     paintStatus();
   }
 
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v4.6', at: '2026-10-20 04:18', title: 'Markets and metals', items: [
+      'Ticker, a full-screen secret skin: the game as a market board, with the last roll\'s 1/N as the price, a line chart of your last 100 rolls, a tape of the latest ones and a quote for each mode. Its hint is in Settings.',
+      'Prestige perks (Trophies): each prestige earns a point for one of six lasting perks: Head start, Deep pockets, Collector\'s eye, Quick study, Keen hunter and Spare tickets. PERKS in the command line.',
+      'Hall of fame by difficulty: pick Standard, Hardcore, Nightmare, Abyss or Oblivion to see your ten best rolls there.',
+      'Three prestige skins: Bronze for the first prestige, Silver for the second, Platinum for the fifth. Four new achievements.',
+      'Fix: the perks panel refreshes the moment you prestige.',
+    ] },
     { v: 'v4.4', at: '2026-10-20 04:03', title: 'While you are away', items: [
       'Rolling while away: when you come back, the time the game was closed is rolled, one roll a second for up to eight hours, with no charm or booster used. A welcome-back line shows what came of it. It can be switched off in Settings.',
       'Night shift in the token workshop: each level makes rolling while away one roll a second faster, up to ten a second.',

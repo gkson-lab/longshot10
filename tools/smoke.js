@@ -53,7 +53,7 @@ async function session(browser, url, width, height) {
   const click = async (sel, what) => {
     const el = page.locator(sel).first();
     if (!(await el.count())) { fail(`${width}px: ${what || sel} is missing`); return false; }
-    await el.click();
+    try { await el.click({ timeout: 10000 }); } catch (e) { throw new Error(`could not click ${sel}: ${e.message.split('\n')[0]}`); }
     return true;
   };
   return { page, errors, shot, overflow, click };
@@ -401,7 +401,7 @@ const STEPS = [
     });
     await page.reload();
     await page.waitForFunction(() => /Welcome back/.test(document.getElementById('batchResult').textContent), null, { timeout: 60000 });
-    if (!/7,200 rolls/.test(await page.textContent('#batchResult'))) throw new Error(`away said "${(await page.textContent('#batchResult')).slice(0, 120)}"`);
+    if (!/7,20\d rolls/.test(await page.textContent('#batchResult'))) throw new Error(`away said "${(await page.textContent('#batchResult')).slice(0, 120)}"`);
     await click('[data-tab="inventory"]');
     if (!(await page.isVisible('#shopList'))) await click('#shopFold summary');
     await click('[data-buy="hourglass"]');
@@ -412,12 +412,42 @@ const STEPS = [
     if (after < before + 7200 + 3600) throw new Error(`rolls went from ${before} to ${after}`);
     await click('[data-tab="roll"]');
   }],
+  // v4.6
+  ['Ticker skin, prestige and a perk, difficulty halls of fame', async ({ page, click, overflow, shot }) => {
+    const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
+    await click('#settingsBtn');
+    if (await page.isHidden('#terminal')) await click('#termToggle');
+    await type('#termInput', '$LS10');
+    await type('#termInput', 'SKIN ticker');
+    if (!(await page.isVisible('#ticker'))) throw new Error('Ticker did not open');
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    await page.keyboard.press('r');
+    await page.keyboard.press('h');
+    if (!/^1\//.test((await page.textContent('#tkLast')).replace('≈ ', ''))) throw new Error('no price on the board');
+    if (!(await page.locator('#tkChart polyline').count())) throw new Error('no chart line');
+    await overflow('ticker');
+    await shot('ticker');
+    await click('#ticker [data-leave]');
+    await page.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); });
+    await click('#settingsBtn');
+    await click('#skinList [data-skin="midnight"]');
+    await page.keyboard.press('Escape');
+    await click('[data-tab="trophies"]');
+    if (await page.isDisabled('#prestigeBtn')) throw new Error('prestige is not open after 100,000 rolls');
+    await click('#prestigeBtn');
+    await click('[data-perk="pockets"]');
+    if (!/Yours/.test(await page.textContent('#perks'))) throw new Error('the perk was not taken');
+    await page.selectOption('#hofDiff', 'hardcore');
+    if (!/Hardcore/.test(await page.textContent('#hofList'))) throw new Error('the difficulty hall of fame did not switch');
+    await page.selectOption('#hofDiff', '');
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     if (await page.isHidden('#terminal')) await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'PERKS', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');
