@@ -2682,7 +2682,7 @@
     const text = $('installText');
     $('installBtn').hidden = !installPrompt;
     if (matchMedia('(display-mode: standalone)').matches) text.textContent = 'Installed. It runs offline.';
-    else if (location.protocol === 'file:') text.innerHTML = 'Installing works from the hosted copy: open <a href="https://gkson-lab.github.io/rngexp10/">gkson-lab.github.io/rngexp10</a>.';
+    else if (location.protocol === 'file:') text.innerHTML = 'Installing works from the hosted copy: open <a href="https://gkson-lab.github.io/longshot10/">gkson-lab.github.io/longshot10</a>.';
     else if (installPrompt) text.textContent = 'Install it as an app that opens in its own window and works offline.';
     else text.textContent = "Use your browser's Install app or Add to Home Screen option. Once installed, it works offline.";
   }
