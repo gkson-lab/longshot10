@@ -21,6 +21,7 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Spreadsheet | Type a formula, like **=ROLL(3)**, into any command line | The whole game as a spreadsheet. |
 | Receipt | Type **RECEIPT** into any command line | The whole game on a till roll. |
 | Ticker | Type this game's market symbol, **$LS10**, into any command line | The whole game as a market board. |
+| Smartwatch | Ask any command line **what time is it** (or type TIME) | The whole game on a smartwatch. |
 | Gold, Ruby, Aurora | Buy the bundle for 500 coins in Settings | Three rich palettes. |
 | Graph Paper | Complete the Math page of the badge book | Red ink on squared paper. |
 | Golden Spiral | Complete the Sequences page | Gold on slate. |
@@ -41,12 +42,14 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Bronze | Earn Reborn (prestige once) | Dark bronze. |
 | Silver | Earn Twice born (reach prestige 2) | Cool silver on near-black. |
 | Platinum | Earn Ascended (reach prestige 5) | Light polished metal. |
+| Sunset | Earn Challenger (win a challenge) | Dusk over brick, with a coral button. |
+| Lagoon | Earn Up for anything (win four different challenges) | Shallow tropical water on white sand. |
 | Casino | Earn Called it (five right calls in a row at higher or lower) | Roulette-red felt and gold. |
 | Marquee | Earn Wheel regular (spin the daily wheel on 7 days) | A dark theatre front with bulb-white digits. |
 | Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
 | Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
-To leave a full-screen skin, use its Leave chat, Power off, OFF, Close sheet, Off or Close market button, or type GUI in Console. You go back to the skin you wore before.
+To leave a full-screen skin, use its Leave chat, Power off, OFF, Close sheet, Off, Close market or Take it off button, or type GUI in Console. You go back to the skin you wore before.
 
 ## Console and the Settings command line
 
@@ -74,6 +77,8 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `BADGES [word]` | Badges by category, or every badge matching a word |
 | `ACH` | Achievements |
 | `RECORDS` | Records, and how lucky you have been |
+| `CHALLENGE`, `CHALLENGE id`, `CHALLENGE GIVEUP` | Challenges: list, start one, or give up |
+| `TIME` | The time |
 | `PERKS`, `PERKS TAKE id` | Prestige perks, or take one |
 | `PROFILE`, `PROFILE TITLE name` | Your profile, or wear a title from an achievement |
 | `RECEIPT` | Ask for a receipt |
@@ -159,3 +164,12 @@ The tabs along the bottom (Rolls, Stats, Luck, Items, Quests, Best, Records, Hel
 | Endless | E | Endless on or off; Rare or rarer rolls reach the tape |
 | Next mode | M | Change mode |
 | Close market | | Leave the ticker |
+
+## Smartwatch
+
+| Control | Keyboard | What it does |
+| --- | --- | --- |
+| Tap the face | Enter | Roll |
+| Crown | Arrow keys | Next screen: last roll, today, streak |
+| Side button | E | Endless on or off |
+| Take it off | | Leave the watch |

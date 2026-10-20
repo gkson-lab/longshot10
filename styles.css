@@ -555,10 +555,10 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 :root[data-effects="off"] *, :root[data-effects="off"] *::before, :root[data-effects="off"] *::after { animation: none !important; transition: none !important; }
 
 /* Full-screen skins: each replaces the page with its own way to play, in its own fixed colours. */
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
-:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"]) body { overflow: hidden; }
-:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet, :root[data-theme="receipt"] .receipt, :root[data-theme="ticker"] .ticker { display: flex; }
-.chat, .handheld, .calc, .sheet, .receipt, .ticker { position: fixed; inset: 0; z-index: 40; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"], [data-theme="watch"]) :is(.wrap, #toasts, #fx, #flash) { display: none; }
+:root:is([data-theme="chat"], [data-theme="handheld"], [data-theme="calc"], [data-theme="sheet"], [data-theme="receipt"], [data-theme="ticker"], [data-theme="watch"]) body { overflow: hidden; }
+:root[data-theme="chat"] .chat, :root[data-theme="handheld"] .handheld, :root[data-theme="calc"] .calc, :root[data-theme="sheet"] .sheet, :root[data-theme="receipt"] .receipt, :root[data-theme="ticker"] .ticker, :root[data-theme="watch"] .watch { display: flex; }
+.chat, .handheld, .calc, .sheet, .receipt, .ticker, .watch { position: fixed; inset: 0; z-index: 40; }
 
 /* Chat: a messaging app with Tenny. */
 .chat { flex-direction: column; background: #eef1f5; color: #1b1f24; font: 15px/1.4 system-ui, sans-serif; }
@@ -996,3 +996,54 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 [data-swatch="bronze"] { background: linear-gradient(135deg, #130d08 55%, #d08a4a 55%); }
 [data-swatch="silver"] { background: linear-gradient(135deg, #0e1013 55%, #c9d1dc 55%); }
 [data-swatch="platinum"] { background: linear-gradient(135deg, #f1f3f6 55%, #4f5b6b 55%); }
+
+/* v4.8 */
+.challenges li { align-items: flex-start; }
+.challenges li > div:first-child { flex: 1; min-width: 0; }
+.challenges .progress { margin: 8px 0 0; height: 6px; }
+/* Smartwatch: a round black face in a steel case, with a crown and a side button on the right. */
+.watch { flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px; background: #1d1f23; overflow-y: auto; }
+.w-body { position: relative; width: min(300px, 78vw); aspect-ratio: 1; border-radius: 50%; background: #8d939b; padding: 14px; box-shadow: inset 0 -6px 12px rgba(0, 0, 0, 0.35); }
+.w-face { width: 100%; height: 100%; border: 0; border-radius: 50%; background: #000000; color: #f2f2f2; cursor: pointer; padding: 0; display: grid; place-items: center; }
+.w-screen { display: flex; flex-direction: column; align-items: center; gap: 4px; font: 14px/1.2 system-ui, sans-serif; text-align: center; }
+.w-time { color: #b9bcc2; font-size: 13px; }
+.w-num { font-size: clamp(22px, 7vw, 30px); font-weight: 700; letter-spacing: 0.04em; line-height: 1.1; }
+.w-tier { font-size: 18px; }
+.w-label { color: #b9bcc2; font-size: 13px; }
+.w-big { font-size: clamp(34px, 11vw, 48px); line-height: 1; }
+.w-dots { display: flex; gap: 5px; margin-top: 4px; }
+.w-dots i { width: 6px; height: 6px; border-radius: 50%; background: #55585e; }
+.w-dots i.on { background: #f2f2f2; }
+.w-run { color: #8fd18f; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; }
+.w-crown { position: absolute; right: -16px; top: 28%; width: 22px; height: 52px; border: 0; border-radius: 6px; background: repeating-linear-gradient(#b5bac1 0 3px, #7d828a 3px 5px); cursor: pointer; }
+.w-side { position: absolute; right: -10px; top: 58%; width: 14px; height: 44px; border: 0; border-radius: 5px; background: #7d828a; cursor: pointer; }
+.w-crown::after, .w-side::after { content: ""; position: absolute; inset: -12px -12px -12px -4px; } /* a 44px target around a slim control */
+.w-help { margin: 0; max-width: 320px; color: #c9ccd2; font: 13px/1.4 system-ui, sans-serif; text-align: center; }
+.w-off { min-height: 44px; padding: 0 16px; border: 1px solid #55585e; border-radius: 22px; background: transparent; color: #f2f2f2; font: 600 14px system-ui, sans-serif; cursor: pointer; }
+.watch :focus-visible { outline: 2px solid #ffffff; outline-offset: 3px; }
+[data-swatch="watch"] { background: linear-gradient(135deg, #000000 55%, #8d939b 55%); }
+/* Compact: tighter spacing everywhere, the same 44px controls. */
+:root[data-density="compact"] .tabs { margin-bottom: 12px; }
+:root[data-density="compact"] .result { margin: 14px 0 10px; }
+:root[data-density="compact"] .controls { gap: 8px; margin: 12px 0 4px; }
+:root[data-density="compact"] .cabinet { padding: 12px 10px 10px; }
+:root[data-density="compact"] .modes { gap: 4px; margin-bottom: 10px; }
+:root[data-density="compact"] .mode-desc { min-height: 0; }
+:root[data-density="compact"] .two-col { gap: 18px; }
+:root[data-density="compact"] .cat, :root[data-density="compact"] .coins-panel, :root[data-density="compact"] .luck, :root[data-density="compact"] .list { margin-bottom: 14px; }
+:root[data-density="compact"] .card, :root[data-density="compact"] .items li { padding-top: 6px; padding-bottom: 6px; }
+:root[data-density="compact"] .keys { display: none; }
+/* Sunset: dusk over brick, with a coral Roll button, for a first challenge won. */
+:root[data-theme="sunset"] {
+  --bg: #170d0b; --surface: #1f1310; --surface-2: #261814; --line: #4a2f27;
+  --ink: #fff0ea; --muted: #e2c1b6; --faint: #c8a69a; --cell: #0d0706; --cell-ink: #ffd0b8; --cell-lead: #84594c;
+  --accent: #ff8a5b; --accent-ink: #210a02; --focus: #ffb59a;
+}
+/* Lagoon: shallow tropical water on white sand, light, with deep teal ink, for four challenges won. */
+:root[data-theme="lagoon"] {
+  --bg: #eef8f6; --surface: #fbfefd; --surface-2: #e5f3f0; --line: #bfdcd6;
+  --ink: #0b302d; --muted: #2f5752; --faint: #3f6762; --cell: #0b302d; --cell-ink: #eafaf7; --cell-lead: #78a39d;
+  --accent: #00777f; --accent-ink: #ffffff; --focus: #0b302d;
+}
+[data-swatch="sunset"] { background: linear-gradient(135deg, #170d0b 55%, #ff8a5b 55%); }
+[data-swatch="lagoon"] { background: linear-gradient(135deg, #eef8f6 55%, #00777f 55%); }

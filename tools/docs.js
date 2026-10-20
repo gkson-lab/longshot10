@@ -55,6 +55,7 @@ const WHEEL = run(grab('const WHEEL ='));
 const SCRATCH = run(grab('const SCRATCH ='));
 const SCRATCH_COST = run(grab('const SCRATCH_COST ='));
 const PERKS = run(grab('const PERKS ='));
+const CHALLENGES = run(grab('const CHALLENGES ='));
 const BOOK = run(grab('const BOOK ='));
 const PRESTIGE_STEP = run(grab('const PRESTIGE_STEP ='));
 const BUNDLE_PRICE = run(grab('const BUNDLE_PRICE ='));
@@ -67,7 +68,7 @@ const SHOP = run(grab('const SHOP ='));
 const out = [];
 const p = (...lines) => out.push(...lines);
 const table = (head, rows) => {
-  const RIGHT = ['Per cell', 'Row of three', 'Cells', 'Day', 'Levels', 'First level', 'Last level', 'Tokens', 'Trash', '1/10 or rarer', '1/100 or rarer', '1/1,000 or rarer', '1/10,000 or rarer', 'Luck', 'Cost of this level', 'Total tokens', 'About this many Standard rolls', 'Starts at', 'Share of all rolls', 'About', 'Numbers', 'Chance', 'EP', 'Chance per roll', 'Odds', 'Hard pity', 'Coins', 'Badges needed', 'Rarest needed'];
+  const RIGHT = ['Rolls', 'Per cell', 'Row of three', 'Cells', 'Day', 'Levels', 'First level', 'Last level', 'Tokens', 'Trash', '1/10 or rarer', '1/100 or rarer', '1/1,000 or rarer', '1/10,000 or rarer', 'Luck', 'Cost of this level', 'Total tokens', 'About this many Standard rolls', 'Starts at', 'Share of all rolls', 'About', 'Numbers', 'Chance', 'EP', 'Chance per roll', 'Odds', 'Hard pity', 'Coins', 'Badges needed', 'Rarest needed'];
   p(`| ${head.join(' | ')} |`, `|${head.map(h => (RIGHT.includes(h) ? ' ---: ' : ' --- ')).join('|')}|`);
   for (const r of rows) p(`| ${r.join(' | ')} |`);
   p('');
@@ -200,6 +201,15 @@ p('### Scratch card', '', `A card costs ${SCRATCH_COST} lucky tokens and has thr
   table(['Symbol', 'Per cell', 'Row of three', 'Pays'], rows);
   const any = 1 - (1 - SCRATCH.reduce((t, x) => t + (x[1] / 1000) ** 3, 0)) ** 3;
   p(`A card wins something ${oneIn(any)} (${pct(any)}).`, '');
+}
+
+p('### Challenges', '', 'A goal within a fixed number of real rolls. The chance is exact for plain Standard rolls: a tier of 1/N or rarer comes up with chance 1/N on each roll, a badge with its own chance, and the chance of k or more in n rolls is the binomial tail.', '');
+{
+  const atLeast = (k, n, q) => { let miss = 0; for (let i = 0; i < k; i++) { let lc = 0; for (let j = 0; j < i; j++) lc += Math.log(n - j) - Math.log(j + 1); miss += Math.exp(lc + i * Math.log(q) + (n - i) * Math.log1p(-q)); } return 1 - miss; };
+  table(['Challenge', 'Rolls', 'Chance', 'Reward'], CHALLENGES.map(c => {
+    const q = c.kind === 'badge' ? g.BADGES.find(b => b.id === c.badge).p : 1 / g.RARITIES.find(r => r.id === c.tier).from;
+    return [c.name, fmt(c.rolls), pct(atLeast(c.need, c.rolls, q)), `${NAME[c.reward[0]]}${c.reward[1] > 1 ? ` ×${c.reward[1]}` : ''}`];
+  }));
 }
 
 p('## Badge book', '', 'A page is complete when you own every badge of its category with a chance of at least 1 in 1,000,000.', '');

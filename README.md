@@ -31,12 +31,12 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A luck table comparing your tiers with how often each tier really comes up, a rating of how lucky you have been, an odds calculator, records and milestones
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Forty-one skins (see below), an effects setting, and offline install from the hosted copy
+- Forty-four skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three, and a free reroll a day; three weekly quests with bigger rewards
 - A daily streak with rewards and Streak Freezes, a lucky hour each day, and double coins at weekends
 - A token workshop of lasting upgrades, a coin shop, and quick-use buttons for pinned items
 - Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige, and a perk point for one of six lasting perks
-- An Arcade tab with four games (higher or lower, digit pick, a daily wheel and scratch cards), each with its exact chances and payback
+- An Arcade tab with four games (higher or lower, digit pick, a daily wheel and scratch cards), each with its exact chances and payback, and challenges: goals in a fixed number of real rolls with their exact chance
 - A weekly bingo card of badges and a bounty board that changes every six hours
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
@@ -45,11 +45,11 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A profile with titles from your achievements, saved as an image card
 - Up to ten save files in the browser, each with its own progress and its newest three automatic backups; export one to move or share it, and importing always adds a new save file instead of replacing yours
 - Keys for everything: Space rolls, A toggles Auto, E toggles Endless, ? lists the rest
-- Settings for text size and for which notices pop up
+- Settings for text size, a compact layout, and which notices pop up
 
 ## Skins
 
-Skins are picked in Settings and belong to the save file. Midnight, Felt, Daylight and High Contrast are free; Chalkboard is the reward for the Mathematician achievement. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld, Calculator, Spreadsheet, Receipt and Ticker replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, a calculator whose ten-digit display holds exactly one roll, a spreadsheet driven by formulas, a till roll that prints every roll, and a market board. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
+Skins are picked in Settings and belong to the save file. Midnight, Felt, Daylight and High Contrast are free; Chalkboard is the reward for the Mathematician achievement. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld, Calculator, Spreadsheet, Receipt, Ticker and Smartwatch replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, a calculator whose ten-digit display holds exactly one roll, a spreadsheet driven by formulas, a till roll that prints every roll, a market board, and a round watch face. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
 
 ## Inventory
 
@@ -95,6 +95,7 @@ npm run smoke   # play the game in Chromium (Playwright) at phone and desktop wi
 
 Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
 
+- v4.8 (2026-10-20 04:25 UTC): Challenges: eight goals in a fixed number of real rolls, each with its exact chance for your mode, difficulty and luck, and a CHALLENGE command; Smartwatch, a full-screen secret skin with a round face, a crown and a side button; a compact layout; Sunset (reward for a first challenge) and Lagoon (reward for four challenges) skins; three achievements.
 - v4.6 (2026-10-20 04:18 UTC): Ticker, a full-screen secret skin that turns the game into a market board with a live chart; prestige perks, one point per prestige for six lasting perks; the hall of fame by difficulty; Bronze, Silver and Platinum prestige skins; four achievements. Fix: the perks panel refreshes the moment you prestige.
 - v4.4 (2026-10-20 04:03 UTC): Rolling while away (the time the game was closed is rolled on your return, one roll a second up to eight hours, using no charm or booster); Night shift in the workshop (up to ten away rolls a second); the Hourglass item (an hour of away rolls at once); volume and three sound sets; vibration on rare rolls; Abacus (reward for Night shift) and Royal (reward for prestige 3) skins; three achievements.
 - v4.2 (2026-10-20 03:59 UTC): Receipt, a full-screen secret skin that prints every roll on a till roll; a profile with titles from your achievements, saved as an image card; automatic backups of each save (every 30 minutes and before a prestige or restore, newest three kept) with Restore; PROFILE and RECEIPT commands; Newsprint skin (reward for Front page); three achievements.

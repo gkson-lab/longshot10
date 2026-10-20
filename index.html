@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="styles.css">
 <script>
   // Apply the saved theme before first paint so the page never flashes the wrong colours.
-  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { const d = document.documentElement.dataset; d.theme = s.settings.theme; d.tone = s.settings.tone || (['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'); d.effects = s.settings.effects; d.text = s.settings.text || 'normal'; } } catch (e) {}
+  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { const d = document.documentElement.dataset; d.theme = s.settings.theme; d.tone = s.settings.tone || (['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'); d.effects = s.settings.effects; d.text = s.settings.text || 'normal'; d.density = s.settings.density || 'comfortable'; } } catch (e) {}
 </script>
 </head>
 <body>
@@ -148,6 +148,17 @@
     <button class="tk-btn" type="button" data-tk="mode">Next mode <kbd>M</kbd></button>
   </div>
   <p class="tk-note" id="tkNote" aria-live="polite"></p>
+</div>
+
+<div class="watch" id="watch" hidden>
+  <div class="w-body">
+    <button class="w-crown" type="button" data-w="next" aria-label="Crown: next screen">
+    </button>
+    <button class="w-side" type="button" data-w="endless" aria-label="Side button: Endless on or off"></button>
+    <button class="w-face" type="button" data-w="roll" aria-label="Tap to roll"><span class="w-screen" id="wScreen" aria-live="polite"></span></button>
+  </div>
+  <p class="w-help">Tap the face (or Enter) to roll. The crown (or the arrow keys) changes screen, the side button (or E) runs Endless.</p>
+  <button class="w-off" type="button" data-leave>Take it off</button>
 </div>
 
 <div class="wrap">
@@ -465,6 +476,9 @@
           </div>
         </div>
       </div>
+      <div class="section-head"><h2>Challenges</h2><span id="challengeSub"></span></div>
+      <p class="muted">Real rolls, a fixed number of them, and a goal. The chance shown is exact for plain rolls in your current mode and difficulty; luck makes tier goals likelier. One challenge at a time, and each can be won once a day.</p>
+      <ul class="items challenges" id="challenges"></ul>
     </section>
 
     <section id="tab-log" role="tabpanel" aria-labelledby="tab-btn-log" hidden>
@@ -516,7 +530,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v4.6</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v4.8</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -572,6 +586,12 @@
     <label class="check-row"><input type="checkbox" id="hapticsBox"> Vibrate on Legendary or rarer rolls, on phones that can</label>
     <h3>While you are away</h3>
     <label class="check-row"><input type="checkbox" id="awayBox"> Roll while the game is closed: one roll a second, up to eight hours, with no charm or booster used</label>
+    <h3>Layout</h3>
+    <div class="choices" id="densityChoices">
+      <label><input type="radio" name="density" value="comfortable"> Comfortable</label>
+      <label><input type="radio" name="density" value="compact"> Compact</label>
+    </div>
+    <p class="muted">Compact tightens the spacing so more fits on a screen. Buttons stay just as easy to press.</p>
     <h3>Text size</h3>
     <div class="choices" id="textChoices">
       <label><input type="radio" name="text" value="normal"> Normal</label>

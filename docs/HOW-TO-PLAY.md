@@ -116,6 +116,7 @@ Four games in the Arcade tab. Each shows its exact chances and its payback (what
 - **Digit pick:** pick a digit and bet coins. Ten cells are drawn; you are paid by how many show your digit. Payback 90.8%.
 - **Daily wheel:** one free spin a day. Each segment is drawn at the size of its chance.
 - **Scratch card:** 300 lucky tokens for three rows of three cells; three matching symbols in a row pay that symbol's prize.
+- **Challenges:** a goal within a fixed number of real rolls, such as Mythic in 5,000 or five primes in 100. The chance shown is exact for your mode, difficulty and luck; each challenge can be won once a day.
 
 ## Prestige
 
@@ -123,7 +124,7 @@ After 100,000 rolls (then 200,000 more for the second, and so on) you can presti
 
 ## Skins
 
-Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Seven of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet, a till roll and a market board. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
+Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Eight of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet, a till roll, a market board and a smartwatch. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
 
 ## Your saves
 

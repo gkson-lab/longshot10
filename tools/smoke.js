@@ -442,12 +442,53 @@ const STEPS = [
     await page.selectOption('#hofDiff', '');
     await click('[data-tab="roll"]');
   }],
+  // v4.8
+  ['challenges run to the end, Smartwatch, compact layout', async ({ page, click, overflow, shot }) => {
+    const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
+    await click('[data-tab="arcade"]');
+    await click('[data-challenge="epic100"]');
+    await click('[data-tab="roll"]');
+    if (!/Challenge: /.test(await page.textContent('#status'))) throw new Error('the challenge is not in the status line');
+    await click('[data-batch="1000"]');
+    await page.waitForFunction(() => !/Challenge: /.test(document.getElementById('status').textContent), null, { timeout: 20000 });
+    await click('[data-tab="arcade"]');
+    await click('[data-challenge="prime5"]');
+    await click('[data-tab="roll"]');
+    await click('[data-batch="100"]');
+    await page.waitForFunction(() => !/Challenge: /.test(document.getElementById('status').textContent), null, { timeout: 20000 });
+    await click('[data-tab="arcade"]');
+    if ((await page.$$('#challenges li')).length !== 8) throw new Error('not eight challenges');
+    await overflow('arcade with challenges');
+    await click('#settingsBtn');
+    if (await page.isHidden('#terminal')) await click('#termToggle');
+    await type('#termInput', 'what time is it');
+    await type('#termInput', 'SKIN watch');
+    if (!(await page.isVisible('#watch'))) throw new Error('Smartwatch did not open');
+    await page.evaluate(() => document.activeElement && document.activeElement.blur());
+    await page.keyboard.press('Enter');
+    if (!/^\d{2}/.test((await page.textContent('#wScreen')).replace(/^[^\d]*\d{1,2}[:.]\d{2}\s*(AM|PM)?/i, '').trim())) throw new Error(`watch face shows "${await page.textContent('#wScreen')}"`);
+    await page.keyboard.press('ArrowDown');
+    if (!/Today/.test(await page.textContent('#wScreen'))) throw new Error('the crown did not turn to Today');
+    await shot('watch');
+    await click('#watch [data-leave]');
+    await page.evaluate(() => { for (const d of document.querySelectorAll('dialog[open]')) d.close(); });
+    await click('#settingsBtn');
+    await click('#skinList [data-skin="midnight"]');
+    await click('#densityChoices input[value="compact"]');
+    await page.keyboard.press('Escape');
+    for (const tab of ['roll', 'inventory', 'log']) { await click(`[data-tab="${tab}"]`); await overflow(`compact ${tab}`); }
+    await shot('compact');
+    await click('#settingsBtn');
+    await click('#densityChoices input[value="comfortable"]');
+    await page.keyboard.press('Escape');
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     if (await page.isHidden('#terminal')) await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'PERKS', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'PERKS', 'CHALLENGE', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

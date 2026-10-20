@@ -811,7 +811,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', p2: 'luck100k', perk1: 'goose', perkAll: 'luck10m', hardHof: 'goose2', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', p2: 'luck100k', perk1: 'goose', perkAll: 'luck10m', hardHof: 'goose2', challenge1: 'luck100', challenge4: 'goose', challengeAll: 'luck1m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -1359,6 +1359,10 @@
     if (alsoHunt.some(h => h.done)) { alsoHunt = alsoHunt.filter(h => !h.done); paintAlsoHunt(); }
     markBingo(rec.r.badges);
     checkBounties(rec);
+    if (state.challenge) {
+      const c = CH_BY_ID[state.challenge.id];
+      challengeProgress(1, c.kind === 'badge' ? (rec.r.badges.some(b => b.id === c.badge) ? 1 : 0) : (T(rec.entry.tier) >= T(c.tier) ? 1 : 0));
+    }
     questEvent('roll');
     questEvent('mode', 1, q => q.mode === x.mode);
     questEvent('tier', 1, q => T(rec.entry.tier) >= T(q.tier));
@@ -1449,6 +1453,7 @@
       parts.push(`Endless keeps rolling until you press Stop${secs > 3 ? `, about ${fmt(run.rolls / secs)} rolls a second` : ''}`
         + (L > 1 && speed === 3 ? ` (luck ×${fmt(L)} makes every roll the best of ${fmt(L)}, which is slower than a plain roll)` : ''));
     }
+    if (state.challenge) { const c = CH_BY_ID[state.challenge.id]; parts.push(`Challenge: <b>${esc(c.name)}</b>, ${fmt(state.challenge.have)} of ${fmt(c.need)}, <span class="num">${fmt(state.challenge.left)}</span> rolls left`); }
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
     for (const h of alsoHunt) parts.push(`Also hunting <b>${esc(huntName(h.id))}</b> (${odds(huntP(h.id))}), <span class="num">${fmt(h.rolls)}</span> rolls so far`);
     if (auto === 'endless' && state.settings.endlessLimit) parts.push(`Stops after ${esc($('endlessLimit').selectedOptions[0].textContent)}`);
@@ -1535,6 +1540,7 @@
       if (boost > 1) m = Math.min(m, fx.drop.left);
       if (magnet > 1) m = Math.min(m, fx.coin.left);
       if (tk > 1) m = Math.min(m, fx.token.left);
+      if (state.challenge) m = Math.min(m, Math.max(1, state.challenge.left)); // no hits past a challenge's last roll
       left -= m;
       // The part's best, built and played for real (it uses up one charm, lens and booster roll).
       const roll = commitRoll(pickSync(mode, L * m, lens, t), mode, L, lens, t);
@@ -1566,9 +1572,11 @@
         add(id, c);
         if (!(L > 1 || lens > 1 || hard())) state.tiers[mode][id] = (state.tiers[mode][id] || 0) + c;
         questEvent('tier', c, q => T(id) >= T(q.tier));
+        if (state.challenge && CH_BY_ID[state.challenge.id].kind === 'tier' && T(id) >= T(CH_BY_ID[state.challenge.id].tier)) challengeProgress(0, c);
         if (plain && k && BAND_FROM[k - 1] >= COIN_FROM) for (let i = 0; i < c; i++) dropsInto(bag, BAND_FROM[k - 1], D, C);
       });
       addTokens(heads(r) * TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense') * perkMult('study'));
+      challengeProgress(r, 0); // the counted rolls use up the challenge's budget
       questEvent('roll', r);
       questEvent('mode', r, q => q.mode === mode);
     }
@@ -1613,7 +1621,7 @@
   // n rolls, then draws the best of them: counted at once, or played one by one during a hunt
   // (stopping early if `keepGoing` turns false).
   async function runBatch(n, keepGoing = () => true) {
-    if (!hunting()) {
+    if (!hunting() && !challengeNeedsPlay()) {
       const start = performance.now(), { tiers, best, changed } = countBatch(n);
       if (best) drawRoll(best, 3, changed);
       return { n, secs: (performance.now() - start) / 1000, tiers, best };
@@ -2102,6 +2110,10 @@
     { id: 'perk1', name: 'Perks of the job', desc: 'Take a prestige perk', test: () => Object.keys(state.perks || {}).length >= 1 },
     { id: 'perkAll', name: 'Fully loaded', desc: 'Take every prestige perk', test: () => PERKS.every(p => hasPerk(p.id)) },
     { id: 'hardHof', name: 'Hard earned', desc: 'Fill a hall of fame for a harder difficulty with ten rolls', test: () => Object.values(state.hofDiff || {}).some(l => l.length >= 10) },
+    // v4.8
+    { id: 'challenge1', name: 'Challenger', desc: 'Win a challenge', test: () => (state.challengeWins || 0) >= 1 },
+    { id: 'challenge4', name: 'Up for anything', desc: 'Win four different challenges', test: () => Object.keys(state.challengeKinds || {}).length >= 4 },
+    { id: 'challengeAll', name: 'Undefeated', desc: 'Win every challenge at least once', test: () => CHALLENGES.every(c => (state.challengeKinds || {})[c.id]) },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2611,7 +2623,7 @@
     if (name === 'collection') { renderBingo(); renderBounties(); renderBook(); renderCollection(); }
     if (name === 'trophies') { renderProfile(); renderQuests(); renderPrestige(); renderPerks(); renderTrophies(); }
     if (name === 'log') renderLog();
-    if (name === 'arcade') renderArcade();
+    if (name === 'arcade') { renderArcade(); renderChallenges(); }
     if (name === 'inventory') { renderInventory(); renderSlot(); }
   }
   const tabBar = document.querySelector('.tabs');
@@ -2634,6 +2646,8 @@
     s.tone = SKIN_BY_ID[s.theme].light ? 'light' : 'dark'; // read by the first-paint script in index.html
     document.documentElement.dataset.effects = s.effects;
     document.documentElement.dataset.text = s.text || 'normal';
+    document.documentElement.dataset.density = s.density || 'comfortable';
+    for (const r of document.querySelectorAll('#settingsDialog input[name="density"]')) r.checked = r.value === (s.density || 'comfortable');
     document.querySelector('meta[name="theme-color"]').content = cssVar('--bg');
     for (const r of document.querySelectorAll('#settingsDialog input[name="effects"]')) r.checked = r.value === s.effects;
     for (const r of document.querySelectorAll('#settingsDialog input[name="text"]')) r.checked = r.value === (s.text || 'normal');
@@ -2644,6 +2658,7 @@
     const { name, value } = ev.target;
     if (name === 'effects') state.settings.effects = value;
     else if (name === 'text') state.settings.text = value;
+    else if (name === 'density') state.settings.density = value;
     else if (name === 'notice') state.settings.notices = { ...state.settings.notices, [value]: ev.target.checked };
     else return;
     applySettings();
@@ -2818,6 +2833,7 @@
     { id: 'calc', name: 'Calculator', how: 'secret', hint: 'Say hello the calculator way, in the number lookup.' },
     { id: 'sheet', name: 'Spreadsheet', how: 'secret', hint: 'A command line that is spoken to in formulas.', light: true },
     { id: 'receipt', name: 'Receipt', how: 'secret', hint: 'Ask any command line for a receipt.', light: true },
+    { id: 'watch', name: 'Smartwatch', how: 'secret', hint: 'Ask a command line what time it is.' },
     { id: 'ticker', name: 'Ticker', how: 'secret', hint: 'Every market has a symbol. Type this game\'s into a command line, with a dollar sign.' },
     { id: 'gold', name: 'Gold', how: 'bundle' },
     { id: 'ruby', name: 'Ruby', how: 'bundle' },
@@ -2842,6 +2858,8 @@
     { id: 'abacus', name: 'Abacus', how: 'reward', ach: 'away1' },
     { id: 'royal', name: 'Royal', how: 'reward', ach: 'p3' },
     { id: 'bronze', name: 'Bronze', how: 'reward', ach: 'p1' },
+    { id: 'sunset', name: 'Sunset', how: 'reward', ach: 'challenge1' },
+    { id: 'lagoon', name: 'Lagoon', how: 'reward', ach: 'challenge4', light: true },
     { id: 'silver', name: 'Silver', how: 'reward', ach: 'p2' },
     { id: 'platinum', name: 'Platinum', how: 'reward', ach: 'p5', light: true },
     { id: 'marquee', name: 'Marquee', how: 'reward', ach: 'wheel7' },
@@ -2973,6 +2991,7 @@
     'BINGO                  This week\'s bingo card.',
     'PROFILE [TITLE name]   Your profile, or wear a title from an achievement.',
     'PERKS [TAKE id]        Prestige perks, or take one with a point.',
+    'CHALLENGE [id|GIVEUP]  Challenges, start one, or give up the one running.',
     'HL RARER|COMMONER [bet]  Higher or lower in the arcade.',
     'DIGIT d [bet]          Digit pick: bet on how many of ten cells show d.',
     'WHEEL                  Spin the daily wheel.',
@@ -3013,6 +3032,10 @@
       case 'cls': case 'clear': print.clear(); break;
       case 'exit': if (print.exit) print.exit(); else print('Type GUI to leave the Console skin.'); break;
       case 'gui': leaveFull(); break;
+      case 'time': case 'what':
+        if (w === 'what' && !/time/.test(a)) { print(`${word} : The term '${word}' is not recognized as the name of a command.`, 'Type HELP for the list of commands.', ''); break; }
+        print(`It is ${new Date().toLocaleTimeString()}.`, unlockSkin('watch', 'Asked the time') ? 'You unlocked the Smartwatch skin. SKIN watch puts it on.' : '', '');
+        break;
       case '$ls10':
         print(unlockSkin('ticker', 'Market open') ? 'Market open: the Ticker skin is unlocked. SKIN ticker trades every roll.' : 'You already have the Ticker skin. SKIN ticker wears it.', '');
         break;
@@ -3251,6 +3274,19 @@
         scratchCard.told = true;
         break;
       }
+      case 'challenge': case 'challenges': {
+        const want = (rest[0] || '').toLowerCase();
+        if (want === 'giveup' || want === 'quit') { if (state.challenge) { endChallenge(false); print('Challenge given up.', ''); } else print('No challenge is running.', ''); break; }
+        if (want) {
+          const c = CHALLENGES.find(x => x.id.toLowerCase() === want);
+          if (!c) { print(`CHALLENGE ${CHALLENGES.map(x => x.id).join('|')}`); break; }
+          print(startChallenge(c.id) ? `Started ${c.name}: ${chanceText(state.challenge.chance)} chance.` : state.challenge ? 'A challenge is already running.' : 'Already won today.', '');
+          break;
+        }
+        print(...CHALLENGES.map(c => `${challengeWon(c.id) ? '[x]' : state.challenge && state.challenge.id === c.id ? '[>]' : '[ ]'} ${pad(c.id, 12)}${pad(c.name, 30)}${pad(chanceText(challengeChance(c)), 12)}${prizeName(c.reward[0], c.reward[1])}`),
+          state.challenge ? `Running: ${CH_BY_ID[state.challenge.id].name}, ${fmt(state.challenge.have)} of ${fmt(CH_BY_ID[state.challenge.id].need)}, ${fmt(state.challenge.left)} rolls left.` : 'CHALLENGE id starts one.', '');
+        break;
+      }
       case 'perks': case 'perk': {
         if ((rest[0] || '').toLowerCase() === 'take') {
           const p = PERKS.find(x => x.id.toLowerCase() === (rest[1] || '').toLowerCase() || x.name.toLowerCase().startsWith(rest.slice(1).join(' ').toLowerCase() || '-'));
@@ -3403,7 +3439,7 @@
   // Full-screen skins: Console, Chat, Handheld and Calculator each replace the page with their own
   // way to play. They all drive the same game through the same functions; Leave returns to the skin
   // worn before.
-  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet', 'receipt', 'ticker'];
+  const FULL_SKINS = ['console', 'chat', 'handheld', 'calc', 'sheet', 'receipt', 'ticker', 'watch'];
   const fullSkin = () => (FULL_SKINS.includes(state.settings.theme) ? state.settings.theme : null);
   function leaveFull() {
     const back = state.settings.prevSkin;
@@ -3419,6 +3455,7 @@
     if (f === 'sheet') sheetRoll(entry);
     if (f === 'receipt') receiptRoll(entry);
     if (f === 'ticker') tickerRoll(entry);
+    if (f === 'watch') { watch.last = entry; wPaintSoon(); }
   }
   function fullNotice(text) {
     const f = fullSkin();
@@ -3429,6 +3466,7 @@
     if (f === 'sheet') $('shOut').textContent = text;
     if (f === 'receipt') rcPrint(`* ${text}`);
     if (f === 'ticker') $('tkNote').textContent = text;
+    if (f === 'watch') wPaintSoon();
   }
   function paintFull() {
     const f = fullSkin();
@@ -3439,6 +3477,8 @@
     $('sheet').hidden = f !== 'sheet';
     $('receipt').hidden = f !== 'receipt';
     $('ticker').hidden = f !== 'ticker';
+    $('watch').hidden = f !== 'watch';
+    if (f === 'watch') wPaint();
     if (f === 'ticker') tkPaint();
     if (f === 'receipt' && !$('rcOut').textContent) rcHeader();
     if (f === 'sheet') { sheetPaint(); setTimeout(() => $('shInput').focus(), 0); }
@@ -3906,6 +3946,132 @@
   $('ticker').addEventListener('click', ev => { const b = ev.target.closest('[data-tk]'); if (b) tkPress(b.dataset.tk); });
   const TK_KEYS = { r: 'roll', h: 'roll100', e: 'endless', m: 'mode' };
 
+  // Challenges: a goal in a fixed number of real rolls. Tier goals count every roll, counted batch
+  // rolls included; badge goals need each roll played, so batches play every roll while one runs,
+  // as during a hunt. The chance shown is exact for plain rolls in the current mode and difficulty.
+  const CHALLENGES = [
+    { id: 'epic100', name: 'Epic in 100', kind: 'tier', tier: 'epic', need: 1, rolls: 100, reward: ['luck100', 2] },
+    { id: 'legend3', name: 'Three Legendaries in 2,000', kind: 'tier', tier: 'legendary', need: 3, rolls: 2000, reward: ['goose', 1] },
+    { id: 'mythic5k', name: 'Mythic in 5,000', kind: 'tier', tier: 'mythic', need: 1, rolls: 5000, reward: ['luck1k', 3] },
+    { id: 'divine25k', name: 'Divine in 25,000', kind: 'tier', tier: 'divine', need: 1, rolls: 25000, reward: ['luck10k', 1] },
+    { id: 'cosmic100k', name: 'Cosmic in 100,000', kind: 'tier', tier: 'cosmic', need: 1, rolls: 1e5, reward: ['goose2', 1] },
+    { id: 'prime5', name: 'Five primes in 100', kind: 'badge', badge: 'prime', need: 5, rolls: 100, reward: ['prism', 2] },
+    { id: 'twin3', name: 'Three twin primes in 500', kind: 'badge', badge: 'twin', need: 3, rolls: 500, reward: ['horn', 3] },
+    { id: 'pal50k', name: 'A palindrome in 50,000', kind: 'badge', badge: 'pal', need: 1, rolls: 5e4, reward: ['luck10k', 1] },
+  ];
+  const CH_BY_ID = Object.fromEntries(CHALLENGES.map(c => [c.id, c]));
+  // P(at least k successes in n tries at chance q), summing the first k terms in log space.
+  function atLeast(k, n, q) {
+    if (q <= 0) return 0;
+    if (q >= 1) return n >= k ? 1 : 0;
+    let miss = 0;
+    for (let i = 0; i < k; i++) {
+      let lc = 0;
+      for (let j = 0; j < i; j++) lc += Math.log(n - j) - Math.log(j + 1);
+      miss += Math.exp(lc + i * Math.log(q) + (n - i) * Math.log1p(-q));
+    }
+    return Math.min(1, Math.max(0, 1 - miss));
+  }
+  function challengeChance(c) {
+    if (c.kind === 'badge') return atLeast(c.need, c.rolls, findBadge(c.badge).p);
+    const r = RARITIES.find(x => x.id === c.tier);
+    const q1 = ready[state.mode] ? G.reachChance(1 / r.from, state.mode, state.difficulty || 'standard') : 1 / r.from;
+    return atLeast(c.need, c.rolls, -Math.expm1(effLuck() * Math.log1p(-Math.min(q1, 1 - 1e-16))));
+  }
+  const challengeWon = id => (state.challengesWon || {})[id] === dayKey();
+  function startChallenge(id) {
+    const c = CH_BY_ID[id];
+    if (!c || state.challenge || challengeWon(id)) return false;
+    state.challenge = { id, left: c.rolls, have: 0, chance: challengeChance(c) };
+    toast(`Challenge on: <b>${esc(c.name)}</b>`, 'rare', 'quest');
+    save();
+    renderChallenges();
+    paintStatus();
+    return true;
+  }
+  function endChallenge(won) {
+    const ch = state.challenge, c = CH_BY_ID[ch.id];
+    state.challenge = null;
+    if (won) {
+      state.challengesWon = { ...state.challengesWon, [c.id]: dayKey() };
+      state.challengeWins = (state.challengeWins || 0) + 1;
+      state.challengeKinds = { ...state.challengeKinds, [c.id]: true };
+      grant(c.reward[0], `Challenge won: ${c.name}`, c.reward[1]);
+    } else toast(`Challenge over: <b>${esc(c.name)}</b>, ${fmt(ch.have)} of ${fmt(c.need)}`, 'common', 'quest');
+    checkAchievements();
+    save();
+    if (!$('tab-arcade').hidden) renderChallenges();
+    paintStatus();
+  }
+  // `rolls` rolls just landed; `hits` of them met the goal.
+  function challengeProgress(rolls, hits) {
+    const ch = state.challenge;
+    if (!ch) return;
+    const c = CH_BY_ID[ch.id];
+    ch.left -= rolls;
+    ch.have += hits;
+    if (ch.have >= c.need) endChallenge(true);
+    else if (ch.left <= 0) endChallenge(false);
+  }
+  const challengeNeedsPlay = () => !!(state.challenge && CH_BY_ID[state.challenge.id].kind === 'badge');
+  function renderChallenges() {
+    const ch = state.challenge;
+    $('challengeSub').textContent = ch ? `${fmt(ch.left)} rolls left` : `${CHALLENGES.filter(c => challengeWon(c.id)).length} of ${CHALLENGES.length} won today`;
+    $('challenges').innerHTML = CHALLENGES.map(c => {
+      const on = ch && ch.id === c.id, won = challengeWon(c.id);
+      const goal = c.kind === 'badge' ? findBadge(c.badge) : null;
+      const what = c.kind === 'badge' ? `${c.need > 1 ? `${c.need} rolls with` : 'A roll with'} the ${goal.name} badge (${odds(goal.p)} each)` : `${c.need > 1 ? `${c.need} rolls` : 'A roll'} of ${ROLL_TIERS[T(c.tier)].name} or rarer`;
+      const action = on ? `<button class="btn" type="button" data-giveup="1">Give up</button>`
+        : won ? '<span class="muted">Won today</span>'
+          : `<button class="btn" type="button" data-challenge="${c.id}" ${ch ? 'disabled' : ''}>Start</button>`;
+      return `<li style="--rc:${tierVar(on ? 'legendary' : won ? 'uncommon' : 'common')}"${won && !on ? ' class="none"' : ''}><div><b>${esc(c.name)}</b> <span class="muted num">${on ? `${fmt(ch.have)} of ${fmt(c.need)}, ${fmt(ch.left)} rolls left` : `${chanceText(challengeChance(c))} chance`}</span><br>`
+        + `<span class="muted">${esc(what)} within ${rollsText(c.rolls)}. Pays ${esc(prizeName(c.reward[0], c.reward[1]))}.</span>`
+        + (on ? `<div class="progress"><i style="width:${(100 * (c.rolls - ch.left) / c.rolls).toFixed(1)}%"></i></div>` : '') + `</div><div class="item-actions">${action}</div></li>`;
+    }).join('');
+  }
+  $('challenges').addEventListener('click', ev => {
+    const b = ev.target.closest('[data-challenge]');
+    if (b) startChallenge(b.dataset.challenge);
+    if (ev.target.closest('[data-giveup]') && confirm('Give up this challenge? It can be started again.')) endChallenge(false);
+  });
+
+  // Smartwatch: a round face with three screens (the last roll, today, your streak), a crown to turn
+  // them and a side button for Endless. Tap the face to roll.
+  const watch = { screen: 0, last: null };
+  const W_SCREENS = 3;
+  let wFrame = 0;
+  const wPaintSoon = () => { if (!wFrame) wFrame = requestAnimationFrame(() => { wFrame = 0; wPaint(); }); };
+  function wPaint() {
+    if (fullSkin() !== 'watch') return;
+    const now = new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    const e = watch.last || (state.log[0] && entryFor(state.log[0]));
+    let body;
+    if (watch.screen === 0) {
+      const s = e ? String(e.n).padStart(10, '0') : '';
+      body = e ? `<span class="w-num num">${s.slice(0, 5)}<br>${s.slice(5)}</span><b class="w-tier" style="color:${tierVar(e.tier)}">${esc(ROLL_TIERS[T(e.tier)].name)}</b><span class="num">${esc(oneText(e))}</span>`
+        : '<span class="w-tier">Tap to roll</span>';
+    } else if (watch.screen === 1) {
+      body = `<span class="w-label">Today</span><b class="w-big num">${fmt(state.daily[dayKey()] || 0)}</b><span>rolls</span><span class="num">${fmt(state.coins)} coins</span>`;
+    } else {
+      const st = state.streak || {};
+      body = `<span class="w-label">Streak</span><b class="w-big num">${fmt(st.last === dayKey() ? st.days : 0)}</b><span>${st.days === 1 ? 'day' : 'days'}</span><span class="num">best ${fmt(st.best || 0)}</span>`;
+    }
+    $('wScreen').innerHTML = `<span class="w-time num">${esc(now)}</span>${body}<span class="w-dots" aria-hidden="true">${Array.from({ length: W_SCREENS }, (_, i) => `<i${i === watch.screen ? ' class="on"' : ''}></i>`).join('')}</span>${auto ? '<span class="w-run">ENDLESS</span>' : ''}`;
+  }
+  function wPress(k) {
+    if (fullSkin() !== 'watch') return;
+    if (navigator.vibrate && state.settings.haptics) navigator.vibrate(15);
+    if (k === 'roll') { watch.screen = 0; shell('roll', () => {}); }
+    if (k === 'next') watch.screen = (watch.screen + 1) % W_SCREENS;
+    if (k === 'prev') watch.screen = (watch.screen + W_SCREENS - 1) % W_SCREENS;
+    if (k === 'endless') shell(auto ? 'stop' : 'endless', () => {});
+    checkAchievements();
+    save();
+    wPaint();
+  }
+  $('watch').addEventListener('click', ev => { const b = ev.target.closest('[data-w]'); if (b) wPress(b.dataset.w); });
+  const W_KEYS = { Enter: 'roll', ArrowDown: 'next', ArrowRight: 'next', ArrowUp: 'prev', ArrowLeft: 'prev', e: 'endless' };
+
   // Keys for the handheld and calculator, and the Konami code that unlocks the handheld.
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let konami = 0;
@@ -3916,6 +4082,7 @@
     if (ev.ctrlKey || ev.metaKey || ev.altKey || document.querySelector('dialog[open]')) return;
     const f = fullSkin();
     if (f === 'handheld' && HH_KEYS[ev.key]) { ev.preventDefault(); hhPress(HH_KEYS[ev.key]); }
+    if (f === 'watch' && W_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key] && !ev.target.closest('button')) { ev.preventDefault(); wPress(W_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key]); }
     if (f === 'ticker' && TK_KEYS[ev.key.toLowerCase()] && !ev.target.closest('button')) { ev.preventDefault(); tkPress(TK_KEYS[ev.key.toLowerCase()]); }
     if (f === 'receipt' && RC_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key] && !ev.target.closest('button')) { ev.preventDefault(); rcPress(RC_KEYS[ev.key.length === 1 ? ev.key.toLowerCase() : ev.key]); }
     if (f === 'calc') {
@@ -4334,6 +4501,12 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v4.8', at: '2026-10-20 04:25', title: 'Challenges', items: [
+      'Challenges (Arcade): eight goals in a fixed number of real rolls, from Epic in 100 to a palindrome in 50,000, each with its exact chance for your mode, difficulty and luck. Each can be won once a day. CHALLENGE in the command line.',
+      'Smartwatch, a full-screen secret skin: a round face with three screens (your last roll, today, your streak), a crown and a side button. Its hint is in Settings.',
+      'Compact layout (Settings): tighter spacing so more fits on a screen, with buttons just as easy to press.',
+      'Two skins: Sunset, the reward for a first challenge won, and Lagoon, the reward for four different challenges. Three new achievements.',
+    ] },
     { v: 'v4.6', at: '2026-10-20 04:18', title: 'Markets and metals', items: [
       'Ticker, a full-screen secret skin: the game as a market board, with the last roll\'s 1/N as the price, a line chart of your last 100 rolls, a tape of the latest ones and a quote for each mode. Its hint is in Settings.',
       'Prestige perks (Trophies): each prestige earns a point for one of six lasting perks: Head start, Deep pockets, Collector\'s eye, Quick study, Keen hunter and Spare tickets. PERKS in the command line.',

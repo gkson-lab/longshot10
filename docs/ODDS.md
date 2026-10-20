@@ -613,11 +613,11 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 0.991% | 1 in 10 | 1 in 102 | 1 in 941 | 1 in 12,903 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.48% | 1 in 16 | 1 in 342 | 1 in 2,857 | 1 in 44,444 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.4% | 1 in 760 | 1 in 40,000 | 0 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.2% | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
-| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1.02% | 1 in 10 | 1 in 100 | 1 in 983 | 1 in 8,511 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.52% | 1 in 16 | 1 in 330 | 1 in 3,200 | 1 in 200,000 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.39% | 1 in 697 | 1 in 22,222 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 44,444 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.5% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels
 
@@ -888,6 +888,21 @@ A card costs 300 lucky tokens and has three rows of three cells, each cell an in
 | Seven | 2% | 1 in 125,000 | Charm of Ten Thousand |
 
 A card wins something 1 in 3.7 (27%).
+
+### Challenges
+
+A goal within a fixed number of real rolls. The chance is exact for plain Standard rolls: a tier of 1/N or rarer comes up with chance 1/N on each roll, a badge with its own chance, and the chance of k or more in n rolls is the binomial tail.
+
+| Challenge | Rolls | Chance | Reward |
+| --- | ---: | ---: | --- |
+| Epic in 100 | 100 | 63.4% | Charm of a Hundred ×2 |
+| Three Legendaries in 2,000 | 2,000 | 76.2% | Golden Goose |
+| Mythic in 5,000 | 5,000 | 39.3% | Charm of a Thousand ×3 |
+| Divine in 25,000 | 25,000 | 39.3% | Charm of Ten Thousand |
+| Cosmic in 100,000 | 100,000 | 33% | Diamond Goose |
+| Five primes in 100 | 100 | 48% | Prism Lens ×2 |
+| Three twin primes in 500 | 500 | 51.7% | Horn of Plenty ×3 |
+| A palindrome in 50,000 | 50,000 | 63.2% | Charm of Ten Thousand |
 
 ## Badge book
 
