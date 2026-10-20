@@ -31,8 +31,9 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A luck table comparing your tiers with how often each tier really comes up, a rating of how lucky you have been, an odds calculator, records and milestones
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Twenty-three skins (see below), an effects setting, and offline install from the hosted copy
+- Twenty-five skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three
+- A token workshop of lasting upgrades, a coin shop, and quick-use buttons for pinned items
 - Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
@@ -88,6 +89,7 @@ npm run smoke   # play the game in Chromium (Playwright) at phone and desktop wi
 
 Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
 
+- v3.6 (2026-10-20 03:21 UTC): Token workshop with four lasting upgrades (coins, items, tokens and quest coins up to ×3, kept through prestige); a coin shop of eleven items at fixed prices; Coin Magnet and Token Charm items; auto-fuse; quick-use buttons for up to four pinned items; WORKSHOP and SHOP commands; Steel (reward for Tinkerer) and Ledger (reward for Customer) skins; four achievements.
 - v3.5 (2026-10-20 03:14 UTC): How lucky you have been (your best plain roll against everyone with as many rolls, as an exact share); an odds calculator for any tier in any number of rolls, also as CHANCE; records and milestones in the Log, also as RECORDS; recent rolls filtered by mode and tier and exported as CSV; a badge's chance in your next 1,000 plain rolls; Nixie (reward for the Pandigital badge) and Index Card (reward for Show and tell) skins.
 - v3.4 (2026-10-20 03:06 UTC): What's new, with the time of every release; a key list (press ?) and new keys (B batch, T speed, M mode, S star, 1 to 5 tabs); text size; switches for each kind of notice; batch ×25,000 and ×100,000, and a hunt's batch stops when it finds its target; Keep boosts going renews a charm, lens or drop booster when it runs out; High Contrast (free) and Chalkboard (reward for Mathematician) skins. Fixes: Trophies and the Terminal skin no longer run off a phone screen; a full-screen skin worn from the Settings command line no longer opens under Settings.
 - v3.33 (2026-10-19 23:29 UTC): Roll shows its result at once, with no reels spinning (Auto still spins them at 1× and 2×). Batch rolls are counted instead of played one by one, so ×5,000 takes a few milliseconds instead of about two seconds: the best roll is real and recorded, and the other rolls bring their tiers, items, coins, tokens and quest progress but not badges. During a hunt a batch still plays every roll. Endless in batches rolls one batch a second.

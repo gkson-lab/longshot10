@@ -675,6 +675,8 @@
     { id: 'overclock', name: 'Overclock', kind: 'overclock', speedup: 2, minutes: 3, rarity: 2, next: ['overclock2', 5], desc: 'Turbo rolls twice as fast for 3 minutes.' },
     { id: 'overclock2', name: 'Overclock II', kind: 'overclock', speedup: 4, minutes: 3, rarity: 4, next: ['overclock3', 10], desc: 'Turbo rolls four times as fast for 3 minutes.' },
     { id: 'overclock3', name: 'Overclock III', kind: 'overclock', speedup: 8, minutes: 3, rarity: 7, desc: 'Turbo rolls eight times as fast for 3 minutes.' },
+    { id: 'coinmag', name: 'Coin Magnet', kind: 'coin', coin: 5, rolls: 500, rarity: 4, desc: 'Coins drop 5 times as often for 500 plain rolls.' },
+    { id: 'tokencharm', name: 'Token Charm', kind: 'token', token: 3, rolls: 500, rarity: 4, desc: 'Three times the lucky tokens for 500 rolls.' },
     { ...luckItem('luck2', 'Charm of Two', 2, 50, 0, ['luck5', 5]), retired: true },
     { ...luckItem('luck5', 'Charm of Five', 5, 50, 0, ['luck10', 4]), retired: true },
     { ...dropItem('magnet', 'Magnet', 2, 500, 0, ['map', 5]), retired: true },
@@ -686,9 +688,9 @@
   const DROPS = [
     [100, [['luck10', 0.03]]],
     [1e3, [['luck10', 0.15], ['lens', 0.05], ['overclock', 0.02]]],
-    [1e4, [['luck10', 0.3], ['lens', 0.15], ['overclock', 0.05], ['horn', 0.03]]],
-    [1e5, [['luck10', 0.4], ['luck100', 0.25], ['overclock', 0.2], ['horn', 0.1]]],
-    [1e6, [['luck100', 0.5], ['luck1k', 0.1], ['overclock', 0.4], ['horn', 0.2], ['prism', 0.05]]],
+    [1e4, [['luck10', 0.3], ['lens', 0.15], ['overclock', 0.05], ['horn', 0.03], ['coinmag', 0.02]]],
+    [1e5, [['luck10', 0.4], ['luck100', 0.25], ['overclock', 0.2], ['horn', 0.1], ['tokencharm', 0.05]]],
+    [1e6, [['luck100', 0.5], ['luck1k', 0.1], ['overclock', 0.4], ['horn', 0.2], ['prism', 0.05], ['coinmag', 0.1], ['tokencharm', 0.1]]],
     [1e7, [['luck1k', 0.3], ['goose', 0.1], ['prism', 0.2]]],
     [1e8, [['luck10k', 0.2], ['goose', 0.3], ['overclock2', 0.2]]],
     [1e9, [['luck100k', 0.15], ['luck1m', 0.03], ['goose2', 0.1], ['overclock2', 0.3]]],
@@ -704,7 +706,7 @@
   const COIN_CHANCE = 1 / 3;
   const SLOT_UNITS = 1e9;
   const SLOT_PRIZES = [ // every spin wins something
-    ['luck10', 1, 399996880, '×10'], // the base prize; it gave 3,120 parts to the v3.3 prizes
+    ['luck10', 1, 389996880, '×10'], // the base prize; it gave 3,120 parts to the v3.3 prizes and 10,000,000 to the v3.6 ones
     ['luck10', 3, 150000000, '×10'],
     ['lens', 1, 120000000, 'Lens'],
     ['overclock', 1, 90000000, 'OC'],
@@ -714,6 +716,8 @@
     ['prism', 1, 22500000, 'Prism'],
     ['luck1k', 1, 19500000, '×1k'],
     ['overclock2', 1, 15000000, 'OC II'],
+    ['coinmag', 1, 5000000, 'Magnet'],
+    ['tokencharm', 1, 5000000, 'Token'],
     ['goose', 1, 1200000, 'Goose'],
     ['goose', 2, 225000, 'Goose'],
     ['goose', 5, 75000, 'Goose'],
@@ -751,7 +755,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -760,16 +764,18 @@
   }
   // A drop booster multiplies each chance; past 100% the whole part drops for sure and the rest is a chance at one more.
   function rollDrops(oneInLog) {
-    const fx = state.effects, boost = fx.drop && fx.drop.left > 0 ? fx.drop.D : 1;
+    const fx = state.effects, boost = dropActive(), magnet = coinActive();
     if (boost > 1) fx.drop.left--;
-    const bag = {};
-    dropsInto(bag, 10 ** oneInLog, boost * prestigeBonus());
+    if (magnet > 1) fx.coin.left--;
+    const bag = {}, P = boost * prestigeBonus();
+    dropsInto(bag, 10 ** oneInLog, P * wsBonus('itemSense'), P * wsBonus('coinSense') * magnet);
     payDrops(bag);
   }
-  // What one plain roll of 1 in n drops with drop boost D, added to `bag` ({ coins, [item]: count }).
-  function dropsInto(bag, n, D) {
+  // What one plain roll of 1 in n drops with item boost D and coin boost C, added to `bag`
+  // ({ coins, [item]: count }).
+  function dropsInto(bag, n, D, C = D) {
     if (n >= COIN_FROM) { // a 1 in 3 chance of a coin for the slot machine, boosted like any other drop
-      const c = COIN_CHANCE * D, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
+      const c = COIN_CHANCE * C, k = Math.floor(c) + (Math.random() < c % 1 ? 1 : 0);
       if (k) bag.coins = (bag.coins || 0) + k;
     }
     const row = [...DROPS].reverse().find(([from]) => n >= from);
@@ -788,9 +794,17 @@
       if (!$('tab-inventory').hidden) renderSlot();
     }
     for (const [id, k] of Object.entries(items)) grant(id, 'Item found', k);
+    if (Object.keys(items).length) autoFuse();
   }
   const luckActive = () => (state.effects.luck && state.effects.luck.left > 0 ? state.effects.luck.L : 1);
   const dropActive = () => (state.effects.drop && state.effects.drop.left > 0 ? state.effects.drop.D : 1);
+  const coinActive = () => (state.effects.coin && state.effects.coin.left > 0 ? state.effects.coin.C : 1);
+  const tokenActive = () => (state.effects.token && state.effects.token.left > 0 ? state.effects.token.K : 1);
+  // Boosts that last a number of rolls: the effect slot, its power key, and the word for it.
+  const BOOST_KEY = { luck: 'L', drop: 'D', coin: 'C', token: 'K' };
+  const BOOST_WORD = { luck: 'Luck', drop: 'Drops', coin: 'Coins', token: 'Tokens' };
+  // Tokens come in whole numbers; a fraction is a chance at one more.
+  function addTokens(x) { state.tokens = (state.tokens || 0) + Math.floor(x) + (Math.random() < x % 1 ? 1 : 0); }
   // Multiplier spins per roll: 100 with the Kaleidoscope Lens, 10 with the Prism Lens, 2 with the Multiplier Lens, else 1.
   const lensActive = () => ((state.effects.kaleido || 0) > 0 ? 100 : (state.effects.prism || 0) > 0 ? 10 : (state.effects.lens || 0) > 0 ? 2 : 1);
   const overclockLeft = () => Math.max(0, (state.effects.overclock || 0) - Date.now());
@@ -803,9 +817,8 @@
     const it = ITEM_BY_ID[id], fx = state.effects;
     if (!(state.inv[id] > 0)) return;
     const k = Math.min(times, state.inv[id]);
-    if (it.kind === 'luck' || it.kind === 'drop') {
-      const slot = it.kind, power = it.kind === 'luck' ? it.luck : it.drop, key = it.kind === 'luck' ? 'L' : 'D';
-      const word = it.kind === 'luck' ? 'Luck' : 'Drops';
+    if (it.kind in BOOST_KEY) {
+      const slot = it.kind, power = it[it.kind], key = BOOST_KEY[it.kind], word = BOOST_WORD[it.kind];
       const cur = fx[slot] && fx[slot].left > 0 ? fx[slot] : null;
       if (cur && cur[key] > power) { $('invMsg').textContent = `${word} ×${fmt(cur[key])} is still active, so ${it.name} would do nothing yet.`; return; }
       if (cur && cur[key] < power && (quiet || !confirm(`${word} ×${fmt(cur[key])} has ${rollsText(cur.left)} left. Replace it with ×${fmt(power)}?`))) return;
@@ -828,7 +841,7 @@
   function renewBoosts() {
     if (!state.settings.renew) return;
     const fx = state.effects;
-    for (const slot of ['luck', 'drop']) {
+    for (const slot of Object.keys(BOOST_KEY)) {
       const e = fx[slot];
       if (e && e.left <= 0 && e.id && state.inv[e.id] > 0) useItem(e.id, 1, true);
     }
@@ -867,6 +880,110 @@
     $('upgradeMax').disabled = n < 2;
     $('upgradeMax').textContent = n > 1 ? `Upgrade ${fmt(n)} levels` : 'Upgrade max';
   }
+  // Token workshop: lasting upgrades bought with lucky tokens, kept through prestige like luck levels.
+  // Each level adds `step` to a multiplier; each costs `grow` times the last.
+  const WORKSHOP = [
+    { id: 'coinSense', name: 'Coin sense', short: 'coins', step: 0.1, max: 20, base: 150, grow: 1.4, desc: 'Coins drop 10% more often per level.' },
+    { id: 'itemSense', name: 'Item sense', short: 'item drops', step: 0.1, max: 20, base: 150, grow: 1.4, desc: 'Items drop 10% more often per level.' },
+    { id: 'tokenSense', name: 'Token sense', short: 'tokens', step: 0.1, max: 20, base: 100, grow: 1.4, desc: '10% more lucky tokens per level.' },
+    { id: 'questSense', name: 'Quest sense', short: 'quest coins', step: 0.25, max: 8, base: 300, grow: 1.8, desc: 'Daily quests pay 25% more coins per level.' },
+  ];
+  const WS_BY_ID = Object.fromEntries(WORKSHOP.map(w => [w.id, w]));
+  const wsLevel = id => (state.workshop && state.workshop[id]) || 0;
+  const wsBonus = id => 1 + WS_BY_ID[id].step * wsLevel(id);
+  const wsCost = (w, lv) => Math.ceil(w.base * w.grow ** lv);
+  function buyWorkshop(id) {
+    const w = WS_BY_ID[id], lv = wsLevel(id);
+    if (!w || lv >= w.max || (state.tokens || 0) < wsCost(w, lv)) return false;
+    state.tokens -= wsCost(w, lv);
+    state.workshop = { ...state.workshop, [id]: lv + 1 };
+    toast(`${esc(w.name)} level ${lv + 1}: ${esc(w.short)} ×${+wsBonus(id).toFixed(2)}`, 'legendary');
+    checkAchievements();
+    save();
+    if (!$('tab-inventory').hidden) renderInventory();
+    paintStatus();
+    return true;
+  }
+  function renderWorkshop() {
+    $('workshop').innerHTML = WORKSHOP.map(w => {
+      const lv = wsLevel(w.id), maxed = lv >= w.max, cost = wsCost(w, lv);
+      return `<li style="--rc:${tierVar(maxed ? 'legendary' : 'uncommon')}"><div><b>${esc(w.name)}</b> <span class="muted num">level ${lv} of ${w.max}</span><br>`
+        + `<span class="muted">${esc(w.desc)} Now ×${+wsBonus(w.id).toFixed(2)}${maxed ? ', the most it goes.' : `; next level ×${+(1 + w.step * (lv + 1)).toFixed(2)}.`}</span>`
+        + `<div class="progress"><i style="width:${(100 * lv / w.max).toFixed(1)}%"></i></div></div>`
+        + `<div class="item-actions">${maxed ? '<span class="muted">Maxed</span>' : `<button class="btn" type="button" data-ws="${w.id}" ${(state.tokens || 0) >= cost ? '' : 'disabled'} aria-label="Buy ${esc(w.name)} level ${lv + 1} for ${fmt(cost)} tokens">${fmt(cost)} tokens</button>`}</div></li>`;
+    }).join('');
+  }
+  $('workshop').addEventListener('click', ev => { const b = ev.target.closest('[data-ws]'); if (b) buyWorkshop(b.dataset.ws); });
+
+  // Coin shop: fixed prices, a sure way to an item. Each costs more coins than the slot needs on
+  // average to pay it out, so the slot stays the better deal and the shop the dependable one.
+  const SHOP = [['lens', 4], ['overclock', 5], ['luck100', 8], ['horn', 12], ['coinmag', 25], ['tokencharm', 25], ['prism', 30], ['overclock2', 40], ['luck1k', 60], ['goose', 900], ['luck10k', 1500]];
+  function buyShop(id, k = 1) {
+    const row = SHOP.find(x => x[0] === id);
+    if (!row) return 0;
+    k = Math.min(k, Math.floor(state.coins / row[1]));
+    if (k < 1) return 0;
+    state.coins -= k * row[1];
+    state.shopSpent = (state.shopSpent || 0) + k * row[1];
+    state.inv[id] = (state.inv[id] || 0) + k;
+    $('shopMsg').textContent = `Bought ${k > 1 ? `${fmt(k)} ` : ''}${ITEM_BY_ID[id].name} for ${fmt(k * row[1])} ${k * row[1] === 1 ? 'coin' : 'coins'}. ${fmt(state.coins)} left.`;
+    checkAchievements();
+    autoFuse();
+    save();
+    if (!$('tab-inventory').hidden) { renderInventory(); renderSlot(); }
+    return k;
+  }
+  function renderShop() {
+    $('shopList').innerHTML = SHOP.map(([id, price]) => {
+      const it = ITEM_BY_ID[id], can = Math.floor(state.coins / price);
+      return `<li style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">${fmt(price)} ${price === 1 ? 'coin' : 'coins'}</span><br><span class="muted">${esc(it.desc)}</span></div>`
+        + `<div class="item-actions"><button class="btn" type="button" data-buy="${id}" ${can ? '' : 'disabled'} aria-label="Buy one ${esc(it.name)} for ${price} coins">Buy</button>`
+        + `<button class="btn" type="button" data-buy10="${id}" ${can >= 10 ? '' : 'disabled'} aria-label="Buy ten ${esc(it.name)} for ${fmt(price * 10)} coins">Buy 10</button></div></li>`;
+    }).join('');
+  }
+  $('shopList').addEventListener('click', ev => {
+    const one = ev.target.closest('[data-buy]'), ten = ev.target.closest('[data-buy10]');
+    if (one) buyShop(one.dataset.buy, 1);
+    if (ten) buyShop(ten.dataset.buy10, 10);
+  });
+
+  // Auto-fuse: Fuse everything on its own after drops, slot spins, purchases and rewards.
+  function autoFuse() { if (state.settings.autoFuse) fuseEverything(true); }
+  $('autoFuseBox').checked = !!state.settings.autoFuse;
+  $('autoFuseBox').addEventListener('change', () => { state.settings.autoFuse = $('autoFuseBox').checked; autoFuse(); save(); });
+
+  // Quick use: up to four items pinned in the Inventory sit under the roll buttons. The buttons are
+  // only rebuilt when the pins change; counts update in place, so a click is never lost to a redraw.
+  const MAX_PINS = 4;
+  let pinKey = '';
+  function renderQuickbar() {
+    const pins = (state.settings.pins || []).filter(id => ITEM_BY_ID[id]);
+    const bar = $('quickbar');
+    bar.hidden = !pins.length;
+    if (pins.join() !== pinKey) {
+      pinKey = pins.join();
+      bar.innerHTML = '<span class="muted">Quick use</span>' + pins.map(id => `<button class="btn" type="button" data-quick="${id}"><span></span></button>`).join('');
+    }
+    for (const b of bar.querySelectorAll('[data-quick]')) {
+      const id = b.dataset.quick, k = state.inv[id] || 0;
+      b.firstChild.textContent = `${ITEM_BY_ID[id].name} ×${fmt(k)}`;
+      b.disabled = !k;
+      b.setAttribute('aria-label', `Use ${ITEM_BY_ID[id].name}, ${fmt(k)} left`);
+    }
+  }
+  $('quickbar').addEventListener('click', ev => { const b = ev.target.closest('[data-quick]'); if (b) useItem(b.dataset.quick); });
+  function togglePin(id) {
+    const pins = (state.settings.pins || []).filter(x => x !== id);
+    if (pins.length === (state.settings.pins || []).length) {
+      if (pins.length >= MAX_PINS) { $('invMsg').textContent = `Quick use holds ${MAX_PINS} items. Unpin one first.`; return; }
+      pins.push(id);
+    }
+    state.settings.pins = pins;
+    save();
+    renderInventory();
+    renderQuickbar();
+  }
+
   $('upgradeOne').addEventListener('click', () => upgradeLuck(1));
   $('upgradeMax').addEventListener('click', () => upgradeLuck(Infinity));
   function effectsText() {
@@ -874,6 +991,9 @@
     if (permLuck() > 1) out.push(`Permanent luck ×${fmt(permLuck())}`);
     if (luckActive() > 1) out.push(`Luck ×${fmt(state.effects.luck.L)}, ${rollsText(state.effects.luck.left)} left`);
     if (dropActive() > 1) out.push(`Drops ×${fmt(state.effects.drop.D)}, ${rollsText(state.effects.drop.left)} left`);
+    if (coinActive() > 1) out.push(`Coin Magnet, coins ×${fmt(state.effects.coin.C)}, ${rollsText(state.effects.coin.left)} left`);
+    if (tokenActive() > 1) out.push(`Token Charm, tokens ×${fmt(state.effects.token.K)}, ${rollsText(state.effects.token.left)} left`);
+    for (const w of WORKSHOP) if (wsLevel(w.id)) out.push(`${w.name} level ${wsLevel(w.id)}, ${w.short} ×${+wsBonus(w.id).toFixed(2)}`);
     if ((state.effects.kaleido || 0) > 0) out.push(`Kaleidoscope Lens, ${rollsText(state.effects.kaleido)} left`);
     if ((state.effects.prism || 0) > 0) out.push(`Prism Lens, ${rollsText(state.effects.prism)} left`);
     if ((state.effects.lens || 0) > 0) out.push(`Multiplier Lens, ${rollsText(state.effects.lens)} left`);
@@ -890,6 +1010,9 @@
   }
   function renderInventory() {
     renderTokens();
+    renderWorkshop();
+    renderShop();
+    renderQuickbar();
     const fx = effectsText();
     $('effects').innerHTML = fx.length ? fx.map(t => `<li>${esc(t)}</li>`).join('') : '<li class="muted">Nothing active. Use an item below.</li>';
     const total = ITEMS.reduce((t, i) => t + (state.inv[i.id] || 0), 0);
@@ -903,6 +1026,7 @@
         + `<button class="btn" type="button" data-fuse-all="${it.id}" ${can > 1 ? '' : 'disabled'} aria-label="Fuse every ${esc(it.name)} you can">Fuse all${can > 1 ? ` (${fmt(can)})` : ''}</button>` : '';
       return `<li class="item${k ? '' : ' none'}" style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">×${fmt(k)}</span><br><span class="muted">${esc(it.desc)}${it.next ? ` Fuse ${it.next[1]} into a ${esc(ITEM_BY_ID[it.next[0]].name)}.` : ''}</span></div>`
         + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button>`
+        + `<button class="btn" type="button" data-pin="${it.id}" aria-pressed="${(state.settings.pins || []).includes(it.id)}" aria-label="Pin ${esc(it.name)} to Quick use on the Roll tab">Pin</button>`
         + `<button class="btn" type="button" data-use-all="${it.id}" ${k > 1 ? '' : 'disabled'} aria-label="Use every ${esc(it.name)}">Use all${k > 1 ? ` (${fmt(k)})` : ''}</button></div></li>`;
     }).join('');
     const last = DROPS.length - 1;
@@ -981,6 +1105,7 @@
     } else ({ totals, pityWins } = spinBatch(n));
     questEvent('spin', n);
     for (const [id, qty] of totals) state.inv[id] = (state.inv[id] || 0) + qty;
+    autoFuse();
     checkAchievements();
     save();
     renderSlot();
@@ -1052,7 +1177,8 @@
   }
   // Fuse everything: every item fuses as far up its line as it can go, bottom first, so the
   // results of one fuse can feed the next.
-  function fuseEverything() {
+  // `quiet`: from auto-fuse, which skips redrawing an Inventory tab nobody is looking at.
+  function fuseEverything(quiet = false) {
     const before = { ...state.inv };
     let fused = 0;
     for (let again = true; again;) {
@@ -1071,11 +1197,11 @@
     state.fused = (state.fused || 0) + fused;
     const gained = ITEMS.filter(it => (state.inv[it.id] || 0) > (before[it.id] || 0)).map(it => `${it.name} ×${fmt(state.inv[it.id] - (before[it.id] || 0))}`);
     const text = `Fused everything: ${fmt(fused)} ${fused === 1 ? 'fuse' : 'fuses'}, gaining ${gained.join(', ')}.`;
-    if (!fullSkin()) toast(esc(text), 'legendary');
+    if (!fullSkin()) toast(esc(text), 'legendary', quiet ? 'item' : '');
     $('invMsg').textContent = text;
     checkAchievements();
     save();
-    renderInventory();
+    if (!quiet || !$('tab-inventory').hidden) renderInventory();
     return text;
   }
   $('fuseEverything').addEventListener('click', fuseEverything);
@@ -1132,7 +1258,9 @@
     }
     const rec = record(x);
     if (!charmed && !x.lens) rollDrops(rec.entry.oneInLog); // charm and lens rolls never drop items, so boosts cannot feed themselves
-    if (randInt(2) === 0) state.tokens = (state.tokens || 0) + TOKENS_PER[state.difficulty || 'standard']; // lucky tokens: 1 in 2 rolls, any tier
+    const tk = tokenActive();
+    if (tk > 1) state.effects.token.left--;
+    if (randInt(2) === 0) addTokens(TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense')); // lucky tokens: 1 in 2 rolls, any tier
     renewBoosts();
     save();
     run.rolls++;
@@ -1249,6 +1377,7 @@
     if (fx.length) parts.push(`<b>Active:</b> ${esc(fx.join(' · '))}`);
     parts.push(`<span class="muted">Lucky tokens: <b class="num">${fmt(state.tokens || 0)}</b></span>`);
     $('status').innerHTML = parts.join('<br>');
+    renderQuickbar();
   }
 
   async function rollClicked() {
@@ -1317,11 +1446,13 @@
       const fx = state.effects, mode = state.mode, t = Date.now();
       const L = effLuck(), lens = effLens(), charmed = luckActive() > 1, plain = !charmed && lens === 1;
       const lensKey = lens === 100 ? 'kaleido' : lens === 10 ? 'prism' : 'lens';
-      const boost = plain ? dropActive() : 1;
+      const boost = plain ? dropActive() : 1, magnet = plain ? coinActive() : 1, tk = tokenActive();
       let m = left;
       if (charmed) m = Math.min(m, fx.luck.left);
       if (lens > 1) m = Math.min(m, fx[lensKey]);
       if (boost > 1) m = Math.min(m, fx.drop.left);
+      if (magnet > 1) m = Math.min(m, fx.coin.left);
+      if (tk > 1) m = Math.min(m, fx.token.left);
       left -= m;
       // The part's best, built and played for real (it uses up one charm, lens and booster roll).
       const roll = commitRoll(pickSync(mode, L * m, lens, t), mode, L, lens, t);
@@ -1343,17 +1474,19 @@
       if (charmed) fx.luck.left = Math.max(0, fx.luck.left - r);
       if (lens > 1) fx[lensKey] = Math.max(0, fx[lensKey] - r);
       if (boost > 1) fx.drop.left = Math.max(0, fx.drop.left - r);
+      if (magnet > 1) fx.coin.left = Math.max(0, fx.coin.left - r);
+      if (tk > 1) fx.token.left = Math.max(0, fx.token.left - r);
       renewBoosts(); // the next part of the batch rolls with the renewed boost
-      const D = boost * prestigeBonus();
+      const D = boost * prestigeBonus() * wsBonus('itemSense'), C = boost * prestigeBonus() * wsBonus('coinSense') * magnet;
       counts.forEach((c, k) => {
         if (!c) return;
         const id = k ? BAND_TIER[k - 1] : 'trash';
         add(id, c);
         if (!(L > 1 || lens > 1 || hard())) state.tiers[mode][id] = (state.tiers[mode][id] || 0) + c;
         questEvent('tier', c, q => T(id) >= T(q.tier));
-        if (plain && k && BAND_FROM[k - 1] >= COIN_FROM) for (let i = 0; i < c; i++) dropsInto(bag, BAND_FROM[k - 1], D);
+        if (plain && k && BAND_FROM[k - 1] >= COIN_FROM) for (let i = 0; i < c; i++) dropsInto(bag, BAND_FROM[k - 1], D, C);
       });
-      state.tokens = (state.tokens || 0) + heads(r) * TOKENS_PER[state.difficulty || 'standard'];
+      addTokens(heads(r) * TOKENS_PER[state.difficulty || 'standard'] * tk * wsBonus('tokenSense'));
       questEvent('roll', r);
       questEvent('mode', r, q => q.mode === mode);
     }
@@ -1754,6 +1887,11 @@
     { id: 'luck50lv', name: 'Born lucky', desc: 'Reach luck level 50', test: () => (state.luckLevel || 0) >= 50 },
     { id: 'luck100lv', name: 'Fortune incarnate', desc: 'Reach luck level 100', test: () => (state.luckLevel || 0) >= 100 },
     { id: 'pile12', name: 'Badge avalanche', desc: 'Earn 12 or more badges on one roll', test: rec => rec && rec.r.badges.length >= 12 },
+    // v3.6
+    { id: 'workshop1', name: 'Tinkerer', desc: 'Buy an upgrade in the token workshop', test: () => WORKSHOP.some(w => wsLevel(w.id) > 0) },
+    { id: 'workshopMax', name: 'Master craftsman', desc: 'Max out an upgrade in the token workshop', test: () => WORKSHOP.some(w => wsLevel(w.id) >= w.max) },
+    { id: 'shop1', name: 'Customer', desc: 'Buy something in the coin shop', test: () => (state.shopSpent || 0) > 0 },
+    { id: 'shop1k', name: 'Regular customer', desc: 'Spend 1,000 coins in the coin shop', test: () => (state.shopSpent || 0) >= 1000 },
   ];
   function checkAchievements(rec) {
     for (const a of ACHIEVEMENTS) {
@@ -2223,6 +2361,8 @@
     if (useAll) useItem(useAll.dataset.useAll, Infinity);
     if (fuse) fuseItem(fuse.dataset.fuse);
     if (all) fuseItem(all.dataset.fuseAll, Infinity);
+    const pin = ev.target.closest('[data-pin]');
+    if (pin) togglePin(pin.dataset.pin);
   });
 
   // Skins. Free ones are always owned; the rest are found in the page, bought as one bundle, or
@@ -2252,6 +2392,8 @@
     { id: 'chalk', name: 'Chalkboard', how: 'reward', ach: 'modes' },
     { id: 'nixie', name: 'Nixie', how: 'reward', badge: 'uniq' },
     { id: 'card', name: 'Index Card', how: 'reward', ach: 'share', light: true },
+    { id: 'steel', name: 'Steel', how: 'reward', ach: 'workshop1' },
+    { id: 'ledger', name: 'Ledger', how: 'reward', ach: 'shop1', light: true },
   ];
   const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
   const BUNDLE_PRICE = 500;
@@ -2365,6 +2507,8 @@
     'BADGES [word]          Badges by category, or the ones matching a word.',
     'ACH                    Achievements.',
     'RECORDS                Records and how lucky you have been.',
+    'WORKSHOP [BUY id]      Token workshop upgrades, or buy the next level of one.',
+    'SHOP [BUY item [n]]    The coin shop, or buy from it, e.g. SHOP BUY luck100 10.',
     'CHANCE tier [n]        Chance of that tier or rarer in n rolls, e.g. CHANCE mythic 5000.',
     'PRESTIGE [YES]         Prestige progress, or prestige.',
     'SKINS, SKIN id         Your skins, or wear one.  BUY BUNDLE buys three.',
@@ -2534,7 +2678,7 @@
         }
         print(...qs.list.map((q, i) => {
           const d = QUEST_BY_ID[q.id];
-          return `${i + 1}. ${pad(d.text, 40)}${pad(`${fmt(q.have)} / ${fmt(d.goal)}`, 18)}${q.claimed ? 'claimed' : q.have >= d.goal ? `ready: QUESTS CLAIM ${i + 1}` : `${d.coins} coins and ${ITEM_BY_ID[d.item].name}`}`;
+          return `${i + 1}. ${pad(d.text, 40)}${pad(`${fmt(q.have)} / ${fmt(d.goal)}`, 18)}${q.claimed ? 'claimed' : q.have >= d.goal ? `ready: QUESTS CLAIM ${i + 1}` : `${questCoins(d)} coins and ${ITEM_BY_ID[d.item].name}`}`;
         }), '');
         break;
       }
@@ -2556,6 +2700,30 @@
         if (a === 'blueprint' && unlockSkin('blueprint', 'Secret found')) print('You found the plans.');
         const l = allBadges().filter(b => `${b.name} ${b.desc} ${b.cat}`.toLowerCase().includes(a));
         print(...(l.length ? l.map(b => `${state.counts[b.id] ? '[x]' : '[ ]'} ${pad(b.name, 26)}${pad(RARITIES[b.rarity].name, 14)}${odds(b.p)}`) : ['Nothing matches.']), '');
+        break;
+      }
+      case 'workshop': case 'work': {
+        if (rest[0] && rest[0].toLowerCase() === 'buy') {
+          const w = WORKSHOP.find(x => x.id.toLowerCase() === (rest[1] || '').toLowerCase() || x.name.toLowerCase().startsWith((rest[1] || '-').toLowerCase()));
+          if (!w) { print(`WORKSHOP BUY ${WORKSHOP.map(x => x.id).join('|')}`); break; }
+          const cost = wsCost(w, wsLevel(w.id));
+          print(buyWorkshop(w.id) ? `${w.name} is now level ${wsLevel(w.id)}: ${w.short} ×${+wsBonus(w.id).toFixed(2)}. ${fmt(state.tokens)} tokens left.`
+            : wsLevel(w.id) >= w.max ? `${w.name} is maxed.` : `It costs ${fmt(cost)} tokens; you have ${fmt(state.tokens || 0)}.`, '');
+          break;
+        }
+        print(`Lucky tokens: ${fmt(state.tokens || 0)}`, ...WORKSHOP.map(w => `${pad(w.id, 12)}${pad(`level ${wsLevel(w.id)}/${w.max}`, 14)}${pad(`×${+wsBonus(w.id).toFixed(2)} ${w.short}`, 22)}${wsLevel(w.id) >= w.max ? 'maxed' : `next ${fmt(wsCost(w, wsLevel(w.id)))} tokens`}`), '');
+        break;
+      }
+      case 'shop': {
+        if (rest[0] && rest[0].toLowerCase() === 'buy') {
+          const it = rest[1] && findItem(rest[1]);
+          const row = it && SHOP.find(x => x[0] === it.id);
+          if (!row) { print(`The shop sells: ${SHOP.map(x => x[0]).join(', ')}`); break; }
+          const k = buyShop(it.id, Math.max(1, Math.floor(+rest[2] || 1)));
+          print(k ? $('shopMsg').textContent : `It costs ${fmt(row[1])} coins each; you have ${fmt(state.coins)}.`, '');
+          break;
+        }
+        print(`Coins: ${fmt(state.coins)}`, ...SHOP.map(([id, price]) => `${pad(id, 12)}${pad(fmt(price) + ' coins', 14)}${ITEM_BY_ID[id].name}`), '');
         break;
       }
       case 'records': {
@@ -2962,6 +3130,7 @@
     ...MODES.map(m => ({ id: `mode-${m.id}`, text: `Roll 300 times in ${m.name} mode`, goal: 300, on: 'mode', mode: m.id, coins: 8, item: 'luck100' })),
   ];
   const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
+  const questCoins = def => Math.round(def.coins * wsBonus('questSense')); // Quest sense in the workshop
   const QUEST_BONUS = 'luck1k';
   function todaysQuests() {
     const day = dayKey();
@@ -2990,7 +3159,7 @@
       const action = q.claimed ? '<span class="muted">Claimed</span>'
         : `<button class="btn" type="button" data-quest="${i}" ${done ? '' : 'disabled'}>Claim</button>`;
       return `<li><div><b>${esc(def.text)}</b> <span class="muted num">${fmt(q.have)} / ${fmt(def.goal)}</span><br>`
-        + `<span class="muted">Reward: ${def.coins} coins and ${esc(ITEM_BY_ID[def.item].name)}</span>`
+        + `<span class="muted">Reward: ${questCoins(def)} coins and ${esc(ITEM_BY_ID[def.item].name)}</span>`
         + `<div class="progress"><i style="width:${(100 * q.have / def.goal).toFixed(1)}%"></i></div></div>${action}</li>`;
     }).join('') + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[QUEST_BONUS].name)}${qs.bonus ? ' (paid)' : ''}. New quests every day at midnight.</li>`;
   }
@@ -3004,8 +3173,10 @@
     if (q.claimed || q.have < def.goal) return false;
     q.claimed = true;
     state.questsDone = (state.questsDone || 0) + 1;
-    state.coins += def.coins;
-    grant(def.item, `Quest reward, plus ${def.coins} coins`);
+    const coins = questCoins(def);
+    state.coins += coins;
+    grant(def.item, `Quest reward, plus ${coins} coins`);
+    autoFuse();
     if (!qs.bonus && qs.list.every(x => x.claimed)) { qs.bonus = true; grant(QUEST_BONUS, 'All quests done'); }
     checkAchievements();
     save();
@@ -3055,6 +3226,15 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v3.6', at: '2026-10-20 03:21', title: 'Workshop and shop', items: [
+      'Token workshop (Inventory): four lasting upgrades bought with lucky tokens, kept through prestige. Coin sense and Item sense make coins and items drop up to 3 times as often, Token sense brings up to 3 times the tokens, and Quest sense makes quests pay up to 3 times the coins.',
+      'Coin shop (Inventory): eleven items at fixed prices, for when you want a sure thing instead of a spin.',
+      'Two items: the Coin Magnet (coins ×5 for 500 plain rolls) and the Token Charm (tokens ×3 for 500 rolls). Both drop from rare rolls, come from the slot and sell in the shop.',
+      'Auto-fuse: Fuse everything can run on its own whenever items come in.',
+      'Quick use: pin up to four items in the Inventory and use them from buttons under Roll.',
+      'WORKSHOP and SHOP in the command line.',
+      'Two skins: Steel, the reward for Tinkerer, and Ledger, the reward for Customer. Four new achievements.',
+    ] },
     { v: 'v3.5', at: '2026-10-20 03:14', title: 'Records and luck', items: [
       'How lucky you have been (Log): your best plain roll of each mode against everyone with as many plain rolls, as an exact share of players.',
       'Odds calculator (Log): the chance of at least one roll of a tier or rarer in any number of rolls, in your mode and difficulty, with your luck. CHANCE does the same in the command line.',

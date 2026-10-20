@@ -164,6 +164,7 @@
               <button class="btn" type="button" data-batch="100000">×100,000</button>
             </div>
             <p class="batch-result muted" id="batchResult" role="status" hidden></p>
+            <div class="quickbar" id="quickbar" role="group" aria-label="Pinned items" hidden></div>
             <div class="opts" id="opts" hidden>
               <div class="seg" id="speed" role="group" aria-label="Speed">
                 <button type="button" data-speed="1" aria-pressed="true">1×</button>
@@ -234,8 +235,16 @@
             </div>
             <ul class="slot-result" id="slotResult" role="status"><li class="muted">Each spin costs one coin. Coins come from Rare or rarer rolls.</li></ul>
           </div>
+          <details class="fold" id="shopFold">
+            <summary><h2>Coin shop</h2><span class="muted">a sure thing, for more coins than the slot</span></summary>
+            <ul class="items shop" id="shopList"></ul>
+          </details>
+          <p class="muted" id="shopMsg" role="status"></p>
           <div class="section-head"><h2>Inventory</h2><span id="invCount"></span></div>
-          <button class="btn" type="button" id="fuseEverything">Fuse everything</button>
+          <div class="inv-tools">
+            <button class="btn" type="button" id="fuseEverything">Fuse everything</button>
+            <label class="check-row"><input type="checkbox" id="autoFuseBox"> Fuse everything on its own whenever items come in</label>
+          </div>
           <ul class="items" id="invList"></ul>
           <p class="muted" id="invMsg" role="status"></p>
         </div>
@@ -258,6 +267,8 @@
               <button class="btn" type="button" id="upgradeMax">Upgrade max</button>
             </div>
           </div>
+          <div class="section-head"><h2>Token workshop</h2><span>lasting upgrades, kept through prestige</span></div>
+          <ul class="items workshop" id="workshop"></ul>
           <div class="section-head"><h2>Active now</h2></div>
           <ul class="effects" id="effects"></ul>
           <label class="check-row"><input type="checkbox" id="renewBox"> Keep boosts going: when a charm, lens or drop booster runs out, use another of the same item</label>
@@ -367,7 +378,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.5</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v3.6</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">

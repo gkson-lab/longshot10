@@ -65,6 +65,13 @@ Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use it
 
 Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. Tick **Keep boosts going** and a charm, lens or drop booster that runs out is followed by the next one of the same item. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
 
+## The token workshop and the coin shop
+
+- **Token workshop:** spend lucky tokens on four lasting upgrades, kept through prestige: Coin sense and Item sense (coins or items drop 10% more often per level, up to ×3), Token sense (10% more tokens per level, up to ×3) and Quest sense (quests pay 25% more coins per level, up to ×3).
+- **Coin shop:** buy an item outright for coins. Each costs more than the slot needs on average to pay it out, so the slot is the better deal and the shop the sure one.
+- **Coin Magnet** (coins ×5 for 500 plain rolls) and **Token Charm** (tokens ×3 for 500 rolls) drop from rare rolls, come from the slot and sell in the shop.
+- **Quick use:** pin up to four items and use them from buttons under the Roll button. **Auto-fuse** runs Fuse everything whenever items come in.
+
 ## Coins and the slot machine
 
 A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buys one spin of the coin slot in the Inventory tab, and every spin wins an item. The rarest prizes have a **hard pity**: go long enough without one and the next spin pays it for sure. The panel next to the slot shows every chance and your pity progress.

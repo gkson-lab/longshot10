@@ -715,3 +715,38 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 .odds-calc .field { flex-wrap: wrap; white-space: nowrap; }
 .odds-calc .field { max-width: 100%; }
 .odds-calc .field select { flex: 1 1 auto; min-width: 0; }
+
+/* v3.6 */
+.inv-tools { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: center; margin-bottom: 10px; }
+.inv-tools #fuseEverything { margin-bottom: 0; }
+.quickbar { display: flex; gap: 6px; align-items: center; justify-content: center; flex-wrap: wrap; }
+.btn[data-pin][aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.workshop .progress { margin: 8px 0 0; height: 6px; }
+.workshop li, .shop li { align-items: flex-start; }
+.workshop li > div:first-child, .shop li > div:first-child { flex: 1; min-width: 0; }
+@media (max-width: 560px) {
+  .items li { flex-wrap: wrap; }
+  .items li .item-actions { width: 100%; justify-content: flex-start; }
+}
+/* Steel: brushed blue-grey metal with a safety-orange Roll button, for the workshop. */
+:root[data-theme="steel"] {
+  --bg: #101317; --surface: #161a20; --surface-2: #1c2129; --line: #303844;
+  --ink: #e8edf3; --muted: #b3bcc8; --faint: #97a1ae; --cell: #090b0e; --cell-ink: #e8edf3; --cell-lead: #66707e;
+  --accent: #ff7a1a; --accent-ink: #1a0b00; --focus: #ffa25e;
+}
+/* Ledger: an accounts book, pale green paper with dark green ink and red for the Roll button. */
+:root[data-theme="ledger"] {
+  --bg: #eef3ea; --surface: #f9fbf6; --surface-2: #e7eee2; --line: #c4d2bc;
+  --ink: #183020; --muted: #3c5444; --faint: #4a6352; --cell: #183020; --cell-ink: #f4f8f0; --cell-lead: #7a9282;
+  --accent: #b3261e; --accent-ink: #ffffff; --focus: #183020;
+}
+[data-swatch="steel"] { background: linear-gradient(135deg, #101317 55%, #ff7a1a 55%); }
+[data-swatch="ledger"] { background: linear-gradient(135deg, #eef3ea 55%, #b3261e 55%); }
+/* A folded section: the summary is the heading, with a turning marker so it reads as openable. */
+.fold { margin: 0 0 10px; }
+.fold summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-height: 44px; padding: 8px 0; cursor: pointer; list-style: none; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary h2 { margin: 0; font-size: 17px; }
+.fold summary h2::before { content: "▸"; display: inline-block; width: 1em; color: var(--muted); transition: transform .15s; }
+.fold[open] summary h2::before { transform: rotate(90deg); }
+.fold summary .muted { font-size: 14px; }

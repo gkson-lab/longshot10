@@ -188,12 +188,39 @@ const STEPS = [
     await shot('log-v35');
     await click('[data-tab="roll"]');
   }],
+  // v3.6
+  ['coin shop, token workshop, pins and auto-fuse', async ({ page, click, overflow, shot }) => {
+    await click('[data-tab="inventory"]');
+    const coins = async () => +(await page.textContent('#coinsInHand')).replace(/,/g, '');
+    const before = await coins();
+    if (before < 8) throw new Error(`only ${before} coins after the batches`);
+    await click('#shopFold summary');
+    await click('[data-buy="luck100"]');
+    if ((await coins()) !== before - 8) throw new Error('buying a Charm of a Hundred did not cost 8 coins');
+    if (!/Bought/.test(await page.textContent('#shopMsg'))) throw new Error('no purchase message');
+    await click('[data-ws="tokenSense"]');
+    if (!/level 1 of/.test(await page.textContent('#workshop'))) throw new Error('workshop level did not go up');
+    await click('[data-pin="luck10"]');
+    await click('#autoFuseBox');
+    await overflow('inventory');
+    await shot('inventory-v36');
+    await click('[data-tab="roll"]');
+    if (await page.isHidden('#quickbar')) throw new Error('quick use bar is hidden after pinning');
+    const label = await page.textContent('#quickbar [data-quick="luck10"]');
+    await click('#quickbar [data-quick="luck10"]');
+    if (label === (await page.textContent('#quickbar [data-quick="luck10"]'))) throw new Error('quick use did not use the item');
+    await click('[data-tab="inventory"]');
+    await click('[data-pin="luck10"]');
+    await click('#autoFuseBox');
+    await click('[data-tab="roll"]');
+    if (!(await page.isHidden('#quickbar'))) throw new Error('quick use bar still shows with nothing pinned');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

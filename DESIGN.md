@@ -31,6 +31,8 @@ Dial: ENERGY 3 / RHYTHM 2 / MOTION 3
 - **How lucky you have been is a sentence, not a score.** The exact share of players who would do as well reads plainly ("62% of players"), where an invented luck score would need explaining. It uses plain rolls only, for the same reason as the Luck table.
 - **Milestones as a timeline.** The first time each tier was reached is a sequence in time, so it is drawn as one line with a dot per tier in that tier's colour, the same rarity encoding as everywhere else.
 - **Chances never round up to 100%.** A 99.996% chance is shown as 99.9960%, and anything closer as "more than 99.9999%", because 100% would claim a certainty the odds do not have.
+- **The coin shop is folded away.** It is a fallback for a sure item, so it opens on request and the slot keeps the top of the Inventory. Folded sections show a turning marker so they read as openable.
+- **Quick use sits under the roll buttons and only appears when something is pinned.** Its buttons are rebuilt only when the pins change, so a click during Turbo never lands on a button that was just replaced.
 - **Type: the system UI font for text, the system monospace font for digits only.** No web fonts, because the game runs fully offline. Monospace keeps every digit the same width, so reels and number columns line up.
 - **Headings in sentence case, with no wide-tracked capitals.** Rarity names are set in weight, not in tracking.
 - **Radius scale: 4 / 8 / 12, plus one full pill on the Roll button.** Chips, controls and panels each get their own radius, and the primary action is the only round shape.
