@@ -31,17 +31,18 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - A luck table comparing your tiers with how often each tier really comes up
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Nineteen skins (see below), an effects setting, and offline install from the hosted copy
+- Twenty-one skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three
 - Prestige: after 100,000 rolls (200,000 for the second, and so on) trade in your coins, items and active effects for a lasting bonus, with drops and coins coming half again as often per prestige
 - A badge book in the Collection: complete a category's page (every badge in it at 1 in 1,000,000 or likelier) to claim a skin or items
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
 - Up to ten save files in the browser, each with its own progress; export one to move or share it, and importing always adds a new save file instead of replacing yours
-- Space rolls, A toggles Auto, E toggles Endless
+- Keys for everything: Space rolls, A toggles Auto, E toggles Endless, ? lists the rest
+- Settings for text size and for which notices pop up
 
 ## Skins
 
-Skins are picked in Settings and belong to the save file. Midnight, Felt and Daylight are free. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld and Calculator replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, and a calculator whose ten-digit display holds exactly one roll. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
+Skins are picked in Settings and belong to the save file. Midnight, Felt, Daylight and High Contrast are free; Chalkboard is the reward for the Mathematician achievement. Neon, LCD, Blueprint, Terminal, Console, Chat, Handheld and Calculator are hidden somewhere in the game; Settings gives a hint for each, and [Skins and commands](docs/SKINS-AND-COMMANDS.md) spoils them all. Console, Chat, Handheld and Calculator replace the page with a different way to play: a command line, a chat with Tenny the bot, a pocket console with a D-pad, and a calculator whose ten-digit display holds exactly one roll. Terminal turns the page into plain console text with no boxes or lines. Console replaces the page with a command line that runs the whole game: ROLL, AUTO, ENDLESS, STOP, SPEED, RATE, MODE, STATS, LUCK, LOG, BEST, INV, USE, FUSE, SPIN, ODDS, QUESTS, BOOK, BADGES, ACH, PRESTIGE, SKINS, BUY and more (type HELP). The same commands work in the command line hidden in Settings. Gold, Ruby and Aurora come together as a bundle for 500 coins. Graph Paper, Golden Spiral, Odometer, Vaporwave and Spectrum are legendary skins from the Math, Sequences, Digits, Memes and Combos pages of the badge book.
 
 ## Inventory
 
@@ -72,6 +73,8 @@ Every badge probability is a count of qualifying numbers, not an estimate. Digit
 npm run data    # rebuild data.js (sieve, radar scan and percentile tables; a few minutes on 16 threads)
 npm run check   # brute-force every badge at small sizes, every mode badge, the multiplier reel, and data.js
 npm run icons   # redraw icon.svg and the PNG app icons
+npm run contrast  # every skin against the WCAG AA promises in DESIGN.md
+npm run smoke   # play the game in Chromium (Playwright) at phone and desktop width; fails on errors and overflow
 ```
 
 ## Documents
@@ -83,7 +86,10 @@ npm run icons   # redraw icon.svg and the PNG app icons
 
 ## Changelog
 
-- v3.33: Roll shows its result at once, with no reels spinning (Auto still spins them at 1× and 2×). Batch rolls are counted instead of played one by one, so ×5,000 takes a few milliseconds instead of about two seconds: the best roll is real and recorded, and the other rolls bring their tiers, items, coins, tokens and quest progress but not badges. During a hunt a batch still plays every roll. Endless in batches rolls one batch a second.
+Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
+
+- v3.4 (2026-10-20 03:06 UTC): What's new, with the time of every release; a key list (press ?) and new keys (B batch, T speed, M mode, S star, 1 to 5 tabs); text size; switches for each kind of notice; batch ×25,000 and ×100,000, and a hunt's batch stops when it finds its target; Keep boosts going renews a charm, lens or drop booster when it runs out; High Contrast (free) and Chalkboard (reward for Mathematician) skins. Fixes: Trophies and the Terminal skin no longer run off a phone screen; a full-screen skin worn from the Settings command line no longer opens under Settings.
+- v3.33 (2026-10-19 23:29 UTC): Roll shows its result at once, with no reels spinning (Auto still spins them at 1× and 2×). Batch rolls are counted instead of played one by one, so ×5,000 takes a few milliseconds instead of about two seconds: the best roll is real and recorded, and the other rolls bring their tiers, items, coins, tokens and quest progress but not badges. During a hunt a batch still plays every roll. Endless in batches rolls one batch a second.
 - v3.32: batch roll, ×100, ×1,000 or ×5,000 rolls in one go, drawn once at the end with the best roll and a count per tier. Endless can run in batches of 1,000, 5,000 or 10,000 (Auto settings), showing each batch's stats and the run's totals between batches: about 3,100 rolls a second with ×28 luck, and it keeps its pace in a background tab.
 - v3.31: luck charms work in full on every difficulty (no more ×100,000 cap off Standard) and every lucky roll is built in about a millisecond, so Turbo keeps going with luck on (about 1,000 rolls a second with ×28 on Standard, about 350 on Hardcore, up from a few). The status line says when luck is what slows Turbo down.
 - v3.3: six rarity tiers past Unfathomable, up to Beyond at 1/10¹⁰⁰; Charms of a Hundred Million, a Billion and Ten Billion; Platinum Goose (drops ×10,000) and Cosmic Goose (×100,000); Kaleidoscope Lens (100 multiplier spins); Overclock III (Turbo ×8). Lenses and Overclocks now fuse upwards too. The new items drop from 1/10¹⁰ rolls and rarer, and four of them are slot prizes; a Charm of a Hundred Million has a 30,000,000-spin pity. 108 achievements.

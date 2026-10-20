@@ -187,7 +187,7 @@ a { color: inherit; }
 
 /* Header */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px 0 10px; }
-.mark { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+.mark { display: flex; flex-wrap: wrap; min-width: 0; align-items: center; gap: 8px; margin: 0; font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
 .mark .cells { display: flex; gap: 2px; }
 .mini-cell {
   display: inline-grid; place-items: center; width: 20px; height: 28px; border-radius: 4px;
@@ -390,6 +390,7 @@ button.card:hover { border-color: var(--faint); }
 .ach li.got .tick { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .ach li:not(.got) { color: var(--muted); }
 .ach .when { color: var(--faint); font-size: 13px; }
+.ach li > span { overflow-wrap: anywhere; min-width: 0; } /* 1/10¹⁰⁰ written out has no break points */
 .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 26px; }
 @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } }
 .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
@@ -626,3 +627,47 @@ dialog::backdrop { background: rgba(0, 0, 0, 0.55); }
 [data-swatch="chat"] { background: linear-gradient(135deg, #eef1f5 55%, #2b6cb0 55%); }
 [data-swatch="handheld"] { background: linear-gradient(135deg, #c9c4bd 55%, #9bbc0f 55%); }
 [data-swatch="calc"] { background: linear-gradient(135deg, #2a2d33 55%, #e08a1e 55%); }
+
+/* v3.4 */
+/* Text size scales the page and its dialogs, not the full-screen skins, which have their own fixed sizes. */
+:root[data-text="large"] { --zoom: 1.15; }
+:root[data-text="larger"] { --zoom: 1.3; }
+.wrap, dialog { zoom: var(--zoom, 1); }
+dialog { width: min(520px, calc((100vw - 32px) / var(--zoom, 1))); max-height: calc((100vh - 48px) / var(--zoom, 1)); }
+/* Buttons that read as links: the footer's What's new and the Keys link. Still 44px tall to tap. */
+.link-btn { min-height: 44px; padding: 0 2px; border: 0; background: none; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; }
+.foot a { display: inline-block; min-height: 44px; line-height: 44px; }
+.keys .link-btn { min-height: 32px; }
+kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface-2); font: 600 13px ui-monospace, monospace; text-align: center; }
+.keys-grid { align-items: baseline; }
+.keys-grid dd { margin: 0; }
+.release { padding: 10px 0; border-top: 1px solid var(--line); }
+.release h3 { margin: 0; font-size: 15px; }
+.release p { margin: 2px 0 4px; }
+.release ul { margin: 0; padding-left: 18px; font-size: 14px; }
+.release li { margin: 3px 0; }
+.check-row { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; padding: 10px 0; color: var(--muted); font-size: 14px; cursor: pointer; }
+.check-row input { margin-top: 3px; accent-color: var(--ink); width: 18px; height: 18px; flex: none; }
+
+/* High Contrast: for low vision and bright screens. Pure black and white, visible borders, a thick
+   yellow focus ring and underlined links. Free, like Midnight. */
+:root[data-theme="contrast"] {
+  --bg: #000000; --surface: #000000; --surface-2: #111111; --line: #a3a3a3;
+  --ink: #ffffff; --muted: #f0f0f0; --faint: #dddddd; --cell: #000000; --cell-ink: #ffffff; --cell-lead: #a3a3a3;
+  --accent: #ffd400; --accent-ink: #000000; --focus: #ffd400;
+}
+:root[data-theme="contrast"] :focus-visible { outline-width: 3px; outline-offset: 3px; }
+:root[data-theme="contrast"] .reel { box-shadow: inset 0 0 0 1px #a3a3a3; }
+:root[data-theme="contrast"] .card.locked, :root[data-theme="contrast"] .items li.none { opacity: 1; }
+/* Chalkboard: slate green with chalk-white digits and a chalk-yellow Roll button. */
+:root[data-theme="chalk"] {
+  --bg: #161f1b; --surface: #1b2621; --surface-2: #202c27; --line: #3d5048;
+  --ink: #f4f1e8; --muted: #cbd1c6; --faint: #b3bcaf; --cell: #101714; --cell-ink: #f4f1e8; --cell-lead: #6f8077;
+  --accent: #efe08f; --accent-ink: #18201c; --focus: #efe08f;
+}
+[data-swatch="contrast"] { background: linear-gradient(135deg, #000000 55%, #ffd400 55%); }
+[data-swatch="chalk"] { background: linear-gradient(135deg, #161f1b 55%, #efe08f 55%); }
+/* Long numbers (1/1,000,000,000,000) may wrap, so tables and lists fit a phone at any text size. */
+.luck td, .list .e, .list .t { overflow-wrap: anywhere; }
+.list li { grid-template-columns: minmax(0, 1fr) auto auto; }
+.list .e { min-width: 0; max-width: 14ch; }

@@ -6,6 +6,8 @@
     "data": "node tools/build-data.js",
     "icons": "node tools/icons.js",
     "check": "node tools/check.js",
-    "docs": "node tools/docs.js"
+    "docs": "node tools/docs.js",
+    "contrast": "node tools/contrast.js",
+    "smoke": "node tools/smoke.js"
   }
 }

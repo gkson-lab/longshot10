@@ -48,10 +48,11 @@ Every roll has a 1 in 2 chance to drop a lucky token, whatever its tier. Spend t
 - **Roll** (or Space) rolls once and shows the result at once.
 - **Auto** (or A) rolls until a tier you choose, or until a badge you are hunting turns up.
 - **Endless** (or E) never stops on its own.
-- **Batch ×100, ×1,000, ×5,000** does that many rolls at once and shows the best roll and how many landed in each tier. The batch is counted rather than played roll by roll, so it takes a few milliseconds at any size. Its best roll is a real roll, recorded like any other (the best of 5,000 rolls with luck ×L is one roll with luck ×5,000L). The other rolls are drawn from the same odds and count fully toward tiers, item drops, coins, lucky tokens, totals and quests, but they do not collect badges or enter the roll log. A charm, lens or drop booster that runs out partway through still covers exactly the rolls it has left. During a hunt a batch plays every roll, so the hunt can find its target.
+- **Batch ×100 up to ×100,000** does that many rolls at once and shows the best roll and how many landed in each tier. The batch is counted rather than played roll by roll, so it takes a few milliseconds at any size. Its best roll is a real roll, recorded like any other (the best of 5,000 rolls with luck ×L is one roll with luck ×5,000L). The other rolls are drawn from the same odds and count fully toward tiers, item drops, coins, lucky tokens, totals and quests, but they do not collect badges or enter the roll log. A charm, lens or drop booster that runs out partway through still covers exactly the rolls it has left. During a hunt a batch plays every roll, so the hunt can find its target; it stops as soon as it does, and Stop batch ends it early.
 - **Endless in batches** (under Auto settings: 1,000, 5,000 or 10,000) makes Endless roll one batch like that every second: after each batch the best roll is drawn and the stats of that batch and of the whole run show under the buttons. Stop ends it at once. A background tab catches up on the batches it missed, up to a minute's worth.
 - **Speed:** 1×, 2× or Turbo. Turbo rolls 90, 250, 500, 1,000, 2,000 or 5,000 times a second (set it under Auto settings) and shows the rarest roll of each screen frame, so a big roll is never skipped.
 - Your best rolls of the session and of all time stay beside the reels.
+- **Keys:** press ? for the full list. Space rolls, A and E start Auto and Endless, B batches ×1,000, T changes speed, M changes mode, S stars the roll shown, and 1 to 5 switch tabs.
 
 ## Items
 
@@ -62,7 +63,7 @@ Rolls of 1/100 or rarer can drop items, and rarer rolls drop better ones. Use it
 - **Lenses** spin the multiplier reel 2, 10 or 100 times and keep the biggest.
 - **Overclocks** make Turbo 2, 4 or 8 times as fast for 3 minutes.
 
-Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
+Rolls made with a charm or lens never drop items, so boosts cannot feed themselves. Tick **Keep boosts going** and a charm, lens or drop booster that runs out is followed by the next one of the same item. **Use all** uses every one of an item at once, adding up their rolls or minutes. Several of one item **fuse** into the next one up: use Fuse for one set, Fuse all for every set of that item, or Fuse everything to push every item as far up its line as it goes.
 
 ## Coins and the slot machine
 

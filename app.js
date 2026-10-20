@@ -351,7 +351,10 @@
     }
   }
 
-  function toast(html, colorId) {
+  // `kind` lets a player switch off a whole family of notices in Settings: badge, item, quest or ach.
+  // Anything else (hunts, skins, prestige) always shows.
+  function toast(html, colorId, kind = '') {
+    if (kind && state.settings.notices && state.settings.notices[kind] === false) return;
     if (fullSkin()) { fullNotice(plain(html)); return; }
     if (auto && speed === 3 && $('toasts').children.length >= 4) return; // Turbo can earn badges faster than anyone can read
     const el = document.createElement('div');
@@ -729,7 +732,7 @@
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
-    toast(`${esc(why)}: <b>${esc(it.name)}</b>${count > 1 ? ` ×${fmt(count)}` : ''}`, RARITIES[it.rarity].id);
+    toast(`${esc(why)}: <b>${esc(it.name)}</b>${count > 1 ? ` ×${fmt(count)}` : ''}`, RARITIES[it.rarity].id, 'item');
     if (!$('tab-inventory').hidden) renderInventory();
   }
   // A drop booster multiplies each chance; past 100% the whole part drops for sure and the rest is a chance at one more.
@@ -758,7 +761,7 @@
     if (k) {
       state.coins += k;
       questEvent('coin', k);
-      toast(`Coin found${k > 1 ? `: <b>×${fmt(k)}</b>` : ''}, ${fmt(state.coins)} in hand`, 'mythic');
+      toast(`Coin found${k > 1 ? `: <b>×${fmt(k)}</b>` : ''}, ${fmt(state.coins)} in hand`, 'mythic', 'item');
       if (!$('tab-inventory').hidden) renderSlot();
     }
     for (const [id, k] of Object.entries(items)) grant(id, 'Item found', k);
@@ -772,7 +775,8 @@
   const overclock3Left = () => Math.max(0, (state.effects.overclock3 || 0) - Date.now());
   const turboSpeedup = () => (overclock3Left() ? 8 : overclock2Left() ? 4 : overclockLeft() ? 2 : 1);
   // Use `times` of an item at once (Infinity: all of them). Their rolls or minutes add up.
-  function useItem(id, times = 1) {
+  // `quiet`: used by Keep boosts going, which must never stop to ask.
+  function useItem(id, times = 1, quiet = false) {
     const it = ITEM_BY_ID[id], fx = state.effects;
     if (!(state.inv[id] > 0)) return;
     const k = Math.min(times, state.inv[id]);
@@ -781,8 +785,9 @@
       const word = it.kind === 'luck' ? 'Luck' : 'Drops';
       const cur = fx[slot] && fx[slot].left > 0 ? fx[slot] : null;
       if (cur && cur[key] > power) { $('invMsg').textContent = `${word} ×${fmt(cur[key])} is still active, so ${it.name} would do nothing yet.`; return; }
-      if (cur && cur[key] < power && !confirm(`${word} ×${fmt(cur[key])} has ${rollsText(cur.left)} left. Replace it with ×${fmt(power)}?`)) return;
-      fx[slot] = cur && cur[key] === power ? { [key]: power, left: cur.left + k * it.rolls } : { [key]: power, left: k * it.rolls };
+      if (cur && cur[key] < power && (quiet || !confirm(`${word} ×${fmt(cur[key])} has ${rollsText(cur.left)} left. Replace it with ×${fmt(power)}?`))) return;
+      // The item id is kept so Keep boosts going knows what to use next.
+      fx[slot] = cur && cur[key] === power ? { [key]: power, left: cur.left + k * it.rolls, id } : { [key]: power, left: k * it.rolls, id };
     }
     if (it.kind === 'lens') fx[it.id] = (fx[it.id] || 0) + k * it.rolls;
     if (it.kind === 'overclock') fx[it.id] = Math.max(Date.now(), fx[it.id] || 0) + k * it.minutes * 60000;
@@ -790,10 +795,24 @@
     state.used = (state.used || 0) + k;
     checkAchievements();
     $('invMsg').textContent = k > 1 ? `Used ${fmt(k)} ${it.name}.` : `Used ${it.name}.`;
+    if (quiet) toast(`Kept going: <b>${esc(it.name)}</b>, ${fmt(state.inv[id])} left`, RARITIES[it.rarity].id, 'item');
     save();
-    renderInventory();
+    if (!quiet || !$('tab-inventory').hidden) renderInventory();
     paintStatus();
   }
+  // Keep boosts going: when a charm, lens or drop booster has just run out, use another of the same
+  // item, if there is one. Called after every roll that uses up a boost.
+  function renewBoosts() {
+    if (!state.settings.renew) return;
+    const fx = state.effects;
+    for (const slot of ['luck', 'drop']) {
+      const e = fx[slot];
+      if (e && e.left <= 0 && e.id && state.inv[e.id] > 0) useItem(e.id, 1, true);
+    }
+    for (const id of ['kaleido', 'prism', 'lens']) if (fx[id] === 0 && state.inv[id] > 0) useItem(id, 1, true);
+  }
+  $('renewBox').checked = !!state.settings.renew;
+  $('renewBox').addEventListener('change', () => { state.settings.renew = $('renewBox').checked; renewBoosts(); save(); });
   // Lucky tokens: a 1 in 2 chance on every roll, more on harder difficulties. They buy permanent
   // luck levels; level k makes every roll the best of k + 1. Each level costs 12% more than the last.
   const TOKENS_PER = { standard: 1, hardcore: 2, nightmare: 3, abyss: 5, oblivion: 10 };
@@ -1091,10 +1110,11 @@
     const rec = record(x);
     if (!charmed && !x.lens) rollDrops(rec.entry.oneInLog); // charm and lens rolls never drop items, so boosts cannot feed themselves
     if (randInt(2) === 0) state.tokens = (state.tokens || 0) + TOKENS_PER[state.difficulty || 'standard']; // lucky tokens: 1 in 2 rolls, any tier
+    renewBoosts();
     save();
     run.rolls++;
-    for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id);
-    if (rec.freshMult) toast(`New multiplier: <b>× ${esc(rec.r.mult.symbol)} ${esc(rec.r.mult.name)}</b>`, RARITIES[rec.r.mult.rarity].id);
+    for (const b of rec.r.badges) if (rec.fresh.has(b.id)) toast(`New badge: <b>${esc(b.name)}</b> (${RARITIES[b.rarity].name})`, RARITIES[b.rarity].id, 'badge');
+    if (rec.freshMult) toast(`New multiplier: <b>× ${esc(rec.r.mult.symbol)} ${esc(rec.r.mult.name)}</b>`, RARITIES[rec.r.mult.rarity].id, 'badge');
     let found = false;
     if (hunt) {
       huntRolls++;
@@ -1203,6 +1223,7 @@
 
   async function rollClicked() {
     if (auto) { setAuto(null); return; }
+    if (batching) { batching.stop = true; return; } // a batch played roll by roll for a hunt
     if (busy || !ready[state.mode]) return;
     busy = true;
     paintRollButton();
@@ -1292,6 +1313,7 @@
       if (charmed) fx.luck.left = Math.max(0, fx.luck.left - r);
       if (lens > 1) fx[lensKey] = Math.max(0, fx[lensKey] - r);
       if (boost > 1) fx.drop.left = Math.max(0, fx.drop.left - r);
+      renewBoosts(); // the next part of the batch rolls with the renewed boost
       const D = boost * prestigeBonus();
       counts.forEach((c, k) => {
         if (!c) return;
@@ -1321,11 +1343,11 @@
       if (best) drawRoll(best, 3, changed);
       return { n, secs: (performance.now() - start) / 1000, tiers, best };
     }
-    batching = { n, done: 0 };
-    paintBatch();
+    batching = { n, done: 0, stop: false };
+    paintRollButton();
     const start = performance.now(), tiers = {};
-    let best = null, changed = false;
-    while (batching.done < n && keepGoing()) {
+    let best = null, changed = false, hit = false;
+    while (batching.done < n && keepGoing() && !batching.stop) {
       const slice = performance.now();
       while (batching.done < n && performance.now() - slice < 40) {
         const roll = takeRoll();
@@ -1333,8 +1355,10 @@
         tiers[roll.rec.tier.id] = (tiers[roll.rec.tier.id] || 0) + 1;
         if (roll.rec.madeSession || roll.rec.madeHof) { changed = true; freshEntry = roll.rec.entry; }
         if (!best || roll.rec.entry.oneInLog > best.rec.entry.oneInLog) best = roll;
+        if (roll.found) { hit = true; break; } // the hunt is over, so the rest of the batch need not be played
       }
       paintBatch();
+      if (hit) break;
       await yieldNow();
     }
     const done = batching.done, secs = (performance.now() - start) / 1000;
@@ -1351,7 +1375,7 @@
     const r = await runBatch(n);
     busy = false;
     $('batchResult').hidden = false;
-    $('batchResult').innerHTML = (r.played ? `${fmt(r.n)} rolls in ${r.secs.toFixed(1)} s, played one by one for the hunt.` : `${fmt(r.n)} rolls.`)
+    $('batchResult').innerHTML = (r.played ? `${fmt(r.n)} of ${fmt(n)} rolls in ${r.secs.toFixed(1)} s, played one by one for the hunt${r.n < n ? ', stopped early' : ''}.` : `${fmt(r.n)} rolls.`)
       + ` Best shown above. ${tierList(r.tiers)}`;
     paintRollButton();
     paintBatch();
@@ -1438,14 +1462,33 @@
     const btn = $('rollBtn');
     paintBatch();
     if (auto) { btn.textContent = 'Stop'; btn.disabled = false; return; }
+    if (batching) { btn.textContent = 'Stop batch'; btn.disabled = false; return; }
     btn.textContent = ready[state.mode] ? 'Roll' : 'Loading odds…';
     btn.disabled = !ready[state.mode] || busy;
   }
 
+  // Keys. `roll`: only on the Roll tab. The Keys dialog (?) lists this same table.
+  const KEYS = [
+    ['Space', 'Roll, or stop Auto, Endless or a batch', true],
+    ['A', 'Auto on or off', true],
+    ['E', 'Endless on or off', true],
+    ['B', 'Batch ×1,000', true],
+    ['T', 'Next speed: 1×, 2×, Turbo', true],
+    ['M', 'Next mode', true],
+    ['S', 'Star or unstar the roll shown', true],
+    ['1 to 5', 'Roll, Inventory, Collection, Trophies, Log'],
+    ['← →', 'Next tab, when a tab has focus'],
+    ['?', 'This list'],
+    ['Esc', 'Close a dialog'],
+  ];
+  $('keysList').innerHTML = KEYS.map(([k, what, roll]) => `<dt><kbd>${esc(k)}</kbd></dt><dd>${esc(what)}${roll ? ' <span class="muted">(Roll tab)</span>' : ''}</dd>`).join('');
   document.addEventListener('keydown', ev => {
-    if (ev.ctrlKey || ev.metaKey || ev.altKey || $('tab-roll').hidden || document.querySelector('dialog[open]') || fullSkin()) return;
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || document.querySelector('dialog[open]') || fullSkin()) return;
     const t = ev.target.closest ? ev.target : document.body;
     if (t.closest('input, select, textarea')) return;
+    if (ev.key === '?') { $('keysDialog').showModal(); return; }
+    if (/^Digit[1-5]$/.test(ev.code)) { selectTab(TABS[+ev.code.slice(5) - 1]); return; }
+    if ($('tab-roll').hidden) return;
     if (ev.code === 'Space') {
       if (t.closest('button, a')) return; // the focused control handles Space itself
       ev.preventDefault();
@@ -1453,6 +1496,17 @@
     }
     if (ev.code === 'KeyA') setAuto(auto === 'auto' ? null : 'auto');
     if (ev.code === 'KeyE') setAuto(auto === 'endless' ? null : 'endless');
+    if (ev.code === 'KeyB') batchRoll(1000);
+    if (ev.code === 'KeyT') $('speed').querySelector(`[data-speed="${speed % 3 + 1}"]`).click();
+    if (ev.code === 'KeyM') setMode(MODE_IDS[(MODE_IDS.indexOf(state.mode) + 1) % MODE_IDS.length]);
+    if (ev.code === 'KeyS' && shown && !shown.preview) $('starBtn').click();
+  });
+  // Buttons that open a dialog by id (the footer's What's new, the Keys link under the controls).
+  document.addEventListener('click', ev => {
+    const b = ev.target.closest('[data-open]');
+    if (!b) return;
+    if (b.dataset.open === 'newsDialog') renderNews();
+    $(b.dataset.open).showModal();
   });
 
   // Modes
@@ -1673,8 +1727,10 @@
     for (const a of ACHIEVEMENTS) {
       if (state.ach[a.id] || !a.test(rec)) continue;
       state.ach[a.id] = Date.now();
-      toast(`Achievement: <b>${esc(a.name)}</b>`, 'rare');
+      toast(`Achievement: <b>${esc(a.name)}</b>`, 'rare', 'ach');
       grant(ACH_REWARD[a.id] || 'luck10', 'Achievement reward');
+      const skin = SKINS.find(x => x.ach === a.id);
+      if (skin) unlockSkin(skin.id, a.name);
     }
   }
 
@@ -1880,14 +1936,21 @@
     document.documentElement.dataset.theme = s.theme;
     document.documentElement.dataset.tone = SKIN_BY_ID[s.theme].light ? 'light' : 'dark';
     paintFull();
+    s.tone = SKIN_BY_ID[s.theme].light ? 'light' : 'dark'; // read by the first-paint script in index.html
     document.documentElement.dataset.effects = s.effects;
+    document.documentElement.dataset.text = s.text || 'normal';
     document.querySelector('meta[name="theme-color"]').content = cssVar('--bg');
     for (const r of document.querySelectorAll('#settingsDialog input[name="effects"]')) r.checked = r.value === s.effects;
+    for (const r of document.querySelectorAll('#settingsDialog input[name="text"]')) r.checked = r.value === (s.text || 'normal');
+    for (const r of document.querySelectorAll('#settingsDialog input[name="notice"]')) r.checked = !s.notices || s.notices[r.value] !== false;
   }
   $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); renderSlots(); renderSkins(); $('settingsDialog').showModal(); });
   $('settingsDialog').addEventListener('change', ev => {
-    if (ev.target.name !== 'effects') return;
-    state.settings.effects = ev.target.value;
+    const { name, value } = ev.target;
+    if (name === 'effects') state.settings.effects = value;
+    else if (name === 'text') state.settings.text = value;
+    else if (name === 'notice') state.settings.notices = { ...state.settings.notices, [value]: ev.target.checked };
+    else return;
     applySettings();
     save();
   });
@@ -2047,6 +2110,7 @@
     { id: 'midnight', name: 'Midnight', how: 'free' },
     { id: 'felt', name: 'Felt', how: 'free' },
     { id: 'daylight', name: 'Daylight', how: 'free', light: true },
+    { id: 'contrast', name: 'High Contrast', how: 'free' },
     { id: 'neon', name: 'Neon', how: 'secret', hint: 'The logo hides something.' },
     { id: 'lcd', name: 'LCD', how: 'secret', hint: 'Keep pressing the version number.' },
     { id: 'blueprint', name: 'Blueprint', how: 'secret', hint: 'Search the collection for the plans.' },
@@ -2063,6 +2127,8 @@
     { id: 'odometer', name: 'Odometer', how: 'book' },
     { id: 'vapor', name: 'Vaporwave', how: 'book' },
     { id: 'spectrum', name: 'Spectrum', how: 'book', light: true },
+    // Achievement rewards: each comes with one achievement, named in Settings.
+    { id: 'chalk', name: 'Chalkboard', how: 'reward', ach: 'modes' },
   ];
   const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
   const BUNDLE_PRICE = 500;
@@ -2080,15 +2146,18 @@
     if (!ownsSkin(id)) return;
     if (FULL_SKINS.includes(id) && !FULL_SKINS.includes(state.settings.theme)) state.settings.prevSkin = state.settings.theme;
     state.settings.theme = id;
+    // A full-screen skin worn from the Settings command line would otherwise sit under the open dialog.
+    if (FULL_SKINS.includes(id)) for (const d of document.querySelectorAll('dialog[open]')) d.close();
     applySettings();
     save();
   }
   function renderSkins() {
-    const groups = [['free', 'Free'], ['secret', 'Secret'], ['bundle', `Bundle, ${BUNDLE_PRICE} coins`], ['book', 'Badge book']];
+    const groups = [['free', 'Free'], ['secret', 'Secret'], ['bundle', `Bundle, ${BUNDLE_PRICE} coins`], ['book', 'Badge book'], ['reward', 'Achievement rewards']];
     $('skinList').innerHTML = groups.map(([how, title]) => `<li class="skin-group"><b>${title}</b></li>` + SKINS.filter(s => s.how === how).map(s => {
       const own = ownsSkin(s.id), on = state.settings.theme === s.id;
       const page = BOOK.find(p => p.skin === s.id);
-      const note = own ? '' : how === 'secret' ? s.hint : how === 'book' ? `Complete the ${page.cat} page` : `${BUNDLE_PRICE} coins`;
+      const note = own ? '' : how === 'secret' ? s.hint : how === 'book' ? `Complete the ${page.cat} page`
+        : how === 'reward' ? `Earn ${ACHIEVEMENTS.find(a => a.id === s.ach).name}: ${ACHIEVEMENTS.find(a => a.id === s.ach).desc.toLowerCase()}` : `${BUNDLE_PRICE} coins`;
       return `<li><button class="skin${on ? ' on' : ''}" type="button" data-skin="${s.id}" aria-pressed="${on}" ${own ? '' : 'disabled'}>`
         + `<span class="swatch" data-swatch="${s.id}" aria-hidden="true"></span><span><b>${own || how !== 'secret' ? esc(s.name) : '???'}</b>`
         + `${note ? `<br><span class="muted">${esc(note)}</span>` : ''}</span></button></li>`;
@@ -2762,7 +2831,7 @@
       const def = QUEST_BY_ID[q.id];
       if (def.on !== on || q.have >= def.goal || !test(def)) continue;
       q.have = Math.min(def.goal, q.have + amount);
-      if (q.have >= def.goal) toast(`Quest done: <b>${esc(def.text)}</b>. Claim it in Trophies${consoleOn() ? ' or with QUESTS CLAIM' : ''}.`, 'rare');
+      if (q.have >= def.goal) toast(`Quest done: <b>${esc(def.text)}</b>. Claim it in Trophies${consoleOn() ? ' or with QUESTS CLAIM' : ''}.`, 'rare', 'quest');
       if (!$('tab-trophies').hidden && (q.have >= def.goal || !auto)) renderQuests();
     }
   }
@@ -2835,12 +2904,43 @@
     paintStatus();
   }
 
+  // What's new: every release, newest first, with the UTC time it went out (from the repository's
+  // history for the older ones). The newest one names the version shown in the footer.
+  const RELEASES = [
+    { v: 'v3.4', at: '2026-10-20 03:06', title: 'Settings and shortcuts', items: [
+      'What\'s new: this list, with the time of every release.',
+      'Keys: press ? for every keyboard shortcut. New ones: B batches ×1,000, T changes speed, M changes mode, S stars the roll, 1 to 5 switch tabs.',
+      'Text size: Normal, Large or Larger, in Settings.',
+      'Notices: switch off the pop-ups for new badges, items and coins, quests or achievements.',
+      'Batch ×25,000 and ×100,000. A batch played roll by roll for a hunt now stops when the hunt finds its target, and Stop batch ends it early.',
+      'Keep boosts going: when a charm, lens or drop booster runs out, the next one of the same item is used (Inventory).',
+      'Two skins: High Contrast, free, with white text on black and a yellow focus ring; Chalkboard, the reward for Mathematician.',
+      'Fixes: the Trophies tab no longer runs off a phone screen, the Terminal skin no longer pushes the header buttons off it, and a full-screen skin worn from the Settings command line no longer opens under Settings.',
+    ] },
+    { v: 'v3.33', at: '2026-10-19 23:29', title: 'Instant rolls', items: ['Roll shows its result at once, and batches are counted instead of played, so ×5,000 takes milliseconds.'] },
+    { v: 'v3.32', at: '2026-10-19 00:20', title: 'Batch rolls', items: ['Roll ×100, ×1,000 or ×5,000 at once; Endless can roll in batches.'] },
+    { v: 'v3.31', at: '2026-10-19 00:14', title: 'Fast luck everywhere', items: ['Luck charms work in full on every difficulty, about a millisecond per lucky roll.'] },
+    { v: 'v3.3', at: '2026-10-18 22:25', title: 'More tiers and items', items: ['Six tiers past Unfathomable up to Beyond, bigger charms, Platinum and Cosmic Goose, Kaleidoscope Lens, Overclock III.'] },
+    { v: 'v3.26', at: '2026-10-18 22:18', title: 'Luck on every difficulty', items: ['Charms and permanent luck work on every difficulty.'] },
+    { v: 'v3.25', at: '2026-10-18 21:35', title: 'Spin a billion coins', items: ['The coin slot handles any number of coins; Use all.'] },
+    { v: 'v3.2', at: '2026-10-18 16:08', title: 'Difficulties', items: ['Hardcore, Nightmare, Abyss and Oblivion, and lucky tokens for permanent luck.'] },
+    { v: 'v3.1', at: '2026-10-18 02:53', title: 'Long Shot 10', items: ['Renamed, 308 badges, Chat, Handheld and Calculator skins.'] },
+    { v: 'v3.0', at: '2026-10-18 02:24', title: 'Skins', items: ['Sixteen skins, Console mode, quests, prestige and charts.'] },
+  ];
+  $('version').textContent = RELEASES[0].v;
+  function renderNews() {
+    $('newsList').innerHTML = RELEASES.map(r => `<section class="release"><h3>${esc(r.v)} <span class="muted">${esc(r.title)}</span></h3>`
+      + `<p class="muted num"><time datetime="${esc(r.at.replace(' ', 'T'))}Z">${esc(r.at)} UTC</time></p>`
+      + `<ul>${r.items.map(i => `<li>${esc(i)}</li>`).join('')}</ul></section>`).join('');
+  }
+
   // Start
   if (state.lastGift !== dayKey()) { // one free charm a day, per save file
     state.lastGift = dayKey();
     setTimeout(() => { grant('luck10', 'Daily gift'); save(); }, 600);
   }
   for (const k of Object.keys(state.daily).sort().slice(0, -60)) delete state.daily[k]; // keep two months of daily counts
+  for (const s of SKINS) if (s.ach && state.ach[s.ach] && !state.skins.includes(s.id)) state.skins.push(s.id); // earned before the skin existed
   applySettings();
   paintPrestigeMark();
   $('chartMode').value = state.mode;

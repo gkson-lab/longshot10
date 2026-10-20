@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="styles.css">
 <script>
   // Apply the saved theme before first paint so the page never flashes the wrong colours.
-  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { document.documentElement.dataset.theme = s.settings.theme; document.documentElement.dataset.tone = ['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'; document.documentElement.dataset.effects = s.settings.effects; } } catch (e) {}
+  try { const ix = JSON.parse(localStorage.getItem('rngdle10:slots')); const id = ix && ix.active; const s = JSON.parse(localStorage.getItem(!id || id === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + id)); if (s && s.settings) { const d = document.documentElement.dataset; d.theme = s.settings.theme; d.tone = s.settings.tone || (['daylight', 'graph', 'spectrum'].indexOf(s.settings.theme) >= 0 ? 'light' : 'dark'); d.effects = s.settings.effects; d.text = s.settings.text || 'normal'; } } catch (e) {}
 </script>
 </head>
 <body>
@@ -160,6 +160,8 @@
               <button class="btn" type="button" data-batch="100">×100</button>
               <button class="btn" type="button" data-batch="1000">×1,000</button>
               <button class="btn" type="button" data-batch="5000">×5,000</button>
+              <button class="btn" type="button" data-batch="25000">×25,000</button>
+              <button class="btn" type="button" data-batch="100000">×100,000</button>
             </div>
             <p class="batch-result muted" id="batchResult" role="status" hidden></p>
             <div class="opts" id="opts" hidden>
@@ -187,7 +189,7 @@
             </div>
             <p class="status" id="status"></p>
             <p class="notice" id="storageNotice" hidden>This browser is blocking storage, so rolls will be lost when you close the tab.</p>
-            <p class="keys">Space rolls, A toggles Auto, E toggles Endless</p>
+            <p class="keys">Space rolls, A toggles Auto, E toggles Endless, <button class="link-btn" type="button" data-open="keysDialog">? lists every key</button></p>
           </div>
 
           <div id="result" hidden>
@@ -258,6 +260,7 @@
           </div>
           <div class="section-head"><h2>Active now</h2></div>
           <ul class="effects" id="effects"></ul>
+          <label class="check-row"><input type="checkbox" id="renewBox"> Keep boosts going: when a charm, lens or drop booster runs out, use another of the same item</label>
           <div class="section-head"><h2>Where items come from</h2></div>
           <p class="muted">Each plain roll can drop items, depending on its tier, and drop boosters multiply those chances. Rolls made with a luck charm or the Lens never drop items. Every achievement also gives one, each save file gets a Charm of Ten once a day, and several of one item fuse into the next one up.</p>
           <table class="luck"><tbody id="dropTable"></tbody></table>
@@ -341,7 +344,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v3.33</span> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v3.4</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -354,6 +357,23 @@
       <button class="btn" id="bdHunt" type="button">Hunt this badge</button>
       <button class="btn" type="button" data-close>Close</button>
     </div>
+  </div>
+</dialog>
+
+<dialog id="newsDialog" aria-labelledby="newsTitle">
+  <div class="dlg">
+    <h2 id="newsTitle">What's new</h2>
+    <p class="muted">Every release, newest first, stamped with the time it went out (UTC).</p>
+    <div id="newsList"></div>
+    <div class="dlg-actions"><button class="btn" type="button" data-close>Close</button></div>
+  </div>
+</dialog>
+
+<dialog id="keysDialog" aria-labelledby="keysTitle">
+  <div class="dlg">
+    <h2 id="keysTitle">Keys</h2>
+    <dl class="facts-grid keys-grid" id="keysList"></dl>
+    <div class="dlg-actions"><button class="btn" type="button" data-close>Close</button></div>
   </div>
 </dialog>
 
@@ -370,6 +390,20 @@
       <label><input type="radio" name="effects" value="off"> Off</label>
     </div>
     <p class="muted">Reduced keeps the reels but drops confetti, shakes and flashes. Off also stops the reels spinning.</p>
+    <h3>Text size</h3>
+    <div class="choices" id="textChoices">
+      <label><input type="radio" name="text" value="normal"> Normal</label>
+      <label><input type="radio" name="text" value="large"> Large</label>
+      <label><input type="radio" name="text" value="larger"> Larger</label>
+    </div>
+    <h3>Notices</h3>
+    <p class="muted">Pop-up notices to show. Hunts, skins and prestige always show.</p>
+    <div class="choices" id="noticeChoices">
+      <label><input type="checkbox" name="notice" value="badge"> New badges</label>
+      <label><input type="checkbox" name="notice" value="item"> Items and coins</label>
+      <label><input type="checkbox" name="notice" value="quest"> Quests</label>
+      <label><input type="checkbox" name="notice" value="ach"> Achievements</label>
+    </div>
     <h3>Install</h3>
     <p class="muted" id="installText"></p>
     <button class="btn" id="installBtn" type="button" hidden>Install Long Shot 10</button>

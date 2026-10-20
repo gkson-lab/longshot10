@@ -9,6 +9,7 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Midnight | Free | The default: charcoal and brass. |
 | Felt | Free | Card-table green. |
 | Daylight | Free | Light, for bright rooms. |
+| High Contrast | Free | White on black, visible borders, a thick yellow focus ring. |
 | Neon | Press the **10** in the logo ten times in a row | Electric cyan and pink. |
 | LCD | Press the version number in the footer seven times | Green segment-display glow. |
 | Blueprint | Search the Collection for **blueprint** | White lines on a blueprint grid. |
@@ -23,6 +24,7 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Odometer | Complete the Digits page | Warm dial-gauge tones. |
 | Vaporwave | Complete the Memes page | Pink and purple. |
 | Spectrum | Complete the Combos page | Clean and bright. |
+| Chalkboard | Earn Mathematician (roll once in every mode) | Chalk on a slate-green board. |
 
 To leave a full-screen skin, use its Leave chat, Power off or OFF button, or type GUI in Console. You go back to the skin you wore before.
 

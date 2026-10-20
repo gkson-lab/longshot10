@@ -609,11 +609,11 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 1.02% | 1 in 10 | 1 in 102 | 1 in 1,130 | 1 in 12,121 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.51% | 1 in 16 | 1 in 343 | 1 in 3,636 | 1 in 133,333 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.43% | 1 in 688 | 1 in 30,769 | 0 in 400,000 | 0 in 400,000 |
-| Abyss | Badges only, and your score is square-rooted. | ×5 | 20% | 1 in 40,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
-| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.4% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1.03% | 1 in 10.0 | 1 in 101 | 1 in 1,036 | 1 in 7,843 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.48% | 1 in 16 | 1 in 338 | 1 in 2,985 | 1 in 200,000 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.46% | 1 in 756 | 1 in 50,000 | 0 in 400,000 | 0 in 400,000 |
+| Abyss | Badges only, and your score is square-rooted. | ×5 | 20% | 1 in 36,364 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
+| Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.3% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
 ## Lucky tokens and luck levels
 
