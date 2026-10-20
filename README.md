@@ -91,11 +91,12 @@ npm run smoke   # play the game in Chromium (Playwright) at phone and desktop wi
 - [How to play](docs/HOW-TO-PLAY.md): how a roll is scored, the modes, items, coins, quests, prestige and saves
 - [Every chance in the game](docs/ODDS.md): exact odds of every tier, badge, multiplier, drop, slot prize and reward, generated from the game by `npm run docs`
 - [Skins and commands](docs/SKINS-AND-COMMANDS.md): where every skin is hidden, every command, and the controls of the Chat, Handheld and Calculator skins
+- [Release notes](docs/RELEASE-NOTES.md): the full notes of every release, with the time each went out
 - [Design](DESIGN.md): design decisions and their reasons
 
 ## Changelog
 
-Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
+Each release is stamped with the time it went out, in UTC. The full notes for each are in [Release notes](docs/RELEASE-NOTES.md), and the game lists them under What's new, in the footer.
 
 - v5.0 (2026-10-20 04:43 UTC): Major update: seasons, a 30-level track each month with XP from every roll and the Diamond skin at level 30; skins that follow the system's light or dark mode or change every day; Void (reward for a Rare roll on Oblivion) and Diamond skins; eight achievements, 153 in all. Since v3.33: 55 new features and 27 new skins over twelve releases.
 - v4.8 (2026-10-20 04:25 UTC): Challenges: eight goals in a fixed number of real rolls, each with its exact chance for your mode, difficulty and luck, and a CHALLENGE command; Smartwatch, a full-screen secret skin with a round face, a crown and a side button; a compact layout; Sunset (reward for a first challenge) and Lagoon (reward for four challenges) skins; three achievements.
