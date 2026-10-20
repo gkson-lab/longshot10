@@ -811,7 +811,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', p2: 'luck100k', perk1: 'goose', perkAll: 'luck10m', hardHof: 'goose2', challenge1: 'luck100', challenge4: 'goose', challengeAll: 'luck1m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', bingo1: 'prism', bingoFull: 'luck10m', mastery100: 'luck1k', mastery400: 'goose2', sheetRoll: 'overclock2', arcade1: 'luck10', hl5: 'luck100', hl10: 'luck10k', digit5: 'goose', wheel7: 'horn', wheelTop: 'luck10k', scratchWin: 'tokencharm', sevens: 'luck1m', titled: 'luck100', profileCard: 'prism', receipt100: 'overclock2', away1: 'hourglass', away25k: 'goose', hourglass1: 'tokencharm', p2: 'luck100k', perk1: 'goose', perkAll: 'luck10m', hardHof: 'goose2', challenge1: 'luck100', challenge4: 'goose', challengeAll: 'luck1m', season10: 'goose', season30: 'luck10m', skin25: 'goose2', skin40: 'luck10m', fullAll: 'luck1m', r50m: 'luck100m', r100m: 'luck1b', c330: 'luck100m', bounty1: 'tokencharm', bounty10: 'goose', hunt3: 'lens', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -1359,6 +1359,7 @@
     if (alsoHunt.some(h => h.done)) { alsoHunt = alsoHunt.filter(h => !h.done); paintAlsoHunt(); }
     markBingo(rec.r.badges);
     checkBounties(rec);
+    addSeasonXp(seasonXpOf(rec.entry.tier));
     if (state.challenge) {
       const c = CH_BY_ID[state.challenge.id];
       challengeProgress(1, c.kind === 'badge' ? (rec.r.badges.some(b => b.id === c.badge) ? 1 : 0) : (T(rec.entry.tier) >= T(c.tier) ? 1 : 0));
@@ -1572,6 +1573,7 @@
         add(id, c);
         if (!(L > 1 || lens > 1 || hard())) state.tiers[mode][id] = (state.tiers[mode][id] || 0) + c;
         questEvent('tier', c, q => T(id) >= T(q.tier));
+        addSeasonXp(c * seasonXpOf(id));
         if (state.challenge && CH_BY_ID[state.challenge.id].kind === 'tier' && T(id) >= T(CH_BY_ID[state.challenge.id].tier)) challengeProgress(0, c);
         if (plain && k && BAND_FROM[k - 1] >= COIN_FROM) for (let i = 0; i < c; i++) dropsInto(bag, BAND_FROM[k - 1], D, C);
       });
@@ -2114,6 +2116,15 @@
     { id: 'challenge1', name: 'Challenger', desc: 'Win a challenge', test: () => (state.challengeWins || 0) >= 1 },
     { id: 'challenge4', name: 'Up for anything', desc: 'Win four different challenges', test: () => Object.keys(state.challengeKinds || {}).length >= 4 },
     { id: 'challengeAll', name: 'Undefeated', desc: 'Win every challenge at least once', test: () => CHALLENGES.every(c => (state.challengeKinds || {})[c.id]) },
+    // v5.0
+    { id: 'season10', name: 'In season', desc: 'Reach level 10 of a season', test: () => (state.seasonBest || 0) >= 10 },
+    { id: 'season30', name: 'Season complete', desc: 'Reach level 30 of a season', test: () => (state.seasonBest || 0) >= 30 },
+    { id: 'skin25', name: 'Closet', desc: 'Own 25 skins', test: () => SKINS.filter(x => ownsSkin(x.id)).length >= 25 },
+    { id: 'skin40', name: 'Walk-in wardrobe', desc: 'Own 40 skins', test: () => SKINS.filter(x => ownsSkin(x.id)).length >= 40 },
+    { id: 'fullAll', name: 'Every way to play', desc: 'Own every skin that replaces the page', test: () => FULL_SKINS.every(id => ownsSkin(id)) },
+    { id: 'r50m', name: 'Fifty million', desc: 'Roll 50,000,000 times', test: () => state.total >= 5e7 },
+    { id: 'r100m', name: 'Nine digits', desc: 'Roll 100,000,000 times', test: () => state.total >= 1e8 },
+    { id: 'c330', name: 'Nearly everything', desc: 'Collect 330 different badges', test: () => collected() >= 330 },
     { id: 'hunt3', name: 'Three at once', desc: 'Hunt three things at the same time', test: () => !!hunt && alsoHunt.length >= MAX_ALSO },
     { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
@@ -2621,7 +2632,7 @@
     });
     for (const t of TABS) $('tab-' + t).hidden = t !== name;
     if (name === 'collection') { renderBingo(); renderBounties(); renderBook(); renderCollection(); }
-    if (name === 'trophies') { renderProfile(); renderQuests(); renderPrestige(); renderPerks(); renderTrophies(); }
+    if (name === 'trophies') { renderSeason(); renderProfile(); renderQuests(); renderPrestige(); renderPerks(); renderTrophies(); }
     if (name === 'log') renderLog();
     if (name === 'arcade') { renderArcade(); renderChallenges(); }
     if (name === 'inventory') { renderInventory(); renderSlot(); }
@@ -2653,7 +2664,7 @@
     for (const r of document.querySelectorAll('#settingsDialog input[name="text"]')) r.checked = r.value === (s.text || 'normal');
     for (const r of document.querySelectorAll('#settingsDialog input[name="notice"]')) r.checked = !s.notices || s.notices[r.value] !== false;
   }
-  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); paintSoundSettings(); renderSlots(); renderBackups(); renderSkins(); $('settingsDialog').showModal(); });
+  $('settingsBtn').addEventListener('click', () => { $('dataMsg').textContent = ''; paintInstall(); paintSoundSettings(); renderSlots(); renderBackups(); renderSkins(); paintSkinMode(); $('settingsDialog').showModal(); });
   $('settingsDialog').addEventListener('change', ev => {
     const { name, value } = ev.target;
     if (name === 'effects') state.settings.effects = value;
@@ -2858,6 +2869,8 @@
     { id: 'abacus', name: 'Abacus', how: 'reward', ach: 'away1' },
     { id: 'royal', name: 'Royal', how: 'reward', ach: 'p3' },
     { id: 'bronze', name: 'Bronze', how: 'reward', ach: 'p1' },
+    { id: 'void', name: 'Void', how: 'reward', ach: 'oblivionRare' },
+    { id: 'diamond', name: 'Diamond', how: 'reward', ach: 'season30' },
     { id: 'sunset', name: 'Sunset', how: 'reward', ach: 'challenge1' },
     { id: 'lagoon', name: 'Lagoon', how: 'reward', ach: 'challenge4', light: true },
     { id: 'silver', name: 'Silver', how: 'reward', ach: 'p2' },
@@ -2921,6 +2934,7 @@
     const buy = ev.target.closest('[data-buyskin]');
     if (buy) { if (buySkin(buy.dataset.buyskin)) wearSkin(buy.dataset.buyskin); renderSkins(); return; }
     const b = ev.target.closest('[data-skin]');
+    if (b && state.settings.skinMode && state.settings.skinMode !== 'fixed' && !FULL_SKINS.includes(b.dataset.skin)) { state.settings.skinMode = 'fixed'; paintSkinMode(); }
     if (b) { wearSkin(b.dataset.skin); renderSkins(); }
   });
   function buyBundle() {
@@ -2991,6 +3005,7 @@
     'BINGO                  This week\'s bingo card.',
     'PROFILE [TITLE name]   Your profile, or wear a title from an achievement.',
     'PERKS [TAKE id]        Prestige perks, or take one with a point.',
+    'SEASON                 This month\'s season track.',
     'CHALLENGE [id|GIVEUP]  Challenges, start one, or give up the one running.',
     'HL RARER|COMMONER [bet]  Higher or lower in the arcade.',
     'DIGIT d [bet]          Digit pick: bet on how many of ten cells show d.',
@@ -3272,6 +3287,11 @@
         print(...[0, 1, 2].map(i => scratchCard.cells.slice(i * 3, i * 3 + 3).map(c => pad(c, 8)).join('')), r, '');
         scratchCard.shown = scratchCard.cells.map(() => true);
         scratchCard.told = true;
+        break;
+      }
+      case 'season': {
+        const se = season(), L = se.level;
+        print(`Season ${se.key}: level ${L} of ${SEASON_LEVELS}, ${fmt(se.xp)} XP.`, L < SEASON_LEVELS ? `Level ${L + 1} at ${fmt(seasonXpFor(L + 1))} XP pays ${prizeName(...SEASON_REWARDS[L])}.` : 'Season complete.', '');
         break;
       }
       case 'challenge': case 'challenges': {
@@ -4072,6 +4092,84 @@
   $('watch').addEventListener('click', ev => { const b = ev.target.closest('[data-w]'); if (b) wPress(b.dataset.w); });
   const W_KEYS = { Enter: 'roll', ArrowDown: 'next', ArrowRight: 'next', ArrowUp: 'prev', ArrowLeft: 'prev', e: 'endless' };
 
+  // Seasons: a 30-level track for each calendar month. Every roll earns season XP by its tier
+  // (Trash and Common 1, Uncommon 2, Rare 3, and one more per tier), counted batch rolls included.
+  // Level L needs 500 × L × (L + 1) / 2 XP in all; each level pays once, and level 30 the Diamond skin.
+  const SEASON_LEVELS = 30;
+  const seasonXpFor = L => 250 * L * (L + 1);
+  const SEASON_REWARDS = Array.from({ length: SEASON_LEVELS }, (_, i) => {
+    const L = i + 1;
+    if (L === 30) return ['luck1m', 1];
+    if (L % 10 === 0) return ['goose2', 1];
+    if (L % 5 === 0) return ['luck10k', 1];
+    return [['luck100', 2], ['lens', 3], ['coinmag', 1], ['horn', 1], ['tokencharm', 1], ['luck1k', 1], ['prism', 1], ['overclock2', 1], ['goose', 1]][i % 9];
+  });
+  const seasonKey = () => dayKey().slice(0, 7);
+  function season() {
+    if (!state.season || state.season.key !== seasonKey()) state.season = { key: seasonKey(), xp: 0, level: 0 };
+    return state.season;
+  }
+  const seasonLevel = xp => { let L = 0; while (L < SEASON_LEVELS && xp >= seasonXpFor(L + 1)) L++; return L; };
+  function addSeasonXp(xp) {
+    const se = season();
+    se.xp += xp;
+    const L = seasonLevel(se.xp);
+    while (se.level < L) {
+      se.level++;
+      const [id, k] = SEASON_REWARDS[se.level - 1];
+      grant(id, `Season level ${se.level}`, k);
+      if (se.level === SEASON_LEVELS) { state.seasonsDone = (state.seasonsDone || 0) + 1; unlockSkin('diamond', 'Season complete'); }
+      state.seasonBest = Math.max(state.seasonBest || 0, se.level);
+      if (!$('tab-trophies').hidden) renderSeason();
+    }
+  }
+  const seasonXpOf = tierId => Math.max(1, T(tierId));
+  function renderSeason() {
+    const se = season(), L = se.level, next = L < SEASON_LEVELS ? seasonXpFor(L + 1) : null, from = seasonXpFor(L);
+    const end = new Date(+se.key.slice(0, 4), +se.key.slice(5, 7), 1);
+    $('seasonSub').textContent = `${new Date(end - 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}, ends ${end.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+    const reward = id => prizeName(SEASON_REWARDS[id][0], SEASON_REWARDS[id][1]);
+    $('season').innerHTML = `<div class="coins-in-hand"><span class="num">${L}</span><span>of ${SEASON_LEVELS} levels, ${fmt(se.xp)} XP</span></div>`
+      + `<div class="progress"><i style="width:${next ? (100 * (se.xp - from) / (next - from)).toFixed(1) : 100}%"></i></div>`
+      + `<p class="muted">${next ? `Level ${L + 1} at ${fmt(next)} XP pays ${esc(reward(L))}${L + 1 === SEASON_LEVELS ? ' and the Diamond skin' : ''}.` : 'Season complete. A new one starts on the first of the month.'} Each roll earns XP by its tier: 1 for Common, 2 for Uncommon, 3 for Rare, one more per tier.</p>`
+      + `<ol class="season-track">${SEASON_REWARDS.map((_, i) => `<li class="${i < L ? 'got' : ''}${i + 1 === SEASON_LEVELS ? ' last' : ''}" title="Level ${i + 1}: ${esc(reward(i))}"><span class="num">${i + 1}</span></li>`).join('')}</ol>`;
+  }
+
+  // How your skin is chosen: kept as picked, following the system's light or dark mode (a light and
+  // a dark skin of your choice), or a different owned skin each day, picked from the date.
+  const darkQuery = matchMedia('(prefers-color-scheme: dark)');
+  const wearable = () => SKINS.filter(x => ownsSkin(x.id) && !FULL_SKINS.includes(x.id));
+  function autoSkin() {
+    const mode = state.settings.skinMode || 'fixed';
+    if (mode === 'fixed' || fullSkin()) return;
+    let id = null;
+    if (mode === 'system') id = darkQuery.matches ? state.settings.darkSkin || 'midnight' : state.settings.lightSkin || 'daylight';
+    if (mode === 'daily') { const list = wearable(); id = list[seeded('skin' + dayKey() + slots.active)() % list.length].id; }
+    if (id && ownsSkin(id) && id !== state.settings.theme) { state.settings.theme = id; applySettings(); save(); }
+  }
+  darkQuery.addEventListener('change', autoSkin);
+  function paintSkinMode() {
+    const mode = state.settings.skinMode || 'fixed';
+    for (const r of document.querySelectorAll('#skinMode input')) r.checked = r.value === mode;
+    $('systemPicks').hidden = mode !== 'system';
+    const opts = light => wearable().filter(x => !!x.light === light).map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('');
+    $('lightSkin').innerHTML = opts(true);
+    $('darkSkin').innerHTML = opts(false);
+    $('lightSkin').value = state.settings.lightSkin && ownsSkin(state.settings.lightSkin) ? state.settings.lightSkin : 'daylight';
+    $('darkSkin').value = state.settings.darkSkin && ownsSkin(state.settings.darkSkin) ? state.settings.darkSkin : 'midnight';
+    $('skinModeNote').textContent = mode === 'system' ? `Your system is in ${darkQuery.matches ? 'dark' : 'light'} mode now.`
+      : mode === 'daily' ? `Today's pick comes from your ${wearable().length} skins. Picking one above switches back to keeping it.` : '';
+  }
+  $('skinMode').addEventListener('change', ev => {
+    state.settings.skinMode = ev.target.value;
+    if (ev.target.value === 'system') { state.settings.lightSkin = $('lightSkin').value || 'daylight'; state.settings.darkSkin = $('darkSkin').value || 'midnight'; }
+    autoSkin();
+    paintSkinMode();
+    renderSkins();
+    save();
+  });
+  for (const id of ['lightSkin', 'darkSkin']) $(id).addEventListener('change', () => { state.settings[id] = $(id).value; autoSkin(); renderSkins(); save(); });
+
   // Keys for the handheld and calculator, and the Konami code that unlocks the handheld.
   const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let konami = 0;
@@ -4501,6 +4599,13 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v5.0', at: '2026-10-20 04:43', title: 'Seasons (major update)', items: [
+      'Seasons (Trophies): every month is a 30-level track. Every roll earns XP by its tier, and each level pays an item; level 30 pays a Charm of a Million and the Diamond skin. SEASON in the command line.',
+      'Skins can follow your system\'s light or dark mode, with a light and a dark skin of your choice, or change every day (Settings > Skin).',
+      'Two skins: Void, the reward for a Rare roll on Oblivion, and Diamond, the reward for finishing a season.',
+      'Eight new achievements, for seasons, wardrobes of 25 and 40 skins, every way to play, 50 and 100 million rolls, and 330 badges. 153 in all.',
+      'Since v3.33: 55 new features and 27 new skins over twelve releases.',
+    ] },
     { v: 'v4.8', at: '2026-10-20 04:25', title: 'Challenges', items: [
       'Challenges (Arcade): eight goals in a fixed number of real rolls, from Epic in 100 to a palindrome in 50,000, each with its exact chance for your mode, difficulty and luck. Each can be won once a day. CHALLENGE in the command line.',
       'Smartwatch, a full-screen secret skin: a round face with three screens (your last roll, today, your streak), a crown and a side button. Its hint is in Settings.',
@@ -4617,6 +4722,7 @@
   for (const k of Object.keys(state.daily).sort().slice(0, -60)) delete state.daily[k]; // keep two months of daily counts
   if (!state.backupAt) state.backupAt = Date.now(); // the first automatic backup comes after 30 minutes of play
   for (const s of SKINS) if (((s.ach && state.ach[s.ach]) || (s.badge && state.counts[s.badge])) && !state.skins.includes(s.id)) state.skins.push(s.id); // earned before the skin existed
+  autoSkin();
   applySettings();
   paintPrestigeMark();
   $('chartMode').value = state.mode;

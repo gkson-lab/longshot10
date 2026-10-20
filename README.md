@@ -27,11 +27,11 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 ## Other things it does
 
 - Collection of badges and multipliers with search and filters; select any of them for the exact count or chance and how often you have landed it against the expectation
-- 108 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
+- 153 achievements, a hall of fame of your ten best rolls per mode, and starred rolls that never drop off the log
 - A luck table comparing your tiers with how often each tier really comes up, a rating of how lucky you have been, an odds calculator, records and milestones
 - The prime factorization of every roll, and a lookup for any number
 - Copy a roll as text or save it as an image
-- Forty-four skins (see below), an effects setting, and offline install from the hosted copy
+- Forty-six skins (see below), an effects setting, and offline install from the hosted copy
 - Daily quests: three a day per save file, each paying coins and an item, with a bonus for finishing all three, and a free reroll a day; three weekly quests with bigger rewards
 - A daily streak with rewards and Streak Freezes, a lucky hour each day, and double coins at weekends
 - A token workshop of lasting upgrades, a coin shop, and quick-use buttons for pinned items
@@ -42,6 +42,8 @@ Auto rolls until a tier you choose, or until a badge or multiplier you are hunti
 - Charts in the Log: rolls per day for the last two weeks, and your tier shares against the expected ones
 - Rolling while away: the time the game was closed is rolled when you come back, up to eight hours
 - Sound settings (volume and three sound sets) and vibration on rare rolls
+- A monthly season of 30 levels, with XP from every roll
+- Skins that follow the system's light or dark mode, or change every day
 - A profile with titles from your achievements, saved as an image card
 - Up to ten save files in the browser, each with its own progress and its newest three automatic backups; export one to move or share it, and importing always adds a new save file instead of replacing yours
 - Keys for everything: Space rolls, A toggles Auto, E toggles Endless, ? lists the rest
@@ -95,6 +97,7 @@ npm run smoke   # play the game in Chromium (Playwright) at phone and desktop wi
 
 Each release is stamped with the time it went out, in UTC. The game lists the same in What's new, in the footer.
 
+- v5.0 (2026-10-20 04:43 UTC): Major update: seasons, a 30-level track each month with XP from every roll and the Diamond skin at level 30; skins that follow the system's light or dark mode or change every day; Void (reward for a Rare roll on Oblivion) and Diamond skins; eight achievements, 153 in all. Since v3.33: 55 new features and 27 new skins over twelve releases.
 - v4.8 (2026-10-20 04:25 UTC): Challenges: eight goals in a fixed number of real rolls, each with its exact chance for your mode, difficulty and luck, and a CHALLENGE command; Smartwatch, a full-screen secret skin with a round face, a crown and a side button; a compact layout; Sunset (reward for a first challenge) and Lagoon (reward for four challenges) skins; three achievements.
 - v4.6 (2026-10-20 04:18 UTC): Ticker, a full-screen secret skin that turns the game into a market board with a live chart; prestige perks, one point per prestige for six lasting perks; the hall of fame by difficulty; Bronze, Silver and Platinum prestige skins; four achievements. Fix: the perks panel refreshes the moment you prestige.
 - v4.4 (2026-10-20 04:03 UTC): Rolling while away (the time the game was closed is rolled on your return, one roll a second up to eight hours, using no charm or booster); Night shift in the workshop (up to ten away rolls a second); the Hourglass item (an hour of away rolls at once); volume and three sound sets; vibration on rare rolls; Abacus (reward for Night shift) and Royal (reward for prestige 3) skins; three achievements.

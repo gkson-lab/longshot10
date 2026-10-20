@@ -1,6 +1,6 @@
 # Skins and commands
 
-Spoilers: this page says where every hidden skin is. Skins belong to the save file. Pick one in Settings > Skin.
+Spoilers: this page says where every hidden skin is. Skins belong to the save file. Pick one in Settings > Skin, or have it follow your system's light or dark mode, or change every day.
 
 ## Every skin
 
@@ -44,6 +44,8 @@ Spoilers: this page says where every hidden skin is. Skins belong to the save fi
 | Platinum | Earn Ascended (reach prestige 5) | Light polished metal. |
 | Sunset | Earn Challenger (win a challenge) | Dusk over brick, with a coral button. |
 | Lagoon | Earn Up for anything (win four different challenges) | Shallow tropical water on white sand. |
+| Void | Earn Impossible (a Rare roll on Oblivion) | Black and white, nothing else. |
+| Diamond | Reach level 30 of a season | Ice blue on near-black. |
 | Casino | Earn Called it (five right calls in a row at higher or lower) | Roulette-red felt and gold. |
 | Marquee | Earn Wheel regular (spin the daily wheel on 7 days) | A dark theatre front with bulb-white digits. |
 | Olive | Buy it for 2,000 coins in Settings, or `BUY OLIVE` | Olive drab and khaki with a chartreuse button. |
@@ -79,6 +81,7 @@ Both understand the same commands. Upper or lower case both work; the up and dow
 | `RECORDS` | Records, and how lucky you have been |
 | `CHALLENGE`, `CHALLENGE id`, `CHALLENGE GIVEUP` | Challenges: list, start one, or give up |
 | `TIME` | The time |
+| `SEASON` | This month's season track |
 | `PERKS`, `PERKS TAKE id` | Prestige perks, or take one |
 | `PROFILE`, `PROFILE TITLE name` | Your profile, or wear a title from an achievement |
 | `RECEIPT` | Ask for a receipt |

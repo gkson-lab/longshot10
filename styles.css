@@ -1047,3 +1047,28 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 }
 [data-swatch="sunset"] { background: linear-gradient(135deg, #170d0b 55%, #ff8a5b 55%); }
 [data-swatch="lagoon"] { background: linear-gradient(135deg, #eef8f6 55%, #00777f 55%); }
+
+/* v5.0 */
+.season .coins-in-hand .num { color: var(--accent); }
+.season .progress { margin: 8px 0; height: 8px; }
+/* The season track: thirty small reel cells, filled as levels are reached; the last is the accent. */
+.season-track { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 3px; }
+.season-track li { display: grid; place-items: center; height: 26px; border-radius: 4px; background: var(--surface-2); box-shadow: inset 0 0 0 1px var(--line); color: var(--faint); font-size: 11px; }
+.season-track li.got { background: var(--cell); color: var(--cell-ink); box-shadow: none; }
+.season-track li.last { box-shadow: inset 0 0 0 2px var(--accent); }
+.season-track li.last.got { background: var(--accent); color: var(--accent-ink); }
+#skinMode { margin: 10px 0 6px; }
+/* Void: nothing but black and white, the reward for a Rare roll on Oblivion. */
+:root[data-theme="void"] {
+  --bg: #030304; --surface: #08080a; --surface-2: #0e0e11; --line: #24242a;
+  --ink: #f4f4f6; --muted: #c4c4cc; --faint: #a8a8b2; --cell: #000000; --cell-ink: #ffffff; --cell-lead: #5d5d66;
+  --accent: #ececf0; --accent-ink: #050506; --focus: #ffffff;
+}
+/* Diamond: ice-blue light on near-black, the reward for completing a season. */
+:root[data-theme="diamond"] {
+  --bg: #061015; --surface: #0b171d; --surface-2: #101e25; --line: #24414d;
+  --ink: #ecfaff; --muted: #b5d5e0; --faint: #98bccb; --cell: #03090c; --cell-ink: #c9f2ff; --cell-lead: #4f7684;
+  --accent: #8fdcff; --accent-ink: #04141c; --focus: #c9f2ff;
+}
+[data-swatch="void"] { background: linear-gradient(135deg, #030304 55%, #ececf0 55%); }
+[data-swatch="diamond"] { background: linear-gradient(135deg, #061015 55%, #8fdcff 55%); }

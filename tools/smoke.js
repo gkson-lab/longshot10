@@ -483,12 +483,33 @@ const STEPS = [
     await page.keyboard.press('Escape');
     await click('[data-tab="roll"]');
   }],
+  // v5.0
+  ['season track, and skins that follow the system or change daily', async ({ page, click, overflow, shot }) => {
+    await click('[data-tab="trophies"]');
+    if (!/of 30 levels/.test(await page.textContent('#season'))) throw new Error('no season track');
+    if ((await page.$$('.season-track li')).length !== 30) throw new Error('the track is not thirty levels');
+    if (!(await page.locator('.season-track li.got').count())) throw new Error('no season level reached after 100,000 rolls');
+    await overflow('trophies with season');
+    await shot('season');
+    await click('#settingsBtn');
+    await click('#skinMode input[value="system"]');
+    if (await page.isHidden('#systemPicks')) throw new Error('the light and dark picks did not show');
+    await page.emulateMedia({ colorScheme: 'light' });
+    await page.waitForFunction(() => document.documentElement.dataset.theme === 'daylight', null, { timeout: 5000 });
+    await page.emulateMedia({ colorScheme: 'dark' });
+    await page.waitForFunction(() => document.documentElement.dataset.theme === 'midnight', null, { timeout: 5000 });
+    await click('#skinMode input[value="daily"]');
+    await click('#skinList [data-skin="midnight"]');
+    if (!(await page.isChecked('#skinMode input[value="fixed"]'))) throw new Error('picking a skin did not switch back to keeping it');
+    await page.keyboard.press('Escape');
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     if (await page.isHidden('#terminal')) await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'PERKS', 'CHALLENGE', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'BINGO', 'BOUNTIES', 'HL', 'HL RARER 1', 'DIGIT 7', 'DIGIT 7 1', 'SCRATCH', 'PROFILE', 'PERKS', 'CHALLENGE', 'SEASON', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

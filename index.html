@@ -396,6 +396,8 @@
     <section id="tab-trophies" role="tabpanel" aria-labelledby="tab-btn-trophies" hidden>
       <div class="two-col">
         <div>
+          <div class="section-head"><h2>Season</h2><span id="seasonSub"></span></div>
+          <div class="coins-panel season" id="season"></div>
           <div class="section-head"><h2>Profile</h2></div>
           <div class="coins-panel profile" id="profile"></div>
           <div class="section-head"><h2>Daily streak</h2><span id="streakSub"></span></div>
@@ -530,7 +532,7 @@
     </section>
   </main>
 
-  <p class="foot">Long Shot 10 · <span id="version">v4.8</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
+  <p class="foot">Long Shot 10 · <span id="version">v5.0</span> · <button class="link-btn" type="button" data-open="newsDialog">what's new</button> · runs and saves in this browser only · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/HOW-TO-PLAY.md">how it works</a> · <a href="https://github.com/gkson-lab/rngexp10/blob/main/docs/ODDS.md">every chance</a> · <a href="https://github.com/gkson-lab/rngexp10">source</a></p>
 </div>
 
 <dialog id="badgeDialog" aria-labelledby="bdTitle">
@@ -569,6 +571,16 @@
     <h2 id="setTitle">Settings</h2>
     <h3>Skin</h3>
     <ul class="skins" id="skinList"></ul>
+    <div class="choices" id="skinMode" role="radiogroup" aria-label="How your skin is chosen">
+      <label><input type="radio" name="skinMode" value="fixed"> Keep the one I pick</label>
+      <label><input type="radio" name="skinMode" value="system"> Follow the system's light or dark mode</label>
+      <label><input type="radio" name="skinMode" value="daily"> A different one each day</label>
+    </div>
+    <div class="sound-row" id="systemPicks" hidden>
+      <label class="field">Light <select id="lightSkin"></select></label>
+      <label class="field">Dark <select id="darkSkin"></select></label>
+    </div>
+    <p class="muted" id="skinModeNote"></p>
     <button class="btn" id="buyBundle" type="button"></button>
     <h3>Effects</h3>
     <div class="choices" id="effectChoices">

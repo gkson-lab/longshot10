@@ -87,7 +87,7 @@ A plain roll of 1/100 or rarer has a 1 in 3 chance to drop a coin. Each coin buy
 - **Bingo:** a new 5 × 5 card of badges every Monday. A badge marks its cell when a roll earns it; each line pays coins and a charm, and a full card a Diamond Goose.
 - **Bounty board:** three badges or multipliers that change every six hours. Land one before it changes for coins and lucky tokens, more for rarer ones.
 - **Badge book:** each category is a page. Collect every badge on a page that comes up at least 1 in 1,000,000 and claim a reward. Five pages give a legendary skin.
-- **Achievements:** 108 of them, each with an item reward.
+- **Achievements:** 153 of them, each with an item reward. Some also come with a skin.
 - **Hall of fame:** your ten best rolls per mode, kept forever and filterable by difficulty, plus any rolls you star.
 - **Profile:** your save at a glance, with a title from any achievement you have earned, and a card to save as an image.
 
@@ -99,6 +99,10 @@ The Log tab keeps the numbers of your play:
 - **Odds calculator:** the chance of at least one roll of a tier or rarer in any number of rolls, in your current mode and difficulty and with your current luck. One roll with luck L reaches a tier its plain odds q would reach with chance 1 - (1 - q)^L.
 - **Records** that only go up, and **milestones**: the first time you reached each tier.
 - **Recent rolls**, filtered by mode and tier, and exported as a CSV file.
+
+## Seasons
+
+Every calendar month is a season of 30 levels. Every roll earns season XP by its tier: 1 for Trash or Common, 2 for Uncommon, 3 for Rare and one more for each tier above, counted batch rolls and away rolls included. Each level pays an item once, and level 30 pays a Charm of a Million and the Diamond skin. A new season starts on the first of the month.
 
 ## Daily things
 
@@ -124,7 +128,7 @@ After 100,000 rolls (then 200,000 more for the second, and so on) you can presti
 
 ## Skins
 
-Skins change how the whole game looks, and some change how you play it. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Eight of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet, a till roll, a market board and a smartwatch. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
+Skins change how the whole game looks, and some change how you play it. In Settings you can keep the one you pick, follow your system's light or dark mode with a light and a dark skin of your choice, or wear a different one each day. Three are free, some are hidden in the game, three come in a 500-coin bundle and five come from the badge book. Eight of the hidden skins replace the page with a completely different way to play: a command line, a chat with a bot, a pocket game console, a calculator, a spreadsheet, a till roll, a market board and a smartwatch. See [SKINS-AND-COMMANDS.md](SKINS-AND-COMMANDS.md).
 
 ## Your saves
 
