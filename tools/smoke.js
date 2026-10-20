@@ -215,12 +215,49 @@ const STEPS = [
     await click('[data-tab="roll"]');
     if (!(await page.isHidden('#quickbar'))) throw new Error('quick use bar still shows with nothing pinned');
   }],
+  // v3.7
+  ['quests reroll, weekly quests show, and the streak panel fills', async ({ page, click, overflow, shot }) => {
+    await click('[data-tab="trophies"]');
+    if ((await page.$$('#weekly li')).length !== 4) throw new Error('weekly quests are not three plus a note');
+    if (!/in a row/.test(await page.textContent('#streakPanel'))) throw new Error('no streak shown');
+    const reroll = page.locator('#quests [data-reroll]:not([disabled])').first();
+    if (await reroll.count()) {
+      const before = await page.textContent('#quests');
+      await reroll.click();
+      if (before === (await page.textContent('#quests'))) throw new Error('reroll changed nothing');
+      if (!/no rerolls left|Quest Ticket/.test(await page.textContent('#rerollNote'))) throw new Error('the free reroll was not used up');
+    }
+    await overflow('trophies');
+    await shot('trophies-v37');
+    await click('[data-tab="roll"]');
+  }],
+  ['a Streak Freeze covers a missed day', async ({ page, click }) => {
+    await page.reload(); // writes the save on the way out
+    await page.waitForFunction(() => document.getElementById('rollBtn').textContent === 'Roll', null, { timeout: 60000 });
+    await page.waitForTimeout(1500); // let the page's own pending save land first, or it would overwrite this edit
+    await page.evaluate(() => {
+      const ago = d => { const t = new Date(Date.now() - d * 864e5); return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`; };
+      const ix = JSON.parse(localStorage.getItem('rngdle10:slots')), key = !ix || ix.active === 'main' ? 'rngdle10:v3' : 'rngdle10:slot:' + ix.active;
+      const s = JSON.parse(localStorage.getItem(key));
+      s.streak = { days: 5, last: ago(2), best: 5 };
+      s.inv.freeze = 1;
+      localStorage.setItem(key, JSON.stringify(s));
+    });
+    await page.reload();
+    await page.waitForFunction(() => document.getElementById('rollBtn').textContent === 'Roll', null, { timeout: 60000 });
+    await click('#rollBtn');
+    await click('[data-tab="trophies"]');
+    const text = await page.textContent('#streakPanel');
+    if (!/^6\s*days/.test(text.trim())) throw new Error(`streak reads "${text.trim().slice(0, 40)}", expected 6 days`);
+    if (!/You have 0\./.test(text)) throw new Error('the Streak Freeze was not used');
+    await click('[data-tab="roll"]');
+  }],
   ['command line unlocks Terminal, Console and Chat, and each plays', async ({ page, click }) => {
     const visible = async sel => { if (!(await page.isVisible(sel))) throw new Error(`${sel} is not showing`); };
     const type = async (sel, text) => { await page.fill(sel, text); await page.press(sel, 'Enter'); };
     await click('#settingsBtn');
     await click('#termToggle');
-    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'SKIN console']) await type('#termInput', cmd);
+    for (const cmd of ['HELP', 'M@D3W1THL0V3', 'hello', 'ROLL 5', 'STATS', 'RECORDS', 'CHANCE epic 500', 'WORKSHOP', 'SHOP', 'SHOP BUY lens 2', 'QUESTS', 'QUESTS REROLL 2', 'SKIN console']) await type('#termInput', cmd);
     await visible('#console');
     for (const cmd of ['ROLL 20', 'INV', 'QUESTS', 'SKIN chat']) await type('#conInput', cmd);
     await visible('#chat');

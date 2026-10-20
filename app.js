@@ -166,6 +166,7 @@
     const rc = state.rec;
     rc.session = Math.max(rc.session || 0, session.rolls);
     rc.day = Math.max(rc.day || 0, state.daily[dayKey()] || 0);
+    noteStreak();
   }
 
   function record(x) {
@@ -677,6 +678,9 @@
     { id: 'overclock3', name: 'Overclock III', kind: 'overclock', speedup: 8, minutes: 3, rarity: 7, desc: 'Turbo rolls eight times as fast for 3 minutes.' },
     { id: 'coinmag', name: 'Coin Magnet', kind: 'coin', coin: 5, rolls: 500, rarity: 4, desc: 'Coins drop 5 times as often for 500 plain rolls.' },
     { id: 'tokencharm', name: 'Token Charm', kind: 'token', token: 3, rolls: 500, rarity: 4, desc: 'Three times the lucky tokens for 500 rolls.' },
+    // Passive items are never used by hand: they do their job on their own.
+    { id: 'freeze', name: 'Streak Freeze', kind: 'passive', rarity: 3, desc: 'Covers one missed day of your daily streak, on its own.' },
+    { id: 'ticket', name: 'Quest Ticket', kind: 'passive', rarity: 2, desc: 'Rerolls a daily quest once the free reroll of the day is used.' },
     { ...luckItem('luck2', 'Charm of Two', 2, 50, 0, ['luck5', 5]), retired: true },
     { ...luckItem('luck5', 'Charm of Five', 5, 50, 0, ['luck10', 4]), retired: true },
     { ...dropItem('magnet', 'Magnet', 2, 500, 0, ['map', 5]), retired: true },
@@ -755,7 +759,7 @@
     if (prize[0] in SLOT_PITY) pity[prize[0]] = 0;
     return prize;
   }
-  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
+  const ACH_REWARD = { uncommon: 'luck10', rare: 'luck10', epic: 'lens', legendary: 'luck100', anomaly: 'horn', mythic: 'luck1k', divine: 'luck10k', cosmic: 'luck100k', transcendent: 'luck1m', ethereal: 'luck1m', celestial: 'luck10m', eternal: 'luck10m', infinite: 'luck10m', omega: 'luck10m', absolute: 'luck10m', primordial: 'luck10m', unfathomable: 'luck10m', c25: 'horn', c60: 'goose', c100: 'goose2', call: 'luck10m', slot100: 'prism', paradox: 'luck100m', singularity: 'luck100m', multiversal: 'luck1b', omniversal: 'luck1b', ineffable: 'luck10b', beyond: 'luck10b', oblivionRare: 'luck10m', abyssUncommon: 'luck1m', nmUncommon: 'goose2', hcEpic: 'goose', luck100lv: 'luck10m', r1m: 'luck1m', r10m: 'luck10m', c200: 'goose', c250: 'goose2', c300: 'luck10m', m100: 'luck1m', slot10k: 'luck100k', fuse100: 'goose', p5: 'luck1m', workshop1: 'tokencharm', workshopMax: 'luck1m', shop1: 'coinmag', shop1k: 'goose', streak7: 'freeze', streak30: 'goose2', weekly1: 'ticket', weeklyAll: 'luck1m', pageAll: 'luck10m', skinAll: 'goose2', secrets: 'luck100k', month: 'luck100k', chest: 'goose' };
   function grant(id, why, count = 1) {
     state.inv[id] = (state.inv[id] || 0) + count;
     const it = ITEM_BY_ID[id];
@@ -768,7 +772,7 @@
     if (boost > 1) fx.drop.left--;
     if (magnet > 1) fx.coin.left--;
     const bag = {}, P = boost * prestigeBonus();
-    dropsInto(bag, 10 ** oneInLog, P * wsBonus('itemSense'), P * wsBonus('coinSense') * magnet);
+    dropsInto(bag, 10 ** oneInLog, P * wsBonus('itemSense') * eventDrops(), P * wsBonus('coinSense') * magnet * eventCoins());
     payDrops(bag);
   }
   // What one plain roll of 1 in n drops with item boost D and coin boost C, added to `bag`
@@ -815,7 +819,7 @@
   // `quiet`: used by Keep boosts going, which must never stop to ask.
   function useItem(id, times = 1, quiet = false) {
     const it = ITEM_BY_ID[id], fx = state.effects;
-    if (!(state.inv[id] > 0)) return;
+    if (!(state.inv[id] > 0) || it.kind === 'passive') return;
     const k = Math.min(times, state.inv[id]);
     if (it.kind in BOOST_KEY) {
       const slot = it.kind, power = it[it.kind], key = BOOST_KEY[it.kind], word = BOOST_WORD[it.kind];
@@ -917,7 +921,7 @@
 
   // Coin shop: fixed prices, a sure way to an item. Each costs more coins than the slot needs on
   // average to pay it out, so the slot stays the better deal and the shop the dependable one.
-  const SHOP = [['lens', 4], ['overclock', 5], ['luck100', 8], ['horn', 12], ['coinmag', 25], ['tokencharm', 25], ['prism', 30], ['overclock2', 40], ['luck1k', 60], ['goose', 900], ['luck10k', 1500]];
+  const SHOP = [['lens', 4], ['overclock', 5], ['luck100', 8], ['horn', 12], ['ticket', 20], ['freeze', 60], ['coinmag', 25], ['tokencharm', 25], ['prism', 30], ['overclock2', 40], ['luck1k', 60], ['goose', 900], ['luck10k', 1500]];
   function buyShop(id, k = 1) {
     const row = SHOP.find(x => x[0] === id);
     if (!row) return 0;
@@ -1025,9 +1029,10 @@
       const fuse = it.next ? `<button class="btn" type="button" data-fuse="${it.id}" ${can ? '' : 'disabled'} aria-label="Fuse ${it.next[1]} ${esc(it.name)} into one ${esc(ITEM_BY_ID[it.next[0]].name)}">Fuse ${it.next[1]} → 1</button>`
         + `<button class="btn" type="button" data-fuse-all="${it.id}" ${can > 1 ? '' : 'disabled'} aria-label="Fuse every ${esc(it.name)} you can">Fuse all${can > 1 ? ` (${fmt(can)})` : ''}</button>` : '';
       return `<li class="item${k ? '' : ' none'}" style="--rc:${tierVar(RARITIES[it.rarity].id)}"><div><b>${esc(it.name)}</b> <span class="muted num">×${fmt(k)}</span><br><span class="muted">${esc(it.desc)}${it.next ? ` Fuse ${it.next[1]} into a ${esc(ITEM_BY_ID[it.next[0]].name)}.` : ''}</span></div>`
-        + `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button>`
-        + `<button class="btn" type="button" data-pin="${it.id}" aria-pressed="${(state.settings.pins || []).includes(it.id)}" aria-label="Pin ${esc(it.name)} to Quick use on the Roll tab">Pin</button>`
-        + `<button class="btn" type="button" data-use-all="${it.id}" ${k > 1 ? '' : 'disabled'} aria-label="Use every ${esc(it.name)}">Use all${k > 1 ? ` (${fmt(k)})` : ''}</button></div></li>`;
+        + (it.kind === 'passive' ? '<div class="item-actions"><span class="muted">Works on its own</span></div></li>'
+          : `<div class="item-actions">${fuse}<button class="btn" type="button" data-use="${it.id}" ${k ? '' : 'disabled'} aria-label="Use ${esc(it.name)}">Use</button>`
+          + `<button class="btn" type="button" data-pin="${it.id}" aria-pressed="${(state.settings.pins || []).includes(it.id)}" aria-label="Pin ${esc(it.name)} to Quick use on the Roll tab">Pin</button>`
+          + `<button class="btn" type="button" data-use-all="${it.id}" ${k > 1 ? '' : 'disabled'} aria-label="Use every ${esc(it.name)}">Use all${k > 1 ? ` (${fmt(k)})` : ''}</button></div></li>`);
     }).join('');
     const last = DROPS.length - 1;
     const rowHead = (n, all) => `<td style="color:${tierVar(tierOfN(n))};font-weight:700">1/${fmt(n)}${all ? ' or rarer' : ''}</td>`;
@@ -1374,6 +1379,8 @@
     if (hunt) parts.push(`Hunting <b>${esc(huntName(hunt))}</b> (${odds(huntP(hunt))}), <span class="num">${fmt(huntRolls)}</span> rolls so far`);
     if (hard()) parts.push(`<b>${esc(G.DIFF_BY_ID[state.difficulty].name)}:</b> no multiplier, only badges count`);
     const fx = effectsText();
+    if (inLuckyHour()) fx.unshift(`Lucky hour, drops and coins ×2 until ${hourText(luckyHour() + 1)}`);
+    if (weekend()) fx.unshift('Weekend, coins ×2');
     if (fx.length) parts.push(`<b>Active:</b> ${esc(fx.join(' · '))}`);
     parts.push(`<span class="muted">Lucky tokens: <b class="num">${fmt(state.tokens || 0)}</b></span>`);
     $('status').innerHTML = parts.join('<br>');
@@ -1477,7 +1484,7 @@
       if (magnet > 1) fx.coin.left = Math.max(0, fx.coin.left - r);
       if (tk > 1) fx.token.left = Math.max(0, fx.token.left - r);
       renewBoosts(); // the next part of the batch rolls with the renewed boost
-      const D = boost * prestigeBonus() * wsBonus('itemSense'), C = boost * prestigeBonus() * wsBonus('coinSense') * magnet;
+      const D = boost * prestigeBonus() * wsBonus('itemSense') * eventDrops(), C = boost * prestigeBonus() * wsBonus('coinSense') * magnet * eventCoins();
       counts.forEach((c, k) => {
         if (!c) return;
         const id = k ? BAND_TIER[k - 1] : 'trash';
@@ -1892,6 +1899,11 @@
     { id: 'workshopMax', name: 'Master craftsman', desc: 'Max out an upgrade in the token workshop', test: () => WORKSHOP.some(w => wsLevel(w.id) >= w.max) },
     { id: 'shop1', name: 'Customer', desc: 'Buy something in the coin shop', test: () => (state.shopSpent || 0) > 0 },
     { id: 'shop1k', name: 'Regular customer', desc: 'Spend 1,000 coins in the coin shop', test: () => (state.shopSpent || 0) >= 1000 },
+    // v3.7
+    { id: 'streak7', name: 'Seven days straight', desc: 'Roll on 7 days in a row', test: () => ((state.streak && state.streak.best) || 0) >= 7 },
+    { id: 'streak30', name: 'A month of mornings', desc: 'Roll on 30 days in a row', test: () => ((state.streak && state.streak.best) || 0) >= 30 },
+    { id: 'weekly1', name: 'Week\'s work', desc: 'Claim a weekly quest', test: () => (state.weeklyDone || 0) >= 1 },
+    { id: 'weeklyAll', name: 'Clean sweep', desc: 'Finish all three weekly quests of a week', test: () => (state.weeklyBonuses || 0) >= 1 },
   ];
   function checkAchievements(rec) {
     for (const a of ACHIEVEMENTS) {
@@ -2394,6 +2406,8 @@
     { id: 'card', name: 'Index Card', how: 'reward', ach: 'share', light: true },
     { id: 'steel', name: 'Steel', how: 'reward', ach: 'workshop1' },
     { id: 'ledger', name: 'Ledger', how: 'reward', ach: 'shop1', light: true },
+    { id: 'sakura', name: 'Sakura', how: 'reward', ach: 'streak7', light: true },
+    { id: 'glacier', name: 'Glacier', how: 'reward', ach: 'weeklyAll', light: true },
   ];
   const SKIN_BY_ID = Object.fromEntries(SKINS.map(s => [s.id, s]));
   const BUNDLE_PRICE = 500;
@@ -2502,7 +2516,7 @@
     'FUSE ALL               Fuse everything as far up as it goes.',
     'SPIN [n|ALL]           Spin the coin slot.',
     'ODDS                   The slot prize table and your pity.',
-    'QUESTS [CLAIM n]       Today\'s quests, or claim one.',
+    'QUESTS [CLAIM n|REROLL n]  Today\'s and this week\'s quests; claim one (W1 for weekly) or reroll one.',
     'BOOK [CLAIM page]      Badge book pages, or claim one.',
     'BADGES [word]          Badges by category, or the ones matching a word.',
     'ACH                    Achievements.',
@@ -2668,18 +2682,26 @@
         print(`${pad('Prize', 32)}${pad('Chance', 10)}Pity`, ...SLOT_PRIZES.map(([id, qty, units]) => `${pad(ITEM_BY_ID[id].name + (qty > 1 ? ` ×${qty}` : ''), 32)}${pad(pctText(units), 10)}${id in SLOT_PITY ? `${fmt(state.pity[id] || 0)} / ${fmt(SLOT_PITY[id])}` : ''}`), '');
         break;
       case 'quests': case 'quest': {
-        const qs = todaysQuests();
-        if (rest[0] && rest[0].toLowerCase() === 'claim') {
-          const i = (+rest[1] || 1) - 1;
-          if (!qs.list[i]) { print('QUESTS CLAIM 1, 2 or 3.'); break; }
-          const q = qs.list[i];
-          print(claimQuest(i) ? `Claimed: ${QUEST_BY_ID[q.id].text}.` : q.claimed ? 'Already claimed.' : 'That quest is not done yet.');
+        const qs = todaysQuests(), wk = weeksQuests(), sub = (rest[0] || '').toLowerCase();
+        const line = (q, tag) => {
+          const d = QUEST_BY_ID[q.id];
+          return `${pad(tag + '.', 4)}${pad(d.text, 40)}${pad(`${fmt(q.have)} / ${fmt(d.goal)}`, 18)}${q.claimed ? 'claimed' : q.have >= d.goal ? `ready: QUESTS CLAIM ${tag}` : `${questCoins(d)} coins and ${ITEM_BY_ID[d.item].name}`}`;
+        };
+        if (sub === 'claim') {
+          const tag = (rest[1] || '1').toLowerCase(), weekly = tag.startsWith('w'), i = (+tag.replace('w', '') || 1) - 1;
+          const q = (weekly ? wk : qs).list[i];
+          if (!q) { print('QUESTS CLAIM 1, 2 or 3, or W1, W2 or W3 for weekly quests.'); break; }
+          print(claimQuest(weekly ? 'w' + i : i) ? `Claimed: ${QUEST_BY_ID[q.id].text}.` : q.claimed ? 'Already claimed.' : 'That quest is not done yet.');
           break;
         }
-        print(...qs.list.map((q, i) => {
-          const d = QUEST_BY_ID[q.id];
-          return `${i + 1}. ${pad(d.text, 40)}${pad(`${fmt(q.have)} / ${fmt(d.goal)}`, 18)}${q.claimed ? 'claimed' : q.have >= d.goal ? `ready: QUESTS CLAIM ${i + 1}` : `${questCoins(d)} coins and ${ITEM_BY_ID[d.item].name}`}`;
-        }), '');
+        if (sub === 'reroll') {
+          const i = (+rest[1] || 1) - 1, old = qs.list[i];
+          const next = old && rerollQuest(i);
+          print(next ? `Swapped ${QUEST_BY_ID[old.id].text} for ${next.text}.` : !old ? 'QUESTS REROLL 1, 2 or 3.' : old.claimed ? 'That quest is claimed.' : 'No rerolls left today. A Quest Ticket buys one more.', '');
+          break;
+        }
+        print('Today', ...qs.list.map((q, i) => line(q, String(i + 1))), 'This week', ...wk.list.map((q, i) => line(q, 'W' + (i + 1))),
+          `Rerolls: ${freeRerolls() ? '1 free today' : `${fmt(state.inv.ticket || 0)} Quest Tickets`}. QUESTS REROLL n swaps one.`, '');
         break;
       }
       case 'book': {
@@ -3114,7 +3136,8 @@
   }
 
   // Daily quests: three a day per save file, picked from the date and the save file so they are
-  // the same all day. Each pays coins and an item; finishing all three pays a bonus.
+  // the same all day. Each pays coins and an item; finishing all three pays a bonus. Weekly quests
+  // work the same way over a week from Monday, with bigger goals and rewards.
   const QUESTS = [
     { id: 'roll500', text: 'Roll 500 times', goal: 500, on: 'roll', coins: 5, item: 'luck10' },
     { id: 'roll2k', text: 'Roll 2,000 times', goal: 2000, on: 'roll', coins: 15, item: 'lens' },
@@ -3129,59 +3152,158 @@
     { id: 'coins5', text: 'Find 5 coins', goal: 5, on: 'coin', coins: 5, item: 'luck100' },
     ...MODES.map(m => ({ id: `mode-${m.id}`, text: `Roll 300 times in ${m.name} mode`, goal: 300, on: 'mode', mode: m.id, coins: 8, item: 'luck100' })),
   ];
-  const QUEST_BY_ID = Object.fromEntries(QUESTS.map(q => [q.id, q]));
+  const WEEKLY = [
+    { id: 'w-roll50k', text: 'Roll 50,000 times', goal: 5e4, on: 'roll', coins: 60, item: 'goose' },
+    { id: 'w-roll250k', text: 'Roll 250,000 times', goal: 2.5e5, on: 'roll', coins: 150, item: 'luck10k' },
+    { id: 'w-mythic3', text: 'Roll Mythic or rarer 3 times', goal: 3, on: 'tier', tier: 'mythic', coins: 80, item: 'luck1k' },
+    { id: 'w-divine', text: 'Roll Divine or rarer', goal: 1, on: 'tier', tier: 'divine', coins: 100, item: 'goose' },
+    { id: 'w-fresh5', text: 'Collect 5 badges you did not have', goal: 5, on: 'fresh', coins: 80, item: 'prism' },
+    { id: 'w-spin500', text: 'Spin the coin slot 500 times', goal: 500, on: 'spin', coins: 50, item: 'coinmag' },
+    { id: 'w-coins100', text: 'Find 100 coins', goal: 100, on: 'coin', coins: 50, item: 'tokencharm' },
+    { id: 'w-mult10', text: 'Land 10 Rare or rarer multipliers', goal: 10, on: 'mult', coins: 60, item: 'prism' },
+    { id: 'w-daily', text: 'Claim 9 daily quests', goal: 9, on: 'claim', coins: 100, item: 'goose' },
+  ];
+  const QUEST_BY_ID = Object.fromEntries(QUESTS.concat(WEEKLY).map(q => [q.id, q]));
   const questCoins = def => Math.round(def.coins * wsBonus('questSense')); // Quest sense in the workshop
-  const QUEST_BONUS = 'luck1k';
+  const QUEST_BONUS = 'luck1k', WEEKLY_BONUS = 'goose2';
+  // FNV-1a of a text, then a step of a small mixer: the same picks all day (or week) for a save file.
+  function seeded(text) {
+    let h = 2166136261;
+    for (const c of text) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
+    return () => (h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0);
+  }
+  const pickQuests = (pool, seed) => { const next = seeded(seed), ids = pool.map(q => q.id), pick = []; while (pick.length < 3) pick.push(ids.splice(next() % ids.length, 1)[0]); return pick; };
   function todaysQuests() {
     const day = dayKey();
     if (state.quests.day !== day) {
-      let h = 2166136261; // FNV-1a of the date and save file, so the pick is fixed for the day
-      for (const c of day + slots.active) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
-      const pool = QUESTS.map(q => q.id), pick = [];
-      while (pick.length < 3) { h = Math.imul(h ^ (h >>> 15), 2246822507) >>> 0; pick.push(pool.splice(h % pool.length, 1)[0]); }
-      state.quests = { day, list: pick.map(id => ({ id, have: 0, claimed: false })), bonus: false };
+      state.quests = { day, list: pickQuests(QUESTS, day + slots.active).map(id => ({ id, have: 0, claimed: false })), bonus: false, rerolls: 0 };
     }
     return state.quests;
   }
+  const weekKey = () => { const d = new Date(); d.setDate(d.getDate() - (d.getDay() + 6) % 7); return dayKey(d.getTime()); }; // Monday's date
+  function weeksQuests() {
+    const week = weekKey();
+    if (!state.weekly || state.weekly.week !== week) {
+      state.weekly = { week, list: pickQuests(WEEKLY, 'w' + week + slots.active).map(id => ({ id, have: 0, claimed: false })), bonus: false };
+    }
+    return state.weekly;
+  }
   function questEvent(on, amount = 1, test = () => true) {
-    for (const q of todaysQuests().list) {
-      const def = QUEST_BY_ID[q.id];
-      if (def.on !== on || q.have >= def.goal || !test(def)) continue;
-      q.have = Math.min(def.goal, q.have + amount);
-      if (q.have >= def.goal) toast(`Quest done: <b>${esc(def.text)}</b>. Claim it in Trophies${consoleOn() ? ' or with QUESTS CLAIM' : ''}.`, 'rare', 'quest');
-      if (!$('tab-trophies').hidden && (q.have >= def.goal || !auto)) renderQuests();
+    for (const [qs, weekly] of [[todaysQuests(), false], [weeksQuests(), true]]) {
+      for (const q of qs.list) {
+        const def = QUEST_BY_ID[q.id];
+        if (def.on !== on || q.have >= def.goal || !test(def)) continue;
+        q.have = Math.min(def.goal, q.have + amount);
+        if (q.have >= def.goal) toast(`${weekly ? 'Weekly quest' : 'Quest'} done: <b>${esc(def.text)}</b>. Claim it in Trophies${consoleOn() ? ' or with QUESTS CLAIM' : ''}.`, 'rare', 'quest');
+        if (!$('tab-trophies').hidden && (q.have >= def.goal || !auto)) renderQuests();
+      }
     }
   }
-  function renderQuests() {
-    const qs = todaysQuests();
-    $('quests').innerHTML = qs.list.map((q, i) => {
-      const def = QUEST_BY_ID[q.id], done = q.have >= def.goal;
-      const action = q.claimed ? '<span class="muted">Claimed</span>'
-        : `<button class="btn" type="button" data-quest="${i}" ${done ? '' : 'disabled'}>Claim</button>`;
-      return `<li><div><b>${esc(def.text)}</b> <span class="muted num">${fmt(q.have)} / ${fmt(def.goal)}</span><br>`
-        + `<span class="muted">Reward: ${questCoins(def)} coins and ${esc(ITEM_BY_ID[def.item].name)}</span>`
-        + `<div class="progress"><i style="width:${(100 * q.have / def.goal).toFixed(1)}%"></i></div></div>${action}</li>`;
-    }).join('') + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[QUEST_BONUS].name)}${qs.bonus ? ' (paid)' : ''}. New quests every day at midnight.</li>`;
+  // One free reroll a day; after that each reroll costs a Quest Ticket. Claimed quests stay put.
+  const freeRerolls = () => Math.max(0, 1 - (todaysQuests().rerolls || 0));
+  function rerollQuest(i) {
+    const qs = todaysQuests(), q = qs.list[i];
+    if (!q || q.claimed) return false;
+    const free = freeRerolls() > 0;
+    if (!free && !(state.inv.ticket > 0)) return false;
+    const pool = QUESTS.filter(d => !qs.list.some(x => x.id === d.id));
+    const next = pool[randInt(pool.length)];
+    if (free) qs.rerolls = (qs.rerolls || 0) + 1; else state.inv.ticket--;
+    qs.list[i] = { id: next.id, have: 0, claimed: false };
+    save();
+    if (!$('tab-trophies').hidden) renderQuests();
+    return next;
   }
-  $('quests').addEventListener('click', ev => {
-    const b = ev.target.closest('[data-quest]');
-    if (!b) return;
-    claimQuest(+b.dataset.quest);
-  });
-  function claimQuest(i) {
-    const qs = todaysQuests(), q = qs.list[i], def = QUEST_BY_ID[q.id];
+  function questRow(q, i, weekly) {
+    const def = QUEST_BY_ID[q.id], done = q.have >= def.goal;
+    const canReroll = !weekly && !q.claimed && (freeRerolls() > 0 || state.inv.ticket > 0);
+    const action = q.claimed ? '<span class="muted">Claimed</span>'
+      : `<button class="btn" type="button" data-quest="${weekly ? 'w' : ''}${i}" ${done ? '' : 'disabled'}>Claim</button>`
+        + (weekly || done ? '' : `<button class="btn" type="button" data-reroll="${i}" ${canReroll ? '' : 'disabled'} aria-label="Swap ${esc(def.text)} for another quest">Reroll</button>`);
+    return `<li><div><b>${esc(def.text)}</b> <span class="muted num">${fmt(q.have)} / ${fmt(def.goal)}</span><br>`
+      + `<span class="muted">Reward: ${questCoins(def)} coins and ${esc(ITEM_BY_ID[def.item].name)}</span>`
+      + `<div class="progress"><i style="width:${(100 * q.have / def.goal).toFixed(1)}%"></i></div></div><div class="item-actions">${action}</div></li>`;
+  }
+  function renderQuests() {
+    const qs = todaysQuests(), wk = weeksQuests();
+    $('quests').innerHTML = qs.list.map((q, i) => questRow(q, i, false)).join('')
+      + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[QUEST_BONUS].name)}${qs.bonus ? ' (paid)' : ''}. New quests every day at midnight.</li>`;
+    $('rerollNote').textContent = freeRerolls() ? '1 free reroll today' : state.inv.ticket > 0 ? `${fmt(state.inv.ticket)} Quest ${state.inv.ticket === 1 ? 'Ticket' : 'Tickets'} for rerolls` : 'no rerolls left today';
+    $('weekly').innerHTML = wk.list.map((q, i) => questRow(q, i, true)).join('')
+      + `<li class="muted">Finish all three for a bonus ${esc(ITEM_BY_ID[WEEKLY_BONUS].name)}${wk.bonus ? ' (paid)' : ''}. New weekly quests every Monday.</li>`;
+    const ends = new Date(wk.week + 'T00:00'); ends.setDate(ends.getDate() + 7);
+    $('weekNote').textContent = `until ${ends.toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}`;
+    renderStreak();
+  }
+  for (const id of ['quests', 'weekly']) {
+    $(id).addEventListener('click', ev => {
+      const b = ev.target.closest('[data-quest]'), r = ev.target.closest('[data-reroll]');
+      if (b) claimQuest(b.dataset.quest);
+      if (r) rerollQuest(+r.dataset.reroll);
+    });
+  }
+  // `which`: a daily quest's index, or "w" and the index of a weekly one.
+  function claimQuest(which) {
+    const weekly = String(which).startsWith('w'), i = +String(which).replace('w', '');
+    const qs = weekly ? weeksQuests() : todaysQuests(), q = qs.list[i];
+    if (!q) return false;
+    const def = QUEST_BY_ID[q.id];
     if (q.claimed || q.have < def.goal) return false;
     q.claimed = true;
     state.questsDone = (state.questsDone || 0) + 1;
+    if (weekly) state.weeklyDone = (state.weeklyDone || 0) + 1;
     const coins = questCoins(def);
     state.coins += coins;
-    grant(def.item, `Quest reward, plus ${coins} coins`);
+    grant(def.item, `${weekly ? 'Weekly quest' : 'Quest'} reward, plus ${coins} coins`);
+    if (!weekly) questEvent('claim');
+    if (!qs.bonus && qs.list.every(x => x.claimed)) {
+      qs.bonus = true;
+      if (weekly) state.weeklyBonuses = (state.weeklyBonuses || 0) + 1;
+      grant(weekly ? WEEKLY_BONUS : QUEST_BONUS, weekly ? 'All weekly quests done' : 'All quests done');
+    }
     autoFuse();
-    if (!qs.bonus && qs.list.every(x => x.claimed)) { qs.bonus = true; grant(QUEST_BONUS, 'All quests done'); }
     checkAchievements();
     save();
     if (!$('tab-trophies').hidden) renderQuests();
     return true;
+  }
+
+  // Daily streak: days in a row with at least one roll. A Streak Freeze covers one missed day and is
+  // used on its own; milestones pay out once each, and every seventh day brings a Streak Freeze.
+  const STREAK_REWARDS = { 3: ['lens', 3], 7: ['luck100', 3], 14: ['horn', 2], 30: ['goose', 1], 60: ['luck10k', 1], 100: ['goose2', 1], 365: ['luck1m', 1] };
+  const daysBetween = (a, b) => Math.round((new Date(b + 'T12:00') - new Date(a + 'T12:00')) / 864e5);
+  function noteStreak() {
+    const today = dayKey(), st = state.streak || (state.streak = { days: 0, last: '', best: 0 });
+    if (st.last === today) return;
+    const gap = st.last ? daysBetween(st.last, today) : 0, missed = gap - 1;
+    let kept = gap === 1;
+    if (gap > 1 && (state.inv.freeze || 0) >= missed) { state.inv.freeze -= missed; kept = true; toast(`${fmt(missed)} Streak ${missed === 1 ? 'Freeze' : 'Freezes'} kept your streak going`, 'rare'); }
+    st.days = kept ? st.days + 1 : 1;
+    st.last = today;
+    st.best = Math.max(st.best || 0, st.days);
+    if (st.days > 1) toast(`Daily streak: <b>${fmt(st.days)} days</b>`, 'uncommon');
+    const reward = STREAK_REWARDS[st.days];
+    if (reward) grant(reward[0], `${st.days}-day streak`, reward[1]);
+    if (st.days % 7 === 0) grant('freeze', `${st.days}-day streak`);
+    if (!$('tab-trophies').hidden) renderStreak();
+  }
+  // Lucky hour: one hour a day, picked from the date and the save file, when drops and coins come
+  // twice as often. Weekends double coins. Both are shown in the status line while they run.
+  const luckyHour = () => 9 + seeded('hour' + dayKey() + slots.active)() % 14; // from 9 a.m. to 10 p.m.
+  const inLuckyHour = () => new Date().getHours() === luckyHour();
+  const weekend = () => [0, 6].includes(new Date().getDay());
+  const eventDrops = () => (inLuckyHour() ? 2 : 1);
+  const eventCoins = () => eventDrops() * (weekend() ? 2 : 1);
+  const hourText = h => new Date(2000, 0, 1, h).toLocaleTimeString(undefined, { hour: 'numeric' });
+  function renderStreak() {
+    const st = state.streak || { days: 0, best: 0 };
+    const alive = st.last && daysBetween(st.last, dayKey()) <= 1 + (state.inv.freeze || 0);
+    const days = alive ? st.days : 0;
+    const next = Object.keys(STREAK_REWARDS).map(Number).find(d => d > days);
+    $('streakSub').textContent = st.best ? `best ${fmt(st.best)} ${st.best === 1 ? 'day' : 'days'}` : '';
+    $('streakPanel').innerHTML = `<div class="coins-in-hand"><span class="num">${fmt(days)}</span><span>${days === 1 ? 'day' : 'days'} in a row${st.last === dayKey() ? ', today included' : alive && days ? ', roll today to keep it' : ''}</span></div>`
+      + `<p class="muted">${next ? `Day ${next} pays ${esc(ITEM_BY_ID[STREAK_REWARDS[next][0]].name)}${STREAK_REWARDS[next][1] > 1 ? ` ×${STREAK_REWARDS[next][1]}` : ''}. ` : ''}Every seventh day brings a Streak Freeze, which covers one missed day on its own. You have ${fmt(state.inv.freeze || 0)}.</p>`
+      + `<p class="muted">Today's lucky hour: ${hourText(luckyHour())} to ${hourText(luckyHour() + 1)}, when drops and coins come twice as often.${weekend() ? ' It is the weekend, so coins come twice as often all day.' : ' Coins come twice as often on Saturdays and Sundays.'}</p>`;
   }
 
   // Prestige: once enough rolls have passed since the last one, trade in coins, items and active
@@ -3226,6 +3348,15 @@
   // What's new: every release, newest first, with the UTC time it went out (from the repository's
   // history for the older ones). The newest one names the version shown in the footer.
   const RELEASES = [
+    { v: 'v3.7', at: '2026-10-20 03:29', title: 'Every day', items: [
+      'Daily streak (Trophies): days in a row with at least one roll. Day 3, 7, 14, 30, 60, 100 and 365 pay rewards, and every seventh day brings a Streak Freeze.',
+      'Streak Freeze: covers one missed day on its own. From every seventh streak day, the coin shop, and Seven days straight.',
+      'Lucky hour: one hour a day, different for each save file, when drops and coins come twice as often. The status line shows it while it runs.',
+      'Weekends: coins come twice as often on Saturdays and Sundays.',
+      'Quest rerolls: swap a daily quest you have not finished for another, once a day for free and then with a Quest Ticket (coin shop).',
+      'Weekly quests: three bigger quests from Monday to Sunday, with a Diamond Goose for finishing all three. QUESTS lists both, QUESTS CLAIM W1 claims a weekly one, QUESTS REROLL swaps a daily one.',
+      'Two skins: Sakura, the reward for a seven-day streak, and Glacier, the reward for a clean sweep of the weekly quests. Four new achievements.',
+    ] },
     { v: 'v3.6', at: '2026-10-20 03:21', title: 'Workshop and shop', items: [
       'Token workshop (Inventory): four lasting upgrades bought with lucky tokens, kept through prestige. Coin sense and Item sense make coins and items drop up to 3 times as often, Token sense brings up to 3 times the tokens, and Quest sense makes quests pay up to 3 times the coins.',
       'Coin shop (Inventory): eleven items at fixed prices, for when you want a sure thing instead of a spin.',

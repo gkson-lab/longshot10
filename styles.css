@@ -750,3 +750,24 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 .fold summary h2::before { content: "▸"; display: inline-block; width: 1em; color: var(--muted); transition: transform .15s; }
 .fold[open] summary h2::before { transform: rotate(90deg); }
 .fold summary .muted { font-size: 14px; }
+
+/* v3.7 */
+.streak .coins-in-hand .num { color: var(--accent); }
+.streak p { margin: 6px 0; }
+.quests .item-actions { flex-wrap: nowrap; }
+/* Sakura: cherry-blossom paper for a week-long streak, with deep cherry ink. */
+:root[data-theme="sakura"] {
+  --bg: #fbf3f5; --surface: #ffffff; --surface-2: #f8eaee; --line: #e7cdd5;
+  --ink: #3a1f2b; --muted: #6b4655; --faint: #7a5463; --cell: #3a1f2b; --cell-ink: #fff5f7; --cell-lead: #a48593;
+  --accent: #c2185b; --accent-ink: #ffffff; --focus: #3a1f2b;
+}
+/* Glacier: pale ice blue for a clean sweep of the weekly quests, with deep sea-blue ink. */
+:root[data-theme="glacier"] {
+  --bg: #eef5f9; --surface: #fbfdfe; --surface-2: #e4eff5; --line: #c3d7e2;
+  --ink: #10293a; --muted: #3a566a; --faint: #4a6679; --cell: #10293a; --cell-ink: #eef8ff; --cell-lead: #7f9cb0;
+  --accent: #0b6fa4; --accent-ink: #ffffff; --focus: #10293a;
+}
+[data-swatch="sakura"] { background: linear-gradient(135deg, #fbf3f5 55%, #c2185b 55%); }
+[data-swatch="glacier"] { background: linear-gradient(135deg, #eef5f9 55%, #0b6fa4 55%); }
+.book li > .item-actions, .quests li > .item-actions { flex: none; }
+@media (max-width: 560px) { .items li > .item-actions { flex-basis: 100%; } }

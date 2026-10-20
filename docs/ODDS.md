@@ -611,9 +611,9 @@ A difficulty changes your score but not the yardstick: 1/N always compares a rol
 
 | Difficulty | Rule | Tokens | Trash | 1/10 or rarer | 1/100 or rarer | 1/1,000 or rarer | 1/10,000 or rarer |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Standard | Badges and the multiplier reel. | ×1 | 1.01% | 1 in 10 | 1 in 104 | 1 in 1,078 | 1 in 12,121 |
-| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.5% | 1 in 16 | 1 in 330 | 1 in 2,740 | 0 in 400,000 |
-| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.49% | 1 in 698 | 1 in 40,000 | 1 in 400,000 | 0 in 400,000 |
+| Standard | Badges and the multiplier reel. | ×1 | 1.01% | 1 in 10 | 1 in 100 | 1 in 1,015 | 1 in 11,429 |
+| Hardcore | No multiplier reel: only your badges count. | ×2 | 1.52% | 1 in 16 | 1 in 334 | 1 in 3,448 | 1 in 80,000 |
+| Nightmare | Badges only, and your score is raised to the power 2/3. | ×3 | 4.44% | 1 in 791 | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 |
 | Abyss | Badges only, and your score is square-rooted. | ×5 | 20.1% | 1 in 33,333 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 | Oblivion | Badges only, and your score is cube-rooted. Astronomically hard. | ×10 | 75.3% | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 | 0 in 400,000 |
 
@@ -721,6 +721,8 @@ Up to 100,000 spins at once are played one by one. Bigger batches are counted in
 | Overclock III | Turbo rolls eight times as fast for 3 minutes. |  |
 | Coin Magnet | Coins drop 5 times as often for 500 plain rolls. |  |
 | Token Charm | Three times the lucky tokens for 500 rolls. |  |
+| Streak Freeze | Covers one missed day of your daily streak, on its own. |  |
+| Quest Ticket | Rerolls a daily quest once the free reroll of the day is used. |  |
 
 Retired items (Charm of Two, Charm of Five, Magnet, Treasure Map) no longer drop but still work and fuse upwards. Fuse all fuses every full set of one item; Fuse everything works up every line from the bottom, so new items feed the next fuse.
 
@@ -745,6 +747,8 @@ Fixed prices in coins. Each item costs more coins here than the slot needs on av
 | Overclock | 5 |
 | Charm of a Hundred | 8 |
 | Horn of Plenty | 12 |
+| Quest Ticket | 20 |
+| Streak Freeze | 60 |
 | Coin Magnet | 25 |
 | Token Charm | 25 |
 | Prism Lens | 30 |
@@ -755,7 +759,7 @@ Fixed prices in coins. Each item costs more coins here than the slot needs on av
 
 ## Daily quests
 
-Three quests a day per save file, picked from this list by the date. Finishing all three adds a Charm of a Thousand.
+Three quests a day per save file, picked from this list by the date. Finishing all three adds a Diamond Goose.
 
 | Quest | Coins | Item |
 | --- | ---: | --- |

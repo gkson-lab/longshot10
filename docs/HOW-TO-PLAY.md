@@ -95,7 +95,10 @@ The Log tab keeps the numbers of your play:
 ## Daily things
 
 - **Daily gift:** a Charm of Ten every day, per save file.
-- **Daily quests:** three a day, like "Roll Epic or rarer 3 times". Each pays coins and an item, and finishing all three pays a bonus.
+- **Daily quests:** three a day, like "Roll Epic or rarer 3 times". Each pays coins and an item, and finishing all three pays a bonus. Swap one you have not finished with Reroll: once a day for free, then with a Quest Ticket.
+- **Weekly quests:** three bigger ones from Monday to Sunday. Finishing all three pays a Diamond Goose.
+- **Daily streak:** days in a row with at least one roll. Days 3, 7, 14, 30, 60, 100 and 365 pay rewards, and every seventh day brings a Streak Freeze, which covers one missed day on its own.
+- **Lucky hour:** one hour a day (Trophies says which) when drops and coins come twice as often. On Saturdays and Sundays coins come twice as often all day.
 
 ## Prestige
 
