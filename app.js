@@ -3424,6 +3424,7 @@
       print(PROMPT + line);
       if (line.trim()) { history.push(line); at = history.length; state.cmds = (state.cmds || 0) + 1; }
       input.value = '';
+      input.focus(); // after the Run button, typing goes straight on
       shell(line, print);
       checkAchievements();
       save();

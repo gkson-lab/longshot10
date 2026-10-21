@@ -1072,3 +1072,20 @@ kbd { display: inline-block; min-width: 1.8em; padding: 1px 6px; border: 1px sol
 }
 [data-swatch="void"] { background: linear-gradient(135deg, #030304 55%, #ececf0 55%); }
 [data-swatch="diamond"] { background: linear-gradient(135deg, #061015 55%, #8fdcff 55%); }
+
+/* Phones: command lines get the full width under their prompt, 16px text so iPhones do not zoom
+   in on focus, and a Run button for keyboards whose Enter key does not submit. */
+.run-btn { flex: none; min-height: 44px; min-width: 56px; margin-left: 8px; padding: 0 12px; border: 1px solid #767676; border-radius: 4px; background: transparent; color: #cccccc; font: inherit; cursor: pointer; }
+.sh-run { border-color: #c5c9cf; color: #1f2328; margin: 0 6px; }
+@media (hover: none), (max-width: 560px) {
+  .con-line, .term-line { flex-wrap: wrap; }
+  .con-line label, .term-line label { flex-basis: 100%; }
+  .con-line input, .term-line input, .chat-form input, .sh-bar input { font-size: 16px; }
+  .con-line input, .term-line input { flex: 1 1 160px; }
+}
+/* Six tabs fit a phone: they share the width and may wrap to a second row instead of scrolling
+   out of sight. */
+@media (max-width: 560px) {
+  .tabs { flex-wrap: wrap; overflow-x: visible; }
+  .tabs button { flex: 1 1 auto; padding: 10px 8px; }
+}

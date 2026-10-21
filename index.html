@@ -22,7 +22,7 @@
 
 <div class="console" id="console" hidden>
   <pre id="conOut" aria-live="polite"></pre>
-  <form id="conForm" class="con-line"><label for="conInput">PS C:\LongShot10&gt;&nbsp;</label><input id="conInput" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Command"></form>
+  <form id="conForm" class="con-line"><label for="conInput">PS C:\LongShot10&gt;&nbsp;</label><input id="conInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Command"><button class="run-btn" type="submit">Run</button></form>
 </div>
 
 <div class="chat" id="chat" hidden>
@@ -45,7 +45,7 @@
     <button type="button" data-say="help">Help</button>
   </div>
   <form class="chat-form" id="chatForm">
-    <input id="chatInput" autocomplete="off" placeholder="Message Tenny" aria-label="Message Tenny">
+    <input id="chatInput" autocomplete="off" autocorrect="off" enterkeyhint="send" placeholder="Message Tenny" aria-label="Message Tenny">
     <button type="submit">Send</button>
   </form>
 </div>
@@ -110,7 +110,7 @@
     <span class="sh-status" id="shStatus"></span>
     <button class="sh-leave" type="button" data-leave>Close sheet</button>
   </header>
-  <form class="sh-bar" id="shForm"><label for="shInput" class="sh-fx">fx</label><input id="shInput" autocomplete="off" spellcheck="false" placeholder="=ROLL(100)" aria-describedby="shOut"></form>
+  <form class="sh-bar" id="shForm"><label for="shInput" class="sh-fx">fx</label><input id="shInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go" placeholder="=ROLL(100)" aria-describedby="shOut"><button class="run-btn sh-run" type="submit">Enter</button></form>
   <p class="sh-out" id="shOut" aria-live="polite"></p>
   <div class="sh-wrap" id="shWrap"><table class="sh-grid" id="shGrid"></table></div>
   <div class="sh-tabs" role="tablist" aria-label="Sheets" id="shTabs"></div>
@@ -640,7 +640,7 @@
     <p class="muted" id="dataMsg" role="status"></p>
     <div class="terminal" id="terminal" hidden>
       <pre id="termOut" aria-live="polite"></pre>
-      <form id="termForm" class="term-line"><label for="termInput">PS C:\LongShot10&gt;&nbsp;</label><input id="termInput" autocomplete="off" autocapitalize="off" spellcheck="false"></form>
+      <form id="termForm" class="term-line"><label for="termInput">PS C:\LongShot10&gt;&nbsp;</label><input id="termInput" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="go"><button class="run-btn" type="submit">Run</button></form>
     </div>
     <div class="dlg-actions"><button class="term-toggle" type="button" id="termToggle" aria-expanded="false" aria-controls="terminal" aria-label="Command line">&gt;_</button><button class="btn" type="button" data-close>Done</button></div>
   </div>
